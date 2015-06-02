@@ -48,6 +48,7 @@ public class ScollerMovement : MonoBehaviour {
 
 
 		if (isDragging) {
+			print ("is dragging");
 			RectTransformUtility.ScreenPointToLocalPointInRectangle(myCanvas.transform as RectTransform, Input.mousePosition, myCanvas.GetComponent<Canvas>().worldCamera, out pos);
 			currentY = pos.y;
 			transform.localPosition = new Vector3(0f, -(initY-currentY), 0f);

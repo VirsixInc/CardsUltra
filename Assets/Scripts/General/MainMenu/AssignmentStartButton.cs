@@ -12,7 +12,7 @@ public class AssignmentStartButton : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		thisEventTrigger = GetComponent<EventTrigger>();
-		entry.eventID = EventTriggerType.PointerDown;
+		entry.eventID = EventTriggerType.PointerUp;
 		entry.callback.AddListener( (eventData) => {CallManager(); } );
 		thisEventTrigger.delegates.Add(entry);
 	}

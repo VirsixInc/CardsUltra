@@ -5,7 +5,7 @@ public class BreatheAnimation : MonoBehaviour {
 
 	Vector3 startScale;
 	
-	float amplitude = .05f;
+	float amplitude = .02f;
 	float period = .3f;
 	
 	void Start() {

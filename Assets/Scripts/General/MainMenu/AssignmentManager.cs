@@ -9,7 +9,7 @@ public class AssignmentManager : MonoBehaviour {
 	public Assignment assignment;
 	public GameObject masteredHeader, unmasteredHeader;
 	public GameObject assignmentGUIPrefab;
-	float prefabHeight = 200f, initPrefabYPos = -350f, leftPos = -300f, rightPos = 300f, dividerHeight = 225f, spaceBetweenAssignments = 100f;
+	float prefabHeight = 200f, initPrefabYPos = 200f, prefabOffset = -500f, leftPos = -300f, rightPos = 300f, dividerHeight = 500f, spaceBetweenAssignments = 100f;
 	public float upperBound; //for clamping scroll
 	public static AssignmentManager s_instance;
 
@@ -32,7 +32,7 @@ public class AssignmentManager : MonoBehaviour {
 
 		//parse associatedGameObjects into either mastered or unmastered
 		for (int i = 0; i < arrayOfAssignments.Count; i++) {
-      arrayOfAssignments[i].associatedGUIObject = Instantiate(assignmentGUIPrefab) as GameObject;
+     	 arrayOfAssignments[i].associatedGUIObject = Instantiate(assignmentGUIPrefab) as GameObject;
 			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().title.text = arrayOfAssignments[i].assignmentTitle;
 			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().assignmentIndex = i;
 
@@ -62,10 +62,10 @@ public class AssignmentManager : MonoBehaviour {
 			
 			if (i%2 == 0){
 				//adds how many completed assignments there are to the Y-value to that it all appears stacked on top one another
-				assignmentPosition = new Vector3(leftPos, initPrefabYPos - i * (spaceBetweenAssignments + prefabHeight), 0);
+				assignmentPosition = new Vector3(leftPos, prefabOffset +  initPrefabYPos - i * (spaceBetweenAssignments + prefabHeight), 0);
 			}
 			else{
-				assignmentPosition = new Vector3(rightPos, initPrefabYPos - (i - 1) * (spaceBetweenAssignments + prefabHeight), 0);
+				assignmentPosition = new Vector3(rightPos, prefabOffset +  initPrefabYPos - (i - 1) * (spaceBetweenAssignments + prefabHeight), 0);
 			}
 			incompleteAssignments[i].transform.localPosition = assignmentPosition;
 		}
@@ -73,17 +73,17 @@ public class AssignmentManager : MonoBehaviour {
 		for (int i = 0; i < completedAssignments.Count; i++) {
 			//if i is even, put it in left column
 			if (i%2 == 0){
-				assignmentPosition = new Vector3(leftPos, initPrefabYPos - i * (spaceBetweenAssignments + prefabHeight),0);
+				assignmentPosition = new Vector3(leftPos, prefabOffset + initPrefabYPos - i * (spaceBetweenAssignments + prefabHeight),0);
 			}
 			else{
-				assignmentPosition = new Vector3(rightPos, initPrefabYPos - (i - 1) * (spaceBetweenAssignments + prefabHeight)); //i -1 because we want it to be next to the prefab on the left not below
+				assignmentPosition = new Vector3(rightPos, prefabOffset + initPrefabYPos - (i - 1) * (spaceBetweenAssignments + prefabHeight)); //i -1 because we want it to be next to the prefab on the left not below
 			}
 			completedAssignments[i].transform.localPosition = assignmentPosition;
 
 		}
 
 		//Places headers accordingly
-		unmasteredHeader.transform.localPosition = new Vector3 (0, initPrefabYPos + 350f, 0);
+		unmasteredHeader.transform.localPosition = new Vector3 (0, initPrefabYPos + 400f, 0);
 		float completedAssignmentOffset;
 		if (incompleteAssignments.Count % 2 == 0)
 			completedAssignmentOffset = -incompleteAssignments.Count * (spaceBetweenAssignments + prefabHeight) - dividerHeight;
