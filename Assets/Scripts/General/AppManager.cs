@@ -27,10 +27,17 @@ public class Assignment {
   public float secondsOnAssignment;
   public float timeAtLoad;
 
+  public string sceneToLoad;
+  public bool hardcoded;
 
-  public Assignment(string assignTitle, string templateType, string fullAssignTit=null){
+
+  public Assignment(string assignTitle, string templateType, string fullAssignTit=null, bool isHardcoded = false){
     if(fullAssignTit != null){
       fullAssignTitle = fullAssignTit;
+    }
+    if(isHardcoded){
+      sceneToLoad = assignTitle;
+      hardcoded = isHardcoded;
     }
     type = templateType;
     assignmentTitle = assignTitle;
@@ -73,7 +80,9 @@ public class AppManager : MonoBehaviour {
           if(currentAppState == AppState.Initialize){
             if(hardcoded){
               currentAssignments.Add(new Assignment("hotspots_periodic","hotspots"));
-              currentAssignments.Add(new Assignment("cards_Chemistry","cards"));
+              currentAssignments.Add(new Assignment("cards_chemistries","cards", null, true));
+              currentAssignments.Add(new Assignment("cards_macro1","cards", null, true));
+              currentAssignments.Add(new Assignment("cards_macro2","cards", null, true));
               currentAppState = AppState.MenuConfig;
             }
             Application.LoadLevel("AssignmentMenu");
@@ -125,7 +134,11 @@ public class AppManager : MonoBehaviour {
       case AppState.AssignmentMenu :
         if(clicked){
 //          filePathToUse = Application.persistentDataPath + "/" + currentAssignments[currIndex].fullAssignTitle;
-          Application.LoadLevel(currentAssignments[currIndex].type);
+          if(currentAssignments[currIndex].hardcoded){
+            Application.LoadLevel(currentAssignments[currIndex].assignmentTitle);
+          }else{
+            Application.LoadLevel(currentAssignments[currIndex].type);
+          }
           currentAssignments[currIndex].timeAtLoad = Time.time;
           clicked = false;
         }
@@ -136,7 +149,7 @@ public class AppManager : MonoBehaviour {
 	}
 
   void OnLevelWasLoaded(int level){
-    if(level == 2){
+    if(Application.loadedLevelName == "AssignmentMenu"){
       currentAppState = AppState.MenuConfig;
     }
   }
@@ -283,8 +296,12 @@ public class AppManager : MonoBehaviour {
   }
 
   public IEnumerator uploadAssignMastery(string assignmentName, int mastery){
-    assignmentName = assignmentName.Replace("\"", "");
+    assignmentName = assignmentName.Replace("\"", "").ToLower();
+    print(assignmentName);
+    print(mastery);
+    assignmentName = "cards_chemistries";
 		WWW www = new WWW(serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString());
+    print(www.url);
     yield return www;
   }
 
