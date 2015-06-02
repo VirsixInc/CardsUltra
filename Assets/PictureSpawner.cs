@@ -8,7 +8,7 @@ public class PictureSpawner : MonoBehaviour {
 	public float speed;
 	public Transform startTransform, endTransform;
 	float startTime;
-	float journeyDistance;
+	float journeyDistance, distCovered;
 
 	// Use this for initialization
 	void Start () {
@@ -17,16 +17,18 @@ public class PictureSpawner : MonoBehaviour {
 	}
 
 	void Reset () {
-		startTime = Time.time;
+		if (fractionOfJourney != 0) {
+			distCovered = fractionOfJourney * journeyDistance;
+		}
 	}
 
 	// Update is called once per frame
 	void Update () {
-		float distCovered = (Time.time - startTime) * speed;
+		distCovered += Time.deltaTime * speed;
 		fractionOfJourney = distCovered / journeyDistance;
 		gameObject.transform.position = Vector3.Lerp (startTransform.position, endTransform.position, fractionOfJourney);
 		if (fractionOfJourney > .97f) {
-//			fractionOfJourney = 0;
+			fractionOfJourney = 0;
 			Reset ();
 		}
 	}
