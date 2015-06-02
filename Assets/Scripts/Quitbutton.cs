@@ -1,0 +1,17 @@
+﻿using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+
+public class Quitbutton : MonoBehaviour {
+	//Set in inspector
+	public Slider mastery;
+
+	public void SaveAndQuit () {
+		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
+		StartCoroutine(AppManager.s_instance.uploadAssignMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].assignmentTitle, masteryOutput));
+    print("AFTER COROUTINE STARTED");
+		//		int masteryOutput = Mathf.CeilToInt (mastery.value * 100);
+		//		AppManager.s_instance.saveAssignmentMastery (AppManager.s_instance.currentAssignments [AppManager.s_instance.currIndex], masteryOutput);
+		Application.LoadLevel ("AssignmentMenu");
+}
+}
