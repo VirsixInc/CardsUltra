@@ -195,6 +195,7 @@ public class cardManager : MonoBehaviour {
       case GameState.ConfigKeyboard:
         keyboardView.SetActive(true);
         cardsView.SetActive(false);
+        circGraphic.transform.localPosition = questDispStart;
 
         unmasteredTerms = allTerms.ToList();
         currentState = GameState.ResetKeyboard;
