@@ -19,6 +19,9 @@ public class PictureSpawner : MonoBehaviour {
 	void Reset () {
 		if (fractionOfJourney != 0) {
 			distCovered = fractionOfJourney * journeyDistance;
+		} else {
+			gameObject.transform.position = new Vector3(startTransform.position.x, transform.position.y, 0f);
+			distCovered = 0;
 		}
 	}
 
@@ -26,7 +29,9 @@ public class PictureSpawner : MonoBehaviour {
 	void Update () {
 		distCovered += Time.deltaTime * speed;
 		fractionOfJourney = distCovered / journeyDistance;
-		gameObject.transform.position = Vector3.Lerp (startTransform.position, endTransform.position, fractionOfJourney);
+		gameObject.transform.position = Vector3.Lerp (new Vector3(startTransform.position.x, transform.position.y, 0f),
+		                                              new Vector3(endTransform.position.x, transform.position.y, 0f),
+		                                              fractionOfJourney);
 		if (fractionOfJourney > .97f) {
 			fractionOfJourney = 0;
 			Reset ();
