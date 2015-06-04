@@ -11,8 +11,16 @@ public class AssignmentGUI : MonoBehaviour {
 	public Slider mastery;
 	public Image picture;
 	public int assignmentIndex;
-
-
+	public Canvas myCanvas;
+	Vector2 sizeDelt;
+	RectTransform rectTransform; 
+	void Start () {
+//		sizeDelt = 
+		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
+		print(myCanvas.pixelRect.width);
+		print (myCanvas.pixelRect.height);
+		gameObject.GetComponent<RectTransform> ().localPosition = new Vector3 (myCanvas.pixelRect.width / 2, myCanvas.pixelRect.height / 2, 0);
+	}
 
 }
 
