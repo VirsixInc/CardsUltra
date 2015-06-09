@@ -128,7 +128,7 @@ public class AppManager : MonoBehaviour {
         }
         break;
       case AppState.MenuConfig:
-        AssignmentManager.s_instance.LoadAllAssignments(currentAssignments);
+        GUIManager.s_instance.LoadAllAssignments(currentAssignments);
         currentAppState = AppState.AssignmentMenu;
         break;
       case AppState.AssignmentMenu :
