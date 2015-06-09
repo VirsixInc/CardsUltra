@@ -19,7 +19,7 @@ public class AssignmentStartButton : MonoBehaviour {
 
 	void CallManager() {
 //		SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_start);
-		AppManager.s_instance.ClickHandler(transform.parent.gameObject.GetComponent<AssignmentGUI>().assignmentIndex);
+//		AppManager.s_instance.ClickHandler(transform.parent.gameObject.GetComponent<AssignmentGUI>().assignmentIndex);
 		//AppManager.s_instance.currentAssignment = transform.parent.GetComponent<Assignment> ();
 //		AppManager.s_instance.currentAppState = AppState.Playing;
 	}

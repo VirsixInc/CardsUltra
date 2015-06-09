@@ -10,17 +10,17 @@ public class GUIManager : MonoBehaviour {
 	public Transform parentAssignmentHolder;
 	public GameObject assignmentGUIPrefab;
 	int totalAssignmentsPlaced;
-	float screenWidth, screenHeight, assignmentCardHeight, totalHeightOfAssignmentCards;
+	float screenWidth, screenHeight, assignmentCardHeight = 500, totalHeightOfAssignmentCards;
 	public float upperBound; //for clamping scroll
 	public static GUIManager s_instance;
 	public Canvas myCanvas;
 
 
 	void Start () {
-		myCanvas = GameObject.Find ("MainCanvas").GetComponent<Canvas>();
+		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
 		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
 		screenHeight = myCanvas.GetComponent <RectTransform> ().rect.height;
-		assignmentCardHeight = assignmentGUIPrefab.GetComponent<RectTransform> ().rect.width;
+//		assignmentCardHeight = assignmentGUIPrefab.GetComponent<RectTransform> ().rect.width;
 	}
 	
 	void Awake () {
@@ -42,8 +42,8 @@ public class GUIManager : MonoBehaviour {
 			}
 		}
 		float numberOfRowsOfAssignments = Mathf.Ceil(arrayOfAssignments.Count / 2);
-		totalHeightOfAssignmentCards = numberOfRowsOfAssignments * assignmentCardHeight;
-
+		totalHeightOfAssignmentCards = numberOfRowsOfAssignments * assignmentCardHeight;	
+		PlaceAssignments ();
 
 	}
 	
@@ -55,10 +55,10 @@ public class GUIManager : MonoBehaviour {
 			totalAssignmentsPlaced++;
 			if (i%2 == 0){
 				//adds how many completed assignments there are to the Y-value to that it all appears stacked on top one another
-				assignmentPosition = new Vector3(-screenWidth*.25f, assignmentCardHeight * i, 0);
+				assignmentPosition = new Vector3(-screenWidth*.25f, (assignmentCardHeight * i)/2, 0);
 			}
 			else{
-				assignmentPosition = new Vector3(-screenWidth*.25f, assignmentCardHeight * (i-1), 0); //i-1 puts it at proper height
+				assignmentPosition = new Vector3(screenWidth*.25f, (assignmentCardHeight * (i-1))/2, 0); //i-1 puts it at proper height
 			}
 			incompleteAssignments[i].transform.localPosition = assignmentPosition;
 		}
