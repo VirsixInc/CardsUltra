@@ -10,7 +10,7 @@ public class GUIManager : MonoBehaviour {
 	public Transform parentAssignmentHolder;
 	public GameObject assignmentGUIPrefab;
 	int totalAssignmentsPlaced;
-	float screenWidth, screenHeight, assignmentCardHeight;
+	float screenWidth, screenHeight, assignmentCardHeight, totalHeightOfAssignmentCards;
 	public float upperBound; //for clamping scroll
 	public static GUIManager s_instance;
 	public Canvas myCanvas;
@@ -28,7 +28,6 @@ public class GUIManager : MonoBehaviour {
 	}
 	// Use this for initialization
 	public void LoadAllAssignments(List<Assignment> arrayOfAssignments){
-//	public void LoadAllAssignments(){   	
 		//parse associatedGameObjects into either mastered or unmastered
 		for (int i = 0; i < arrayOfAssignments.Count; i++) {
 			arrayOfAssignments[i].associatedGUIObject = Instantiate(assignmentGUIPrefab) as GameObject;
@@ -42,6 +41,10 @@ public class GUIManager : MonoBehaviour {
 				arrayOfAssignments[i].associatedGUIObject.transform.SetParent(parentAssignmentHolder, false);
 			}
 		}
+		float numberOfRowsOfAssignments = Mathf.Ceil(arrayOfAssignments.Count / 2);
+		totalHeightOfAssignmentCards = numberOfRowsOfAssignments * assignmentCardHeight;
+
+
 	}
 	
 	void PlaceAssignments() {
