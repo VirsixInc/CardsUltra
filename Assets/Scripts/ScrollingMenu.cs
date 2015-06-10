@@ -11,12 +11,18 @@ public class ScrollingMenu : MonoBehaviour {
 	float startTime, lerpTime = 1f, fracJourney;
 	bool isLerpingBackInBounds = false;
 	Vector3 lowerBoundPosition = Vector3.zero; //assigned from other class no good
-	bool isFingerTouching = false;
-
+	bool isDragging = false;
+	GameObject myCanvas;
+	Vector2 pos;
 	void Start () {
-
+		myCanvas = GameObject.Find ("Canvas");
 	}
-
+	public void OnPointerDown(){
+		isDragging = true;
+		RectTransformUtility.ScreenPointToLocalPointInRectangle(myCanvas.transform as RectTransform, Input.mousePosition, myCanvas.GetComponent<Canvas>().worldCamera, out pos);
+//		initY = pos.y - transform.localPosition.y;
+		
+	}
 
 	void OnGUI () {
 		Event e = Event.current;
