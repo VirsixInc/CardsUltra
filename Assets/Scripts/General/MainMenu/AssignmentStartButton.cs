@@ -34,7 +34,7 @@ public class AssignmentStartButton : MonoBehaviour {
 	}
 
 	void CallManager() {
-		if (Time.time - selectTimer < .3f) {
+		if (Time.time - selectTimer < .2f && ScrollingMenu.s_instance.isSwiping ==false) {
 			//guimanager 
 			//		SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_start);
 			AppManager.s_instance.ClickHandler(gameObject.GetComponent<AssignmentGUI>().assignmentIndex);

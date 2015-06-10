@@ -6,16 +6,21 @@ using UnityEngine.EventSystems;
 public class ScrollingMenu : MonoBehaviour {
 
 	float velocity = 0, deceleration = -1f;
-	float accelerationRatio = .3f;
+	float accelerationRatio = .1f;
 	public float lowerBound;
 	float startTime, lerpTime = 1f, fracJourney;
 	bool isLerpingBackInBounds = false;
 	Vector3 lowerBoundPosition = Vector3.zero; //assigned from other class no good
-	bool isDragging = false;
+	public bool isDragging = false, isSwiping = false;
 	GameObject myCanvas;
 	Vector2 pos;
 	float currentY, initY;
 
+	public static ScrollingMenu s_instance;
+
+	void Awake () {
+		s_instance = this;
+	}
 
 	void Start () {
 		myCanvas = GameObject.Find ("Canvas");
@@ -24,11 +29,19 @@ public class ScrollingMenu : MonoBehaviour {
 	void OnGUI () {
 		Event e = Event.current;
 		if (e.type == EventType.mouseDown) {
+			isSwiping = false;
 			isDragging = true;
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(myCanvas.transform as RectTransform, Input.mousePosition, myCanvas.GetComponent<Canvas>().worldCamera, out pos);
+			initY = pos.y - transform.localPosition.y;
 		}
 		if (e.type == EventType.mouseUp) {
 			isDragging = false;
 		} 
+		if (e.delta.y > 0) {
+			isSwiping = true;
+			print ("SWIPE");
+		}
+	
 
 		if (e.type == EventType.mouseDrag) {
 			velocity -= accelerationRatio*Mathf.Ceil(e.delta.y);
