@@ -10,7 +10,9 @@ public class ScrollingMenu : MonoBehaviour {
 	public float lowerBound;
 	float startTime, lerpTime = 1f, fracJourney;
 	bool isLerpingBackInBounds = false;
-	Vector3 lowerBoundPosition;
+	Vector3 lowerBoundPosition = Vector3.zero; //assigned from other class no good
+	bool isFingerTouching = false;
+
 	void Start () {
 
 	}
@@ -18,6 +20,9 @@ public class ScrollingMenu : MonoBehaviour {
 
 	void OnGUI () {
 		Event e = Event.current;
+		if (e.type == EventType.mouseDown) {
+
+		}
 		if (e.type == EventType.mouseDrag) {
 			velocity -= accelerationRatio*Mathf.Ceil(e.delta.y);
 		}
