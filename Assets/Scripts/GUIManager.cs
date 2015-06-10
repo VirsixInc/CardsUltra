@@ -14,6 +14,7 @@ public class GUIManager : MonoBehaviour {
 	public float upperBound; //for clamping scroll
 	public static GUIManager s_instance;
 	public Canvas myCanvas;
+	public ScrollingMenu thisScrollingMenu;
 
 
 	void Start () {
@@ -42,7 +43,12 @@ public class GUIManager : MonoBehaviour {
 			}
 		}
 		float numberOfRowsOfAssignments = Mathf.Ceil(arrayOfAssignments.Count / 2);
-		totalHeightOfAssignmentCards = numberOfRowsOfAssignments * assignmentCardHeight;	
+		totalHeightOfAssignmentCards = numberOfRowsOfAssignments * assignmentCardHeight;
+		if (totalHeightOfAssignmentCards > screenHeight) {
+			thisScrollingMenu.lowerBound = totalHeightOfAssignmentCards - screenHeight;
+		} else {
+			thisScrollingMenu.lowerBound = 0f;
+		}
 		PlaceAssignments ();
 
 	}
@@ -55,24 +61,24 @@ public class GUIManager : MonoBehaviour {
 			totalAssignmentsPlaced++;
 			if (i%2 == 0){
 				//adds how many completed assignments there are to the Y-value to that it all appears stacked on top one another
-				assignmentPosition = new Vector3(-screenWidth*.25f, (assignmentCardHeight * i)/2, 0);
+				assignmentPosition = new Vector3(-screenWidth*.25f, (-assignmentCardHeight * i)/2 + screenHeight/2 - assignmentCardHeight/2, 0);
 			}
-			else{
-				assignmentPosition = new Vector3(screenWidth*.25f, (assignmentCardHeight * (i-1))/2, 0); //i-1 puts it at proper height
+			else {
+				assignmentPosition = new Vector3(screenWidth*.25f, (-assignmentCardHeight * (i-1))/2 + screenHeight/2 - assignmentCardHeight/2, 0); //i-1 puts it at proper height
 			}
 			incompleteAssignments[i].transform.localPosition = assignmentPosition;
 		}
 
-		for (int i = 0; i < completedAssignments.Count; i++) {
-			if ((i+totalAssignmentsPlaced)%2 == 0){
-				//adds how many completed assignments there are to the Y-value to that it all appears stacked on top one another
-				assignmentPosition = new Vector3(-screenWidth*.25f, assignmentCardHeight * i, 0);
-			}
-			else{
-				assignmentPosition = new Vector3(-screenWidth*.25f, assignmentCardHeight * (i-1), 0); //i-1 puts it at proper height
-			}
-			incompleteAssignments[i].transform.localPosition = assignmentPosition;
-		}
+//		for (int i = 0; i < completedAssignments.Count; i++) {
+//			if ((i+totalAssignmentsPlaced)%2 == 0){
+//				//adds how many completed assignments there are to the Y-value to that it all appears stacked on top one another
+//				assignmentPosition = new Vector3(-screenWidth*.25f, assignmentCardHeight * i, 0);
+//			}
+//			else{
+//				assignmentPosition = new Vector3(-screenWidth*.25f, assignmentCardHeight * (i-1), 0); //i-1 puts it at proper height
+//			}
+//			incompleteAssignments[i].transform.localPosition = assignmentPosition;
+//		}
 	
 		
 
