@@ -32,7 +32,9 @@ public class GUIManager : MonoBehaviour {
 		//parse associatedGameObjects into either mastered or unmastered
 		for (int i = 0; i < arrayOfAssignments.Count; i++) {
 			arrayOfAssignments[i].associatedGUIObject = Instantiate(assignmentGUIPrefab) as GameObject;
-			
+			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().assignmentIndex = i;
+			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().title.text = arrayOfAssignments[i].assignmentTitle;
+
 			if (arrayOfAssignments[i].isCompleted) {
 				completedAssignments.Add(arrayOfAssignments[i].associatedGUIObject);
 				arrayOfAssignments[i].associatedGUIObject.transform.SetParent(parentAssignmentHolder, false);
