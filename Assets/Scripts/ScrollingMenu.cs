@@ -14,21 +14,22 @@ public class ScrollingMenu : MonoBehaviour {
 	bool isDragging = false;
 	GameObject myCanvas;
 	Vector2 pos;
+	float currentY, initY;
+
+
 	void Start () {
 		myCanvas = GameObject.Find ("Canvas");
-	}
-	public void OnPointerDown(){
-		isDragging = true;
-		RectTransformUtility.ScreenPointToLocalPointInRectangle(myCanvas.transform as RectTransform, Input.mousePosition, myCanvas.GetComponent<Canvas>().worldCamera, out pos);
-//		initY = pos.y - transform.localPosition.y;
-		
 	}
 
 	void OnGUI () {
 		Event e = Event.current;
 		if (e.type == EventType.mouseDown) {
-
+			isDragging = true;
 		}
+		if (e.type == EventType.mouseUp) {
+			isDragging = false;
+		} 
+
 		if (e.type == EventType.mouseDrag) {
 			velocity -= accelerationRatio*Mathf.Ceil(e.delta.y);
 		}
@@ -39,6 +40,10 @@ public class ScrollingMenu : MonoBehaviour {
 		} else {
 			velocity = 0;
 		}
+	}
+	void Rebound() {
+		isLerpingBackInBounds = true;
+		startTime = Time.time;
 	}
 
 	void Update () {
@@ -65,27 +70,20 @@ public class ScrollingMenu : MonoBehaviour {
 			}
 		}
 
-//USING TRANSLATE
-//		if (transform.localPosition.y < 0) {
-//			velocity = 0f;
-//			transform.Translate (new Vector3 (0, 1f, 0));
-//			isLerpingBackInBounds = true;
-//		}
-//		if (transform.localPosition.y > lowerBound) {
-//			velocity = 0f;
-//			transform.Translate (new Vector3 (0, -1f, 0));
-//			isLerpingBackInBounds = true;
-//		}
-//
 		if (transform.localPosition.y >= 0 && transform.localPosition.y <= lowerBound) {
 			isLerpingBackInBounds = false;
 		}
 
-	}
-
-	void Rebound() {
-		isLerpingBackInBounds = true;
-		startTime = Time.time;
+		if (isDragging) {
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(myCanvas.transform as RectTransform, Input.mousePosition, myCanvas.GetComponent<Canvas>().worldCamera, out pos);
+			currentY = pos.y;
+			transform.localPosition = new Vector3(0f, -(initY-currentY), 0f);
+		}
+		
+	
+		
+//		scrollbar.value = transform.localPosition.y / GUIManager.s_instance.upperBound;
+		
 	}
 
 }

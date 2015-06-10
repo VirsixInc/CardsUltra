@@ -83,8 +83,20 @@ public class AppManager : MonoBehaviour {
               currentAssignments.Add(new Assignment("cards_macro2","cards", null, true));
               currentAssignments.Add(new Assignment("hotspots_periodic","hotspots"));
               currentAssignments.Add(new Assignment("cards_chemistries","cards", null, true));
-					
-              currentAppState = AppState.MenuConfig;
+				currentAssignments.Add(new Assignment("cards_macro1","cards", null, true));
+				currentAssignments.Add(new Assignment("cards_macro2","cards", null, true));
+				currentAssignments.Add(new Assignment("hotspots_periodic","hotspots"));
+			currentAssignments.Add(new Assignment("cards_chemistries","cards", null, true));
+						currentAssignments.Add(new Assignment("cards_macro1","cards", null, true));
+						currentAssignments.Add(new Assignment("cards_macro2","cards", null, true));
+						currentAssignments.Add(new Assignment("hotspots_periodic","hotspots"));
+						currentAssignments.Add(new Assignment("cards_chemistries","cards", null, true));
+						currentAssignments.Add(new Assignment("cards_macro1","cards", null, true));
+						currentAssignments.Add(new Assignment("cards_macro2","cards", null, true));
+						currentAssignments.Add(new Assignment("hotspots_periodic","hotspots"));
+						currentAssignments.Add(new Assignment("cards_chemistries","cards", null, true));
+						
+						currentAppState = AppState.MenuConfig;
             }
             Application.LoadLevel("AssignmentMenu");
           }

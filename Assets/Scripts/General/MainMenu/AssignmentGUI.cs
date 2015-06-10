@@ -15,7 +15,7 @@ public class AssignmentGUI : MonoBehaviour {
 	Vector2 sizeDelt;
 	RectTransform rectTransform; 
 //	void Start () {
-////		sizeDelt = 
+//		sizeDelt = 
 //		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
 //		print(myCanvas.pixelRect.width);
 //		print (myCanvas.pixelRect.height);
