@@ -88,6 +88,7 @@ public class AppManager : MonoBehaviour {
         break;
       case AppState.Initialize :
         if(CheckForInternetConnection()){
+          currentAssignments.Add(new Assignment("hotspots_periodic", "hotspots"));
           StartCoroutine (DownloadListOfURLs());
           currentAppState = AppState.GetURLs;
         }else{
@@ -123,7 +124,9 @@ public class AppManager : MonoBehaviour {
         break;
       case AppState.PlayConfig:
         GameObject newMgr = GameObject.Find("GameManager");
-        newMgr.SendMessage("configureGame", currentAssignments[currIndex]);
+        if(currentAssignments[currIndex].type != "hotspots"){
+          newMgr.SendMessage("configureGame", currentAssignments[currIndex]);
+        }
         currentAppState = AppState.Playing;
         break;
       case AppState.Playing:
