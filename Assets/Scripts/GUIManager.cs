@@ -47,7 +47,7 @@ public class GUIManager : MonoBehaviour {
 		float numberOfRowsOfAssignments = Mathf.Ceil(arrayOfAssignments.Count / 2);
 		totalHeightOfAssignmentCards = numberOfRowsOfAssignments * assignmentCardHeight;
 		if (totalHeightOfAssignmentCards > screenHeight) {
-			thisScrollingMenu.lowerBound = totalHeightOfAssignmentCards - screenHeight/2;
+			thisScrollingMenu.lowerBound = totalHeightOfAssignmentCards - screenHeight;
 		} else {
 			thisScrollingMenu.lowerBound = 0f;
 		}
@@ -70,10 +70,6 @@ public class GUIManager : MonoBehaviour {
 			}
 			incompleteAssignments[i].transform.localPosition = assignmentPosition;
 		}
-
-	
-		
-
 	}
 	
 }
