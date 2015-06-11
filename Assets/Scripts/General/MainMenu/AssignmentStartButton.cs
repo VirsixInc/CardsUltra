@@ -8,14 +8,13 @@ public class AssignmentStartButton : MonoBehaviour {
 	EventTrigger thisEventTrigger;
 	EventTrigger.Entry entry = new EventTrigger.Entry();
 	EventTrigger.Entry entry2 = new EventTrigger.Entry();
-
 	PointerEventData eventData;
-
+	Vector3 positionAtFingerDown;
 	float selectTimer;
 	
 	void OnFingerDown () {
 		selectTimer = Time.time;
-		
+		positionAtFingerDown = transform.position;
 	}
 
 	
@@ -34,7 +33,7 @@ public class AssignmentStartButton : MonoBehaviour {
 	}
 
 	void CallManager() {
-		if (Time.time - selectTimer < .2f && ScrollingMenu.s_instance.isSwiping ==false) {
+		if (Time.time - selectTimer < .2f && Vector3.Distance(positionAtFingerDown, transform.position) < 1f) {
 			//guimanager 
 			//		SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_start);
 			AppManager.s_instance.ClickHandler(gameObject.GetComponent<AssignmentGUI>().assignmentIndex);

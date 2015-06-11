@@ -8,7 +8,7 @@ public class ScrollingMenu : MonoBehaviour {
 	float velocity = 0, deceleration = -1f;
 	float accelerationRatio = .1f;
 	public float lowerBound;
-	float startTime, lerpTime = 1f, fracJourney;
+	float startTime, lerpTime = 2f, fracJourney;
 	bool isLerpingBackInBounds = false;
 	Vector3 lowerBoundPosition = Vector3.zero; //assigned from other class no good
 	public bool isDragging = false, isSwiping = false;
@@ -37,11 +37,6 @@ public class ScrollingMenu : MonoBehaviour {
 		if (e.type == EventType.mouseUp) {
 			isDragging = false;
 		} 
-		if (e.delta.y > 0) {
-			isSwiping = true;
-			print ("SWIPE");
-		}
-	
 
 		if (e.type == EventType.mouseDrag) {
 			velocity -= accelerationRatio*Mathf.Ceil(e.delta.y);
