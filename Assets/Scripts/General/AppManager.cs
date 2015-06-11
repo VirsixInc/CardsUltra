@@ -203,7 +203,7 @@ public class AppManager : MonoBehaviour {
     string fileToUnzip = directoryPath + (fileName);
     string pathToWrite = fileToUnzip.Substring(0, fileToUnzip.Length - 4) + "/";
     if(www.isDone){
-      if(!Directory.Exists(pathToWrite)){
+      if(Directory.Exists(pathToWrite)){
         File.WriteAllBytes(fileToUnzip, www.bytes);
         using (ZipInputStream s = new ZipInputStream(File.OpenRead(fileToUnzip))){
           ZipEntry theEntry;
