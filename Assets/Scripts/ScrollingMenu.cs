@@ -5,10 +5,10 @@ using UnityEngine.EventSystems;
 
 public class ScrollingMenu : MonoBehaviour {
 
-	float velocity = 0, deceleration = -1f;
-	float accelerationRatio = .1f;
+	float velocity = 0, deceleration = -.5f;
+	float accelerationRatio = .8f;
 	public float lowerBound;
-	float startTime, lerpTime = 2f, fracJourney;
+	float startTime, lerpTime = 3f, fracJourney;
 	bool isLerpingBackInBounds = false;
 	Vector3 lowerBoundPosition = Vector3.zero; //assigned from other class no good
 	public bool isDragging = false, isSwiping = false;
@@ -39,15 +39,9 @@ public class ScrollingMenu : MonoBehaviour {
 		} 
 
 		if (e.type == EventType.mouseDrag) {
-			velocity -= accelerationRatio*Mathf.Ceil(e.delta.y);
+			velocity = -accelerationRatio*Mathf.Ceil(e.delta.y);
 		}
-		if (Mathf.Abs (velocity) > 1) {
-			velocity += deceleration * (Mathf.Abs (velocity) / velocity);
-		} else if (Mathf.Abs (velocity) > .3f) {
-			velocity += deceleration/10 * (Mathf.Abs (velocity) / velocity);
-		} else {
-			velocity = 0;
-		}
+
 	}
 	void Rebound() {
 		isLerpingBackInBounds = true;
@@ -57,7 +51,13 @@ public class ScrollingMenu : MonoBehaviour {
 	void Update () {
 		if (isLerpingBackInBounds == false) {
 			transform.Translate (new Vector3 (0, velocity, 0));
-		}
+			if (Mathf.Abs (velocity) > 1) {
+				velocity += deceleration * (Mathf.Abs (velocity) / velocity);
+			} else if (Mathf.Abs (velocity) > .3f) {
+				velocity += deceleration/10 * (Mathf.Abs (velocity) / velocity);
+			} else {
+				velocity = 0;
+			}		}
 //Reset
 //USING LERP
 		if (transform.localPosition.y < 0 || transform.localPosition.y > lowerBound) {

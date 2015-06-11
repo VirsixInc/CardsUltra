@@ -46,7 +46,6 @@ public class DynamicButton : MonoBehaviour {
 	}
 
 	public void OnFingerUp(){
-		print ("UP");
 		isIdle = false;
 		StartLerp ();
 
