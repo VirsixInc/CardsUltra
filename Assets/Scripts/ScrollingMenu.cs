@@ -44,12 +44,14 @@ public class ScrollingMenu : MonoBehaviour {
 
 	}
 	void Rebound() {
+		print ("rebound");
 		isLerpingBackInBounds = true;
 		startTime = Time.time;
 	}
 
 	void Update () {
-		if (isLerpingBackInBounds == false) {
+		//this block of code handles of the velocity of scrolling
+		if (isLerpingBackInBounds == false && velocity!=0) {
 			transform.Translate (new Vector3 (0, velocity, 0));
 			if (Mathf.Abs (velocity) > 1) {
 				velocity += deceleration * (Mathf.Abs (velocity) / velocity);
@@ -57,18 +59,20 @@ public class ScrollingMenu : MonoBehaviour {
 				velocity += deceleration/10 * (Mathf.Abs (velocity) / velocity);
 			} else {
 				velocity = 0;
-			}		}
+			}		
+		}
 //Reset
 //USING LERP
 		if (transform.localPosition.y < 0 || transform.localPosition.y > lowerBound) {
-			velocity = 0;
+//			velocity = 0;
 			if (isLerpingBackInBounds == false) {
-				Rebound();
+				Rebound(); //this is a switch to only call the lerp once
 			}
 			fracJourney = (Time.time - startTime)/lerpTime;
 			if (fracJourney > .9f) {
-				fracJourney = 1;
+//				fracJourney = 1;
 				isLerpingBackInBounds = false;
+				velocity = 0;
 			}
 			if (transform.localPosition.y < 0) {
 				transform.localPosition = Vector3.Lerp(transform.localPosition, lowerBoundPosition, fracJourney);
@@ -82,6 +86,7 @@ public class ScrollingMenu : MonoBehaviour {
 			isLerpingBackInBounds = false;
 		}
 
+		//moves the menu one for one with finger drag
 		if (isDragging) {
 			RectTransformUtility.ScreenPointToLocalPointInRectangle(myCanvas.transform as RectTransform, Input.mousePosition, myCanvas.GetComponent<Canvas>().worldCamera, out pos);
 			currentY = pos.y;
@@ -90,7 +95,7 @@ public class ScrollingMenu : MonoBehaviour {
 		
 	
 		
-//		scrollbar.value = transform.localPosition.y / GUIManager.s_instance.upperBound;
+//		scrollbar.value = transform.localPosition.y / GUIManager.s_instance.upperBound; TODO
 		
 	}
 
