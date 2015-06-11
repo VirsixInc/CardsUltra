@@ -7,38 +7,32 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Net;
 using UnityEngine.UI;
+using ICSharpCode.SharpZipLib.Zip;
 
-public enum AppState {Login, Initialize, GetURLs, DownloadAssignments, MenuConfig, AssignmentMenu, Playing, LoadContent};
+
+public enum AppState {Login, Initialize, GetURLs, DownloadAssignments, MenuConfig, AssignmentMenu, PlayConfig, Playing, LoadContent};
 
 public class Assignment {
-	public float timeToComplete = 0f;
-	public string dateCompleted ="";
-	public string dueDate = "11111111";
-	public int version = 0;
 	public bool isCompleted = false;
-	public int month = 11, year = 1111, day = 11;
-	public GameObject associatedGUIObject;
 
 	public int mastery = 0;
 
 	public string assignmentTitle = "";
   public string fullAssignTitle = "";
   public string type = "";
+
   public float secondsOnAssignment;
   public float timeAtLoad;
 
   public string sceneToLoad;
-  public bool hardcoded;
+  public bool hasImages;
 
+	public GameObject associatedGUIObject;
+  public string[] content;
+  public string imgDir;
 
-  public Assignment(string assignTitle, string templateType, string fullAssignTit=null, bool isHardcoded = false){
-    if(fullAssignTit != null){
-      fullAssignTitle = fullAssignTit;
-    }
-    if(isHardcoded){
-      sceneToLoad = assignTitle;
-      hardcoded = isHardcoded;
-    }
+  public Assignment(string assignTitle, string templateType, bool usesImg = false){
+    hasImages = usesImg; 
     type = templateType;
     assignmentTitle = assignTitle;
   }
@@ -46,7 +40,7 @@ public class Assignment {
 
 public class AppManager : MonoBehaviour {
 
-  public bool localDebug;
+  public bool localDebug, pabloDebug;
 	private AppState currentAppState;
 	public static AppManager s_instance;
   public List<Assignment> currentAssignments = new List<Assignment>();
@@ -60,6 +54,7 @@ public class AppManager : MonoBehaviour {
          masteryFilePath,
          filePathToUse;
 
+
   int assignsLoaded = 0, assignmentsDownloaded = 0, totalAssigns;
 
 	List<string> assignmentURLsToDownload;
@@ -67,8 +62,19 @@ public class AppManager : MonoBehaviour {
   bool urlsDownloaded, clicked, userExists, hardcoded = true;
 
 	void Awake() {
+    if(localDebug){
+			if(pabloDebug){
+				serverURL = "http://192.168.1.6:8080/client";
+
+			}else{
+      serverURL = "http://localhost:8080/client";
+			}
+      username = "AAguiar";
+      password = "Password2134";
+      userExists = true;
+    }
     s_instance = this;
-    masteryFilePath = Application.persistentDataPath + "mastery.info";
+    masteryFilePath = Application.persistentDataPath + "/mastery.info";
     DontDestroyOnLoad(transform.gameObject);
 	}
 
@@ -77,68 +83,31 @@ public class AppManager : MonoBehaviour {
       case AppState.Login :
         if(userExists){
           currentAppState = AppState.Initialize;
-          if(currentAppState == AppState.Initialize){
-            if(hardcoded){
-              currentAssignments.Add(new Assignment("cards_macro1","cards", null, true));
-              currentAssignments.Add(new Assignment("cards_macro2","cards", null, true));
-              currentAssignments.Add(new Assignment("hotspots_periodic","hotspots"));
-              currentAssignments.Add(new Assignment("cards_chemistries","cards", null, true));
-				currentAssignments.Add(new Assignment("cards_macro1","cards", null, true));
-				currentAssignments.Add(new Assignment("cards_macro2","cards", null, true));
-				currentAssignments.Add(new Assignment("hotspots_periodic","hotspots"));
-			currentAssignments.Add(new Assignment("cards_chemistries","cards", null, true));
-						currentAssignments.Add(new Assignment("cards_macro1","cards", null, true));
-						currentAssignments.Add(new Assignment("cards_macro2","cards", null, true));
-						currentAssignments.Add(new Assignment("hotspots_periodic","hotspots"));
-						currentAssignments.Add(new Assignment("cards_chemistries","cards", null, true));
-						currentAssignments.Add(new Assignment("cards_macro1","cards", null, true));
-						currentAssignments.Add(new Assignment("cards_macro2","cards", null, true));
-						currentAssignments.Add(new Assignment("hotspots_periodic","hotspots"));
-						currentAssignments.Add(new Assignment("cards_chemistries","cards", null, true));
-						
-						currentAppState = AppState.MenuConfig;
-            }
-            Application.LoadLevel("AssignmentMenu");
-          }
+          Application.LoadLevel("AssignmentMenu");
         }
         break;
       case AppState.Initialize :
-        if(hardcoded){
-          currentAppState = AppState.MenuConfig;
+        if(CheckForInternetConnection()){
+          StartCoroutine (DownloadListOfURLs());
+          currentAppState = AppState.GetURLs;
         }else{
-          if(CheckForInternetConnection() && !localDebug){
-            StartCoroutine (DownloadListOfURLs());
-            currentAppState = AppState.GetURLs;
-          }else{
-            currentAppState = AppState.MenuConfig;
-          }
+          currentAppState = AppState.MenuConfig;
         }
         break;
       case AppState.GetURLs :
-        if(hardcoded){
-          currentAppState = AppState.MenuConfig;
-        }else{
-          if(urlsDownloaded){
-            currentAppState = AppState.DownloadAssignments;
-          }
+        if(urlsDownloaded){
+          currentAppState = AppState.DownloadAssignments;
         }
         break;
       case AppState.DownloadAssignments :
-        if(hardcoded){
-          currentAppState = AppState.MenuConfig;
-        }else{
-          if(assignsLoaded == totalAssigns){
-            currentAppState = AppState.LoadContent;
-          }
+        if(assignsLoaded == totalAssigns){
+          currentAppState = AppState.LoadContent;
         }
+        
         break;
       case AppState.LoadContent:
-        if(hardcoded){
-          currentAppState = AppState.MenuConfig;
-        }else{
-          loadInLocalAssignments();
-          currentAppState = AppState.MenuConfig;
-        }
+        loadInLocalAssignments();
+        currentAppState = AppState.MenuConfig;
         break;
       case AppState.MenuConfig:
         GUIManager.s_instance.LoadAllAssignments(currentAssignments);
@@ -146,26 +115,24 @@ public class AppManager : MonoBehaviour {
         break;
       case AppState.AssignmentMenu :
         if(clicked){
-//          filePathToUse = Application.persistentDataPath + "/" + currentAssignments[currIndex].fullAssignTitle;
-          if(currentAssignments[currIndex].hardcoded){
-            Application.LoadLevel(currentAssignments[currIndex].assignmentTitle);
-          }else{
-            Application.LoadLevel(currentAssignments[currIndex].type);
-          }
+          Application.LoadLevel(currentAssignments[currIndex].type);
           currentAssignments[currIndex].timeAtLoad = Time.time;
           clicked = false;
+          currentAppState = AppState.PlayConfig;
         }
         break;
+      case AppState.PlayConfig:
+        GameObject newMgr = GameObject.Find("GameManager");
+        newMgr.SendMessage("configureGame", currentAssignments[currIndex]);
+        currentAppState = AppState.Playing;
+        break;
       case AppState.Playing:
+        if(Application.loadedLevelName == "AssignmentMenu"){
+          currentAppState = AppState.MenuConfig;
+        }
         break;
     }
 	}
-
-  void OnLevelWasLoaded(int level){
-    if(Application.loadedLevelName == "AssignmentMenu"){
-      currentAppState = AppState.MenuConfig;
-    }
-  }
 
   public IEnumerator loginAcct(string name, string wrd){
     WWW www = new WWW(serverURL + "/logStudentIn?username=" + name + "&password=" + wrd);
@@ -174,8 +141,9 @@ public class AppManager : MonoBehaviour {
       userExists = true;
       username = name;
       password = wrd;
-    }else{
+    }else if(www.text == "false"){
       userExists = false;
+    }else{
     }
   }
 
@@ -201,6 +169,17 @@ public class AppManager : MonoBehaviour {
     totalAssigns = allAssignments.Count;
     for(int i = 0; i<totalAssigns;i++){
       string thisAssign = (string)(allAssignments[i].GetField("assignmentName").ToString());
+      string hasImages = (string)(allAssignments[i].GetField("hasImages").ToString());
+      string directoryPath = Application.persistentDataPath + "/images/";
+      string imgDirPath = directoryPath + thisAssign.Replace("\"", "") + "-images";
+      if(hasImages == "true" && !Directory.Exists(imgDirPath)){
+        if(!Directory.Exists(directoryPath)){
+          Directory.CreateDirectory(directoryPath);
+        }
+        Directory.CreateDirectory(imgDirPath);
+        StartCoroutine(pullImgs(thisAssign));
+        //Directory.CreateDirectory(pathToWrite + directoryName);
+      }
       string filePath = (Application.persistentDataPath + "/" + thisAssign).Replace("\"", "");
       if(!File.Exists(filePath + ".data")){
         StartCoroutine(saveAssignment(thisAssign));
@@ -210,6 +189,50 @@ public class AppManager : MonoBehaviour {
     }
     urlsDownloaded = true;
 	}
+
+  IEnumerator pullImgs(string assignmentName){
+    string fileName = assignmentName + "-images.zip";
+    fileName = fileName.Replace("\"", "");
+    string url = (serverURL + "/images?assignment=" + fileName);
+		WWW www = new WWW(url);
+		yield return www;
+    string directoryPath = Application.persistentDataPath + "/images/";
+    string fileToUnzip = directoryPath + (fileName);
+    string pathToWrite = fileToUnzip.Substring(0, fileToUnzip.Length - 4) + "/";
+    if(www.isDone){
+      if(!Directory.Exists(pathToWrite)){
+        File.WriteAllBytes(fileToUnzip, www.bytes);
+        using (ZipInputStream s = new ZipInputStream(File.OpenRead(fileToUnzip))){
+          ZipEntry theEntry;
+          while ((theEntry = s.GetNextEntry()) != null){
+            string directoryName = Path.GetDirectoryName(theEntry.Name);
+            string fileNameZip = Path.GetFileName(theEntry.Name);
+
+            if (directoryName.Length > 0 ){
+              Directory.CreateDirectory(pathToWrite + directoryName);
+            }
+            if (fileNameZip != String.Empty){
+              string filename = pathToWrite;//.Substring(0, pathToWrite.Length - 8);
+              filename += theEntry.Name;
+              using (FileStream streamWriter = File.Create(filename)){
+                int size = 2048;
+                byte[] fdata = new byte[2048];
+                while (true){
+                  size = s.Read(fdata, 0, fdata.Length);
+                  if (size > 0){
+                    streamWriter.Write(fdata, 0, size);
+                  }
+                  else{
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
   IEnumerator saveAssignment(string assignmentName){
     assignmentName = assignmentName.Replace("\"", "");
@@ -260,17 +283,22 @@ public class AppManager : MonoBehaviour {
     foreach(FileInfo currFile in localFolder.GetFiles()){
       string[] path = currFile.ToString().Split('/');
       string assignName = path[path.Length-1];
-      Assignment currAssign = generateAssignment(assignName);
-      currAssign.mastery = pullAssignMastery(currAssign);
-      currentAssignments.Add(currAssign);
+      string check = assignName.Split('.')[1];
+      if(check == "data"){
+        Assignment currAssign = generateAssignment(assignName);
+        currAssign.mastery = pullAssignMastery(currAssign);
+        currentAssignments.Add(currAssign);
+      }
     }
   }
 
   Assignment generateAssignment(string assignName){
     Assignment assignToReturn;
     string[] assign = assignName.Split('_');
-    string assignWithoutExt = assignName.Split('.')[0];
-    assignToReturn = new Assignment(assign[1],assign[0],assignWithoutExt);
+    bool assignImages = Directory.Exists(Application.persistentDataPath + "/images/" + assignName.Split('.')[0] + "-images");
+    assignToReturn = new Assignment(assign[1],assign[0],assignImages);
+    assignToReturn.imgDir = Application.persistentDataPath + "/images/" + assignName.Split('.')[0] + "-images";
+    assignToReturn.content = File.ReadAllLines((Application.persistentDataPath + "/" + assignName).Replace("\"", ""));
     return assignToReturn;
   }
 
@@ -310,11 +338,8 @@ public class AppManager : MonoBehaviour {
 
   public IEnumerator uploadAssignMastery(string assignmentName, int mastery){
     assignmentName = assignmentName.Replace("\"", "").ToLower();
-    print(assignmentName);
-    print(mastery);
     assignmentName = "cards_chemistries";
 		WWW www = new WWW(serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString());
-    print(www.url);
     yield return www;
   }
 

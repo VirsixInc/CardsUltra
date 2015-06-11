@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 
 public class Card{
 
@@ -35,18 +36,35 @@ public class Term{
   public Sprite imgAssoc;
   public int mastery = 0;
   public bool mastered = false;
-  public Term(string newQuestion, string newAnswer, string filePathForImg = null){
-    if(filePathForImg != null){
-      imgAssoc = Resources.Load<Sprite>(filePathForImg);
+  public string imgPath;
+  public Term(string newQuestion, string newAnswer, Texture2D imgToUse = null){
+    if(imgToUse != null){
+      imgAssoc = Sprite.Create(imgToUse,new Rect(0,0,imgToUse.width, imgToUse.height),new Vector2(0.5f, 0.5f));//Resources.Load<Sprite>(filePathForImg);
     }
     question = newQuestion;
     answer = newAnswer;
   }
+  /*
+  public IEnumerator loadImg(){
+    WWW imgToPull = new WWW(imgPath);
+    yield return imgToPull;
+    if(imgToPull.error == null){
+      Debug.Log("IMAGE IS DONE");
+      Texture2D tex = new Texture2D(256, 256, TextureFormat.RGB24, false);
+      imgToPull.LoadImageIntoTexture(tex);
+      //Texture2D tex = imgToPull.texture;
+    }else{
+      Debug.Log(imgToPull.error);
+    }
+  }
+  */
 }
 
 public class cardManager : MonoBehaviour {
 
   public enum GameState{
+    Idle,
+    ConfigGame,
     ConfigCards,
     PlayingCards,
     ResetCards,
@@ -69,10 +87,9 @@ public class cardManager : MonoBehaviour {
   public List<Term> allTerms = new List<Term>();
   public List<Term> unmasteredTerms = new List<Term>();
   
-  public DirectoryInfo direct;
+  private DirectoryInfo direct;
 
-  public bool useImages;
-  private bool handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit;
+  private bool useImages, handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit;
 
   private int currentDifficulty;
 
@@ -86,25 +103,38 @@ public class cardManager : MonoBehaviour {
   private int requiredMastery = 1;
   private int currentPhase;
   private int levenThresh = 3;
-  public TextAsset csvToUse;
 
+  private string[] contentForAssign;
   public string baseImagePath;
 	public GameObject winningSlide;
 	
   public Slider masteryMeter;
 
 	bool soundHasPlayed = false;
+  bool readyToConfigure;
 
   private Vector3 questDispStart, questDispEnd;
 
   public AppManager manager;
 	
-  void Awake(){
-//    manager = GameObject.FindGameObjectWithTag("appManager").GetComponent<AppManager>();
+  public void configureGame(Assignment assignToUse){
+    useImages = assignToUse.hasImages;
+    if(useImages){
+      direct = new DirectoryInfo(assignToUse.imgDir);
+    }
+    contentForAssign = assignToUse.content;
+    readyToConfigure = true;
   }
 	void Update () {
-
     switch(currentState){
+      case GameState.Idle:
+        if(readyToConfigure){
+          currentState = GameState.ConfigGame;
+        }
+        break;
+      case GameState.ConfigGame:
+        currentState = GameState.ConfigCards;
+        break;
       case GameState.ConfigCards:
         keyboardView.SetActive(false);
         cardsView.SetActive(true);
@@ -119,7 +149,7 @@ public class cardManager : MonoBehaviour {
           newCard.thisIndiCard = card.GetComponent<indiCard>();
           allCards.Add(newCard);
         }
-        allTerms = convertCSV(parseCSV(csvToUse));
+        allTerms = convertCSV(parseContent(contentForAssign));
         unmasteredTerms = allTerms.ToList();
 
         totalMastery = unmasteredTerms.Count*requiredMastery;
@@ -338,9 +368,9 @@ public class cardManager : MonoBehaviour {
     return listToReturn;
   }
 
-	List<string[]> parseCSV(TextAsset csvToParse){
+	List<string[]> parseContent(string[] contentToParse){
 		List<string[]> listToReturn = new List<string[]>();
-		string[] lines = csvToParse.text.Split('\n');
+		string[] lines = contentToParse;
 		for(int i = 0;i<lines.Length;i++){
 			string[] currLine = lines[i].Split(',');
       if(currLine.Length > 0){
@@ -368,7 +398,15 @@ public class cardManager : MonoBehaviour {
       if(thisLine.Length > 1){
         Term termToAdd;
         if(useImages){
-          termToAdd = new Term(thisLine[0], thisLine[1], baseImagePath + "/" + thisLine[1]);
+          if(thisLine[1][0] == ' '){
+            thisLine[1] = thisLine[1].Substring(1,thisLine[1].Length-1);
+          }
+          //string imgPathToUse =  direct.FullName + "/" + thisLine[1] + ".png";
+          string imgPathToUse = Path.Combine(direct.FullName, thisLine[1] + ".png");
+          byte[] currImg = File.ReadAllBytes(imgPathToUse);
+          Texture2D newImg = new Texture2D(2,2);
+          newImg.LoadImage(currImg);
+          termToAdd = new Term(thisLine[0], thisLine[1], newImg);
         }else{
           termToAdd = new Term(thisLine[0], thisLine[1]);
         }
@@ -377,5 +415,4 @@ public class cardManager : MonoBehaviour {
     }
     return listToReturn;
   }
-
 }
