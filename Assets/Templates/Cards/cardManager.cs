@@ -99,7 +99,7 @@ public class cardManager : MonoBehaviour {
   private int amtOfCards;
   private int correctTermIndex;
   private int totalMastery;
-  private int requiredMastery = 1;
+  private int requiredMastery = 4;
   private int currentPhase;
   private int levenThresh = 3;
 
