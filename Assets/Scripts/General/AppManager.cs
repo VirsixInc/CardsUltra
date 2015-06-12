@@ -19,6 +19,7 @@ public class Assignment {
 
 	public string assignmentTitle = "";
   public string fullAssignTitle = "";
+  public string displayTitle = "";
   public string type = "";
 
   public float secondsOnAssignment;
@@ -35,6 +36,14 @@ public class Assignment {
     hasImages = usesImg; 
     type = templateType;
     assignmentTitle = assignTitle;
+    displayTitle = UppercaseFirst(assignmentTitle.Split('.')[0]);
+    Debug.Log(displayTitle);
+  }
+  static string UppercaseFirst(string s){
+    if (string.IsNullOrEmpty(s)){
+        return string.Empty;
+    }
+    return char.ToUpper(s[0]) + s.Substring(1);
   }
 }
 
