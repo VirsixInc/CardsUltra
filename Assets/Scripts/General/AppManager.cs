@@ -22,7 +22,6 @@ public class Assignment {
   public string displayTitle = "";
   public string type = "";
 
-  public float secondsOnAssignment;
   public float timeAtLoad;
 
   public string sceneToLoad;
@@ -37,6 +36,7 @@ public class Assignment {
     type = templateType;
     assignmentTitle = assignTitle;
     displayTitle = UppercaseFirst(assignmentTitle.Split('.')[0]).Replace("_", " ");
+    fullAssignTitle = type + "_" + assignmentTitle.Split('.')[0];
   }
   static string UppercaseFirst(string s){
     if (string.IsNullOrEmpty(s)){
@@ -158,9 +158,6 @@ public class AppManager : MonoBehaviour {
     }
   }
 
-  public void quitTemp(){
-    currentAssignments[currIndex].secondsOnAssignment = currentAssignments[currIndex].timeAtLoad-Time.time;
-  }
 
   public int countStringOccurrences(string text, string pattern){
     int count = 0;
@@ -349,11 +346,18 @@ public class AppManager : MonoBehaviour {
 
   public IEnumerator uploadAssignMastery(string assignmentName, int mastery){
     assignmentName = assignmentName.Replace("\"", "").ToLower();
-    assignmentName = assignmentName;
-    print(assignmentName);
 		WWW www = new WWW(serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString());
+    print(www.url);
     yield return www;
-    print(www.text);
+  }
+
+  public IEnumerator uploadAssignTime(string assignmentName, int seconds){
+    print(currentAssignments[currIndex].timeAtLoad);
+    seconds = (int)Time.time - seconds;
+    assignmentName = assignmentName.Replace("\"", "").ToLower();
+		WWW www = new WWW(serverURL + "/setAssignmentTime?assignmentName=" + assignmentName + "&student=" + username + "&time=" + seconds.ToString());
+    print(www.url);
+    yield return www;
   }
 
 	JSONObject ParseToJSON (string txt) {
