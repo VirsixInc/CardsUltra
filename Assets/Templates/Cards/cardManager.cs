@@ -73,7 +73,6 @@ public class cardManager : MonoBehaviour {
     PlayingKeyboard,
     End};
   public GameState currentState; //public for debug purposes 
-  public GameObject instPartFab;
   public GameObject circGraphic;
   public GameObject background;
 
@@ -145,7 +144,7 @@ public class cardManager : MonoBehaviour {
         questDispEnd = circGraphic.transform.localPosition;
         questDispEnd.y = questDispEnd.y*-1;
         foreach(GameObject card in cardObjs){
-          Card newCard = new Card(card, card.transform.Find("Text").GetComponent<Text>(), card.transform.Find("Image").GetComponent<Image>());
+          Card newCard = new Card(card, card.transform.Find("cardText").GetComponent<Text>(), card.transform.Find("Image").GetComponent<Image>());
           newCard.thisIndiCard = card.GetComponent<indiCard>();
           allCards.Add(newCard);
         }
@@ -413,13 +412,11 @@ public class cardManager : MonoBehaviour {
           */
           //string imgPathToUse = Path.Combine(direct.FullName, thisLine[1] + ".png");
           if(File.Exists(imgPathToUse)){
-            print("FILE DOES EXIST");
             byte[] currImg = File.ReadAllBytes(imgPathToUse);
             Texture2D newImg = new Texture2D(2,2);
             newImg.LoadImage(currImg);
             termToAdd = new Term(thisLine[0], thisLine[1], newImg);
           }else{
-            print("FILE DOES NOT EXIST");
             termToAdd = new Term(thisLine[0], thisLine[1]);//, newImg);
           }
         }else{
