@@ -7,7 +7,6 @@ public class BlurLerp : MonoBehaviour {
 
 
 	public void Blur () {
-		print ("BLUR");
 		MenuCanvas.SetActive (true);
 		GetComponent<Blur>().enabled = true;
 		StartCoroutine ("BlurIn");

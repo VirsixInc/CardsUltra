@@ -36,8 +36,7 @@ public class Assignment {
     hasImages = usesImg; 
     type = templateType;
     assignmentTitle = assignTitle;
-    displayTitle = UppercaseFirst(assignmentTitle.Split('.')[0]);
-    Debug.Log(displayTitle);
+    displayTitle = UppercaseFirst(assignmentTitle.Split('.')[0]).Replace("_", " ");
   }
   static string UppercaseFirst(string s){
     if (string.IsNullOrEmpty(s)){
@@ -68,7 +67,7 @@ public class AppManager : MonoBehaviour {
 
 	List<string> assignmentURLsToDownload;
 
-  bool urlsDownloaded, clicked, userExists, hardcoded = true;
+  bool urlsDownloaded, clicked, userExists;
 
 	void Awake() {
     if(localDebug){
