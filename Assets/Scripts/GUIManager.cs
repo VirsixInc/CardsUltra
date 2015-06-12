@@ -45,7 +45,7 @@ public class GUIManager : MonoBehaviour {
 				arrayOfAssignments[i].associatedGUIObject.transform.SetParent(parentAssignmentHolder, false);
 			}
 		}
-		float numberOfRowsOfAssignments = Mathf.Ceil(arrayOfAssignments.Count / 2);
+		float numberOfRowsOfAssignments = Mathf.Ceil((float)arrayOfAssignments.Count / 2);
 		totalHeightOfAssignmentCards = numberOfRowsOfAssignments * assignmentCardHeight;
 		PlaceAssignments ();
 	
