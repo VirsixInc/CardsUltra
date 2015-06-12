@@ -10,9 +10,11 @@ public class circleGraphics : MonoBehaviour {
   int colIndex;
   bool newCol;
   public float speed;
+  private Color startColor;
 	// Use this for initialization
 	void Start () {
     imgToUse = GetComponent<Image>();
+    startColor = imgToUse.color;
 	}
 	
 	// Update is called once per frame

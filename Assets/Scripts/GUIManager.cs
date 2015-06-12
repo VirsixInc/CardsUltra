@@ -66,11 +66,9 @@ public class GUIManager : MonoBehaviour {
 			incompleteAssignments[i].transform.localPosition = assignmentPosition;
 		}
 		if (totalHeightOfAssignmentCards > screenHeight) {
-			print ("NEW BOUNDARDY" + (totalHeightOfAssignmentCards - screenHeight));
 			thisScrollingMenu.lowerBound = totalHeightOfAssignmentCards - screenHeight;
 			thisScrollingMenu.lowerBoundPosition = new Vector3 (0, thisScrollingMenu.lowerBound, 0);
 		} else {
-			print ("NEW BOUNDARDY");
 			thisScrollingMenu.lowerBound = 0;
 			thisScrollingMenu.lowerBoundPosition = Vector3.zero;
 		}

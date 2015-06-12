@@ -46,7 +46,6 @@ public class ScrollingMenu : MonoBehaviour {
 
 	}
 	void Rebound() {
-		print ("rebound");
 		isLerpingBackInBounds = true;
 		startTime = Time.time;
 	}

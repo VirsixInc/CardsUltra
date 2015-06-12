@@ -349,9 +349,11 @@ public class AppManager : MonoBehaviour {
 
   public IEnumerator uploadAssignMastery(string assignmentName, int mastery){
     assignmentName = assignmentName.Replace("\"", "").ToLower();
-    assignmentName = "cards_chemistries";
+    assignmentName = assignmentName;
+    print(assignmentName);
 		WWW www = new WWW(serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString());
     yield return www;
+    print(www.text);
   }
 
 	JSONObject ParseToJSON (string txt) {
