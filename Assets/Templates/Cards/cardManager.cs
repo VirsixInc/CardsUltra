@@ -87,7 +87,7 @@ public class cardManager : MonoBehaviour {
   public List<Term> allTerms = new List<Term>();
   public List<Term> unmasteredTerms = new List<Term>();
   
-  private DirectoryInfo direct;
+  private string direct;
 
   private bool useImages, handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit;
 
@@ -120,7 +120,7 @@ public class cardManager : MonoBehaviour {
   public void configureGame(Assignment assignToUse){
     useImages = assignToUse.hasImages;
     if(useImages){
-      direct = new DirectoryInfo(assignToUse.imgDir);
+      direct = assignToUse.imgDir;
     }
     contentForAssign = assignToUse.content;
     readyToConfigure = true;
@@ -401,12 +401,27 @@ public class cardManager : MonoBehaviour {
           if(thisLine[1][0] == ' '){
             thisLine[1] = thisLine[1].Substring(1,thisLine[1].Length-1);
           }
-          //string imgPathToUse =  direct.FullName + "/" + thisLine[1] + ".png";
-          string imgPathToUse = Path.Combine(direct.FullName, thisLine[1] + ".png");
-          byte[] currImg = File.ReadAllBytes(imgPathToUse);
-          Texture2D newImg = new Texture2D(2,2);
-          newImg.LoadImage(currImg);
-          termToAdd = new Term(thisLine[0], thisLine[1], newImg);
+          string imgPathToUse =  direct + "/" + thisLine[1].ToLower() + ".png";
+          imgPathToUse = imgPathToUse.Replace("\"", "");
+          /*
+          DirectoryInfo persistent = new DirectoryInfo(direct);
+          FileInfo[] fileInfo = persistent.GetFiles("*",SearchOption.AllDirectories);
+          foreach(FileInfo file in fileInfo){
+            print(file);
+            print(imgPathToUse);
+          }
+          */
+          //string imgPathToUse = Path.Combine(direct.FullName, thisLine[1] + ".png");
+          if(File.Exists(imgPathToUse)){
+            print("FILE DOES EXIST");
+            byte[] currImg = File.ReadAllBytes(imgPathToUse);
+            Texture2D newImg = new Texture2D(2,2);
+            newImg.LoadImage(currImg);
+            termToAdd = new Term(thisLine[0], thisLine[1], newImg);
+          }else{
+            print("FILE DOES NOT EXIST");
+            termToAdd = new Term(thisLine[0], thisLine[1]);//, newImg);
+          }
         }else{
           termToAdd = new Term(thisLine[0], thisLine[1]);
         }
