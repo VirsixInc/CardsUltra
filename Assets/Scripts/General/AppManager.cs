@@ -72,13 +72,13 @@ public class AppManager : MonoBehaviour {
 	void Awake() {
     if(localDebug){
 			if(pabloDebug){
-				serverURL = "http://192.168.1.6:8080/client";
+				serverURL = "http://192.168.1.16:8080/client";
 
 			}else{
         serverURL = "http://localhost:8080/client";
 			}
-      username = "AAguiar";
-      password = "Password2134";
+      username = "AGutierrez";
+      password = "Password1357";
       userExists = true;
     }
     s_instance = this;

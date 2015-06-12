@@ -65,9 +65,6 @@ public class HotSpotsGame : MonoBehaviour
 	//state machine
 	void Update ()
 	{
-		//		print (curPhase);
-		//		print (curState);
-		print (curState);
 		switch (curState) {
 		case HotSpotGameState.Config: 
 			ConfigGameData ();
