@@ -67,7 +67,7 @@ public class AppManager : MonoBehaviour {
 				serverURL = "http://192.168.1.6:8080/client";
 
 			}else{
-      serverURL = "http://localhost:8080/client";
+        serverURL = "http://localhost:8080/client";
 			}
       username = "AAguiar";
       password = "Password2134";
@@ -208,15 +208,15 @@ public class AppManager : MonoBehaviour {
         using (ZipInputStream s = new ZipInputStream(File.OpenRead(fileToUnzip))){
           ZipEntry theEntry;
           while ((theEntry = s.GetNextEntry()) != null){
-            string directoryName = Path.GetDirectoryName(theEntry.Name);
-            string fileNameZip = Path.GetFileName(theEntry.Name);
+            string directoryName = Path.GetDirectoryName(theEntry.Name.ToLower());
+            string fileNameZip = Path.GetFileName(theEntry.Name.ToLower());
 
             if (directoryName.Length > 0 ){
               Directory.CreateDirectory(pathToWrite + directoryName);
             }
             if (fileNameZip != String.Empty){
               string filename = pathToWrite;//.Substring(0, pathToWrite.Length - 8);
-              filename += theEntry.Name;
+              filename += theEntry.Name.ToLower();
               using (FileStream streamWriter = File.Create(filename)){
                 int size = 2048;
                 byte[] fdata = new byte[2048];
