@@ -24,6 +24,11 @@ public class TransitionCard : MonoBehaviour {
 		currentLerpTime = 0;
 	}
 
+	Vector3 LerpWithoutClamp(Vector3 A, Vector3 B, float t){
+		return A + (B - A) * t;
+	}
+
+
 	void Update() {
 		//reset when we press spacebar	
 	
@@ -35,7 +40,7 @@ public class TransitionCard : MonoBehaviour {
 			t = Mathf.Clamp01(t);
 			t = (Mathf.Sin(t * Mathf.PI * (0.2f + 2.5f * t * t * t)) * Mathf.Pow(1f - t, 2.2f) + t) * (1f + (1.2f * (1f - t)));
 			print (t);
-			transform.localPosition = Vector3.Lerp(endPos, center, t);
+			transform.localPosition = LerpWithoutClamp(endPos, center, t);
 		}
 		
 

@@ -15,7 +15,7 @@ public class GUIManager : MonoBehaviour {
 	public static GUIManager s_instance;
 	public Canvas myCanvas;
 	public ScrollingMenu thisScrollingMenu;
-	public List<Image> listOfMenuImages;
+	public List<Sprite> listOfMenuImages;
 
 
 	void Start () {
@@ -35,7 +35,7 @@ public class GUIManager : MonoBehaviour {
 			arrayOfAssignments[i].associatedGUIObject = Instantiate(assignmentGUIPrefab) as GameObject;
 			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().assignmentIndex = i;
 			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().title.text = arrayOfAssignments[i].displayTitle;
-
+			arrayOfAssignments[i].associatedGUIObject.GetComponent<Image>().sprite = GUIManager.s_instance.listOfMenuImages[i%listOfMenuImages.Count];
 			if (arrayOfAssignments[i].isCompleted) {
 				completedAssignments.Add(arrayOfAssignments[i].associatedGUIObject);
 				arrayOfAssignments[i].associatedGUIObject.transform.SetParent(parentAssignmentHolder, false);
@@ -48,8 +48,6 @@ public class GUIManager : MonoBehaviour {
 		float numberOfRowsOfAssignments = Mathf.Ceil((float)arrayOfAssignments.Count / 2) + 1;
 		totalHeightOfAssignmentCards = numberOfRowsOfAssignments * assignmentCardHeight;
 		PlaceAssignments ();
-	
-
 	}
 	
 	void PlaceAssignments() {
