@@ -66,7 +66,7 @@ public class ScrollingMenu : MonoBehaviour {
 			}
 //Reset
 //USING LERP
-			if (transform.localPosition.y < -0.1f || transform.localPosition.y > lowerBound) {
+			if (transform.localPosition.y < -0.1f || transform.localPosition.y > lowerBound + 1f) {
 //			velocity = 0;
 				if (isLerpingBackInBounds == false) {
 					Rebound (); //this is a switch to only call the lerp once

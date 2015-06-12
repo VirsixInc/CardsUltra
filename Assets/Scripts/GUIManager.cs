@@ -33,7 +33,7 @@ public class GUIManager : MonoBehaviour {
 		for (int i = 0; i < arrayOfAssignments.Count; i++) {
 			arrayOfAssignments[i].associatedGUIObject = Instantiate(assignmentGUIPrefab) as GameObject;
 			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().assignmentIndex = i;
-			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().title.text = arrayOfAssignments[i].assignmentTitle;
+			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().title.text = arrayOfAssignments[i].displayTitle;
 
 			if (arrayOfAssignments[i].isCompleted) {
 				completedAssignments.Add(arrayOfAssignments[i].associatedGUIObject);
