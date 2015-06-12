@@ -10,7 +10,7 @@ public class ScrollingMenu : MonoBehaviour {
 	public float lowerBound;
 	float startTime, lerpTime = 3f, fracJourney;
 	bool isLerpingBackInBounds = false;
-	Vector3 lowerBoundPosition = Vector3.zero; //assigned from other class no good
+	public Vector3 lowerBoundPosition; //assigned from other class no good
 	public bool isDragging = false, isSwiping = false;
 	GameObject myCanvas;
 	Vector2 pos;
@@ -66,21 +66,24 @@ public class ScrollingMenu : MonoBehaviour {
 			}
 //Reset
 //USING LERP
-			if (transform.localPosition.y < -0.1f || transform.localPosition.y > lowerBound + 1f) {
-//			velocity = 0;
-				if (isLerpingBackInBounds == false) {
-					Rebound (); //this is a switch to only call the lerp once
-				}
+			if (transform.localPosition.y <= 0 || transform.localPosition.y >= lowerBound) {
+				velocity = 0;
+
 				fracJourney = (Time.time - startTime) / lerpTime;
 				if (fracJourney > .9f) {
-//				fracJourney = 1;
+				fracJourney = 1;
 					isLerpingBackInBounds = false;
 					velocity = 0;
 				}
-				if (transform.localPosition.y < 0) {
+
+
+				if (transform.localPosition.y <= 0) {
 					transform.localPosition = Vector3.Lerp (transform.localPosition, lowerBoundPosition, fracJourney);
-				} else if (transform.localPosition.y > lowerBound) {
+				} else if (transform.localPosition.y >= lowerBound) {
 					transform.localPosition = Vector3.Lerp (transform.localPosition, Vector3.zero, fracJourney);
+				}
+				if (isLerpingBackInBounds == false) {
+					Rebound (); //this is a switch to only call the lerp once
 				}
 			}
 
