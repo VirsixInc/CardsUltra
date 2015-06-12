@@ -13,9 +13,13 @@ public class MenuButtonManager : MonoBehaviour {
 	
 	public void EnableMenu() {
 		ActivateMenuButtons ();
+		print ("enable");
 	}
 	
 	public void ActivateMenuButtons () {
+		if (GameObject.FindGameObjectWithTag ("scrollingMenu") != null) {
+			GameObject.FindGameObjectWithTag ("scrollingMenu").GetComponent<ScrollingMenu>().isInMenu = true;
+		}
 		if (faders != null) {
 			foreach (Fader f in faders) {
 				f.StartFadeIn ();
@@ -29,6 +33,10 @@ public class MenuButtonManager : MonoBehaviour {
 	}
 	
 	public void DeActivateMenuButtons () {
+		GameObject.FindGameObjectWithTag("MainCamera").GetComponent<BlurLerp>().UnBlur();
+		if (GameObject.FindGameObjectWithTag ("scrollingMenu") != null) {
+			GameObject.FindGameObjectWithTag ("scrollingMenu").GetComponent<ScrollingMenu>().isInMenu = false;
+		}
 		if (faders != null) {
 			foreach (Fader f in faders) {
 				f.StartFadeOut (0.2f);

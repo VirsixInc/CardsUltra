@@ -12,8 +12,8 @@ public class LoadLevelButton : MonoBehaviour {
 	void Update () {
 	
 	}
-	public void LoadLevel(int index) {
-		AppManager.s_instance.ClickHandler(index);
+	public void LoadLevel() {
+		AppManager.s_instance.ClickHandler(GameObject.FindGameObjectWithTag("scrollingMenu").GetComponent<ScrollingMenu>().currentLevelToBePlayed);
 
 	}
 
