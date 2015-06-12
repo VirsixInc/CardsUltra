@@ -53,16 +53,16 @@ public class ScrollingMenu : MonoBehaviour {
 	void Update () {
 		if (isInMenu == false) {
 			//this block of code handles of the velocity of scrolling
-			if (isLerpingBackInBounds == false && velocity != 0) {
-				transform.Translate (new Vector3 (0, velocity, 0));
-				if (Mathf.Abs (velocity) > 1) {
-					velocity += deceleration * (Mathf.Abs (velocity) / velocity);
-				} else if (Mathf.Abs (velocity) > .3f) {
-					velocity += deceleration / 10 * (Mathf.Abs (velocity) / velocity);
-				} else {
-					velocity = 0;
-				}		
-			}
+//			if (isLerpingBackInBounds == false && velocity != 0) {
+//				transform.Translate (new Vector3 (0, velocity, 0));
+//				if (Mathf.Abs (velocity) > 1) {
+//					velocity += deceleration * (Mathf.Abs (velocity) / velocity);
+//				} else if (Mathf.Abs (velocity) > .3f) {
+//					velocity += deceleration / 10 * (Mathf.Abs (velocity) / velocity);
+//				} else {
+//					velocity = 0;
+//				}		
+//			}
 //Reset
 //USING LERP
 			if (transform.localPosition.y <= 0 || transform.localPosition.y >= lowerBound) {

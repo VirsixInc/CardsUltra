@@ -6,7 +6,7 @@ public class BreatheAnimation : MonoBehaviour {
 	Vector3 startScale;
 	
 	float amplitude = .02f;
-	float period = .3f;
+	public float period = .3f;
 	
 	void Start() {
 		startScale = transform.localScale;
