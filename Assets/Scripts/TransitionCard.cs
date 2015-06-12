@@ -35,8 +35,7 @@ public class TransitionCard : MonoBehaviour {
 		if (currentLerpTime < lerpTime) {
 			currentLerpTime += Time.deltaTime; //nice because you dont need a bool for completion
 			float t = currentLerpTime / lerpTime;
-//			Mathf.Pow(t,3);
-//			t = t*t*t*(t*(6f*t-15f) + 10f);
+
 			t = Mathf.Clamp01(t);
 			t = (Mathf.Sin(t * Mathf.PI * (0.2f + 2.5f * t * t * t)) * Mathf.Pow(1f - t, 2.2f) + t) * (1f + (1.2f * (1f - t)));
 			print (t);
