@@ -36,7 +36,8 @@ public class AssignmentStartButton : MonoBehaviour {
 		if (Time.time - selectTimer < .2f && Vector3.Distance(positionAtFingerDown, transform.position) < 1f) {
 			//guimanager 
 			//		SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_start);
-			AppManager.s_instance.ClickHandler(gameObject.GetComponent<AssignmentGUI>().assignmentIndex);
+			GameObject.Find ("MainMenuCanvas").GetComponent<MenuButtonManager>().EnableMenu();
+
 			//AppManager.s_instance.currentAssignment = transform.parent.GetComponent<Assignment> ();
 			//		AppManager.s_instance.currentAppState = AppState.Playing;
 		}
