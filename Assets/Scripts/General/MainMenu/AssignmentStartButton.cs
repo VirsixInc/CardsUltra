@@ -11,6 +11,7 @@ public class AssignmentStartButton : MonoBehaviour {
 	PointerEventData eventData;
 	Vector3 positionAtFingerDown;
 	float selectTimer;
+	GameObject mainMenuCanvas;
 	
 	void OnFingerDown () {
 		selectTimer = Time.time;
@@ -20,6 +21,7 @@ public class AssignmentStartButton : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
+		mainMenuCanvas = GameObject.FindGameObjectWithTag ("mainMenuCanvas");
 		thisEventTrigger = GetComponent<EventTrigger>();
 		entry.eventID = EventTriggerType.PointerUp;
 		entry2.eventID = EventTriggerType.PointerDown;
@@ -34,9 +36,14 @@ public class AssignmentStartButton : MonoBehaviour {
 
 	void CallManager() {
 		if (Time.time - selectTimer < .2f && Vector3.Distance(positionAtFingerDown, transform.position) < 1f) {
+			print ("callmanager");
+
 			//guimanager 
 			//		SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_start);
-			GameObject.Find ("MainMenuCanvas").GetComponent<MenuButtonManager>().EnableMenu();
+			GameObject.FindGameObjectWithTag ("scrollingMenu").GetComponent<ScrollingMenu>().currentLevelToBePlayed =
+				gameObject.GetComponent<AssignmentGUI>().assignmentIndex;
+			mainMenuCanvas.GetComponent<MenuButtonManager>().EnableMenu();
+			GameObject.FindGameObjectWithTag("MainCamera").GetComponent<BlurLerp>().Blur();
 
 			//AppManager.s_instance.currentAssignment = transform.parent.GetComponent<Assignment> ();
 			//		AppManager.s_instance.currentAppState = AppState.Playing;
