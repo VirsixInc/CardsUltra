@@ -122,6 +122,8 @@ public class cardManager : MonoBehaviour {
       direct = assignToUse.imgDir;
     }
     contentForAssign = assignToUse.content;
+    totalMastery = AppManager.s_instance.pullAssignMastery(assignToUse);
+    print(totalMastery);
     readyToConfigure = true;
   }
 	void Update () {
