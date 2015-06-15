@@ -56,7 +56,7 @@ public class AppManager : MonoBehaviour {
   public int currIndex;
 
 	string[] assignmentURLs;
-	string serverURL = "http://96.126.100.208:8080/client", folderName,
+	string serverURL = "http://96.126.100.208:8000/client", folderName,
          username,
          password,
          masteryFilePath,
@@ -201,6 +201,7 @@ public class AppManager : MonoBehaviour {
   IEnumerator pullImgs(string assignmentName){
     string fileName = assignmentName + "-images.zip";
     fileName = fileName.Replace("\"", "");
+    print(fileName);
     string url = (serverURL + "/images?assignment=" + fileName);
 		WWW www = new WWW(url);
 		yield return www;
@@ -347,16 +348,13 @@ public class AppManager : MonoBehaviour {
   public IEnumerator uploadAssignMastery(string assignmentName, int mastery){
     assignmentName = assignmentName.Replace("\"", "").ToLower();
 		WWW www = new WWW(serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString());
-    print(www.url);
     yield return www;
   }
 
   public IEnumerator uploadAssignTime(string assignmentName, int seconds){
-    print(currentAssignments[currIndex].timeAtLoad);
     seconds = (int)Time.time - seconds;
     assignmentName = assignmentName.Replace("\"", "").ToLower();
 		WWW www = new WWW(serverURL + "/setAssignmentTime?assignmentName=" + assignmentName + "&student=" + username + "&time=" + seconds.ToString());
-    print(www.url);
     yield return www;
   }
 
