@@ -58,6 +58,6 @@ public class AnimationSlide : MonoBehaviour {
 			if (fracJourney >= 1) {
 				isSliding = false;
 			}
-		}
+		} 
 	}
 }

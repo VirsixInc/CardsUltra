@@ -72,7 +72,7 @@ public class AppManager : MonoBehaviour {
 	void Awake() {
     if(localDebug){
 			if(pabloDebug){
-				serverURL = "http://192.168.1.16:8080/client";
+				serverURL = "http://192.168.1.12:8080/client";
 
 			}else{
         serverURL = "http://localhost:8080/client";
@@ -85,7 +85,7 @@ public class AppManager : MonoBehaviour {
     masteryFilePath = Application.persistentDataPath + "/mastery.info";
     DontDestroyOnLoad(transform.gameObject);
 	}
-
+	 
 	void Update () {
 		switch (currentAppState) {
       case AppState.Login :
