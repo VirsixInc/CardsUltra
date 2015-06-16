@@ -340,7 +340,7 @@ public class AppManager : MonoBehaviour {
       }
     }
     if(CheckForInternetConnection()){
-
+      StartCoroutine(uploadAssignMastery(assignToSave.fullAssignTitle, mastery));
     }
     File.WriteAllText(masteryFilePath, String.Empty);
     File.WriteAllLines(masteryFilePath, masteryFile);
@@ -349,6 +349,7 @@ public class AppManager : MonoBehaviour {
   public IEnumerator uploadAssignMastery(string assignmentName, int mastery){
     assignmentName = assignmentName.Replace("\"", "").ToLower();
 		WWW www = new WWW(serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString());
+    print(www.url);
     yield return www;
   }
 
