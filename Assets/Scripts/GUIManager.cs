@@ -22,6 +22,7 @@ public class GUIManager : MonoBehaviour {
 
 
 	void Start () {
+		errorText = GameObject.Find ("UserMessage").GetComponent<Text>();
 		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
 		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
 		screenHeight = myCanvas.GetComponent <RectTransform> ().rect.height;
@@ -86,6 +87,7 @@ public class GUIManager : MonoBehaviour {
 	public void SlideFromLoginToMain() {
 		LoginPanel.GetComponent<TransitionCard> ().StartLerpToOffScreen ();
 		MainMenuPanel.GetComponent<TransitionCard> ().StartLerpToOnScreen ();
+		ScrollingMenu.s_instance.Initialize ();
 	}
 
 	public void SlideFromMainToLogin() {

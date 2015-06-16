@@ -11,10 +11,10 @@ public class TransitionCard : MonoBehaviour {
 	
 	float moveDistance = 10f;
 	public bool isOnScreen = false;
-	Vector3 center;
+	public Vector3 center;
 	Vector3 endPos;
 	public Transform startTransform;
-	void Start() {
+	void Awake() {
 		center = new Vector3(0f,0f,0f);
 		endPos = startTransform.localPosition;
 	}

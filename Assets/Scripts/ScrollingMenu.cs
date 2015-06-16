@@ -28,6 +28,10 @@ public class ScrollingMenu : MonoBehaviour {
 		myCanvas = GameObject.Find ("Canvas");
 	}
 
+	public void Initialize() {
+		Rebound ();
+	}
+
 	void OnGUI () {
 		Event e = Event.current;
 		if (e.type == EventType.mouseDown) {

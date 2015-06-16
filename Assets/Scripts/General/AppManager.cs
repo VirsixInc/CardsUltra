@@ -92,7 +92,6 @@ public class AppManager : MonoBehaviour {
         if(userExists){
           currentAppState = AppState.Initialize;
 //          Application.LoadLevel("AssignmentMenu");
-		  GUIManager.s_instance.SlideFromLoginToMain();
         }
         break;
       case AppState.Initialize :
@@ -121,6 +120,8 @@ public class AppManager : MonoBehaviour {
         break;
       case AppState.MenuConfig:
         GUIManager.s_instance.LoadAllAssignments(currentAssignments);
+			GUIManager.s_instance.SlideFromLoginToMain();
+
         currentAppState = AppState.AssignmentMenu;
         break;
       case AppState.AssignmentMenu :
@@ -154,8 +155,11 @@ public class AppManager : MonoBehaviour {
       username = name;
       password = wrd;
     }else if(www.text == "false"){
+			GUIManager.s_instance.SetErrorText("User Data Not Found");
       userExists = false;
     }else{
+			GUIManager.s_instance.SetErrorText("Check Internet Connection");
+
     }
   }
 
