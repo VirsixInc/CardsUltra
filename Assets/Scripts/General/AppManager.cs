@@ -180,13 +180,12 @@ public class AppManager : MonoBehaviour {
       string hasImages = (string)(allAssignments[i].GetField("hasImages").ToString());
       string directoryPath = Application.persistentDataPath + "/images/";
       string imgDirPath = directoryPath + thisAssign.Replace("\"", "") + "-images";
-      if(hasImages == "true" && !Directory.Exists(imgDirPath)){
+      if(!Directory.Exists(imgDirPath)){
         if(!Directory.Exists(directoryPath)){
           Directory.CreateDirectory(directoryPath);
         }
         Directory.CreateDirectory(imgDirPath);
         StartCoroutine(pullImgs(thisAssign));
-        //Directory.CreateDirectory(pathToWrite + directoryName);
       }
       string filePath = (Application.persistentDataPath + "/" + thisAssign).Replace("\"", "");
       if(!File.Exists(filePath + ".data")){
@@ -201,7 +200,6 @@ public class AppManager : MonoBehaviour {
   IEnumerator pullImgs(string assignmentName){
     string fileName = assignmentName + "-images.zip";
     fileName = fileName.Replace("\"", "");
-    print(fileName);
     string url = (serverURL + "/images?assignment=" + fileName);
 		WWW www = new WWW(url);
 		yield return www;
@@ -341,6 +339,9 @@ public class AppManager : MonoBehaviour {
         break;
       }
     }
+    if(CheckForInternetConnection()){
+      StartCoroutine(uploadAssignMastery(assignToSave.fullAssignTitle, mastery));
+    }
     File.WriteAllText(masteryFilePath, String.Empty);
     File.WriteAllLines(masteryFilePath, masteryFile);
   }
@@ -348,6 +349,7 @@ public class AppManager : MonoBehaviour {
   public IEnumerator uploadAssignMastery(string assignmentName, int mastery){
     assignmentName = assignmentName.Replace("\"", "").ToLower();
 		WWW www = new WWW(serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString());
+    print(www.url);
     yield return www;
   }
 

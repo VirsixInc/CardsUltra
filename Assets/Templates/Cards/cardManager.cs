@@ -99,6 +99,7 @@ public class cardManager : MonoBehaviour {
   private int amtOfCards;
   private int correctTermIndex;
   private int totalMastery;
+  private int currMastery = 0;
   private int requiredMastery = 4;
   private int currentPhase;
   private int levenThresh = 3;
@@ -122,6 +123,7 @@ public class cardManager : MonoBehaviour {
       direct = assignToUse.imgDir;
     }
     contentForAssign = assignToUse.content;
+    currMastery = AppManager.s_instance.pullAssignMastery(assignToUse);
     readyToConfigure = true;
   }
 	void Update () {
@@ -156,6 +158,7 @@ public class cardManager : MonoBehaviour {
         currentState = GameState.ResetCards;
         break;
       case GameState.ResetCards:
+        masteryMeter.value = getMastery();
         Timer1.s_instance.Reset(15f);
         foreach(Card currCard in allCards){
           currCard.objAssoc.SetActive(false);
@@ -209,7 +212,7 @@ public class cardManager : MonoBehaviour {
           Timer1.s_instance.Pause();
           firstPress = false;
           handleCardPress = false;
-          masteryMeter.value = getMastery();
+          //masteryMeter.value = getMastery();
           if(getMastery() >= 1f){
             currentState = GameState.ConfigKeyboard;
           }
@@ -422,6 +425,8 @@ public class cardManager : MonoBehaviour {
         }else{
           termToAdd = new Term(thisLine[0], thisLine[1]);
         }
+        termToAdd.mastery = ((int)Mathf.Ceil(((float)(currMastery/100f))*requiredMastery));
+        print(termToAdd.mastery);
         listToReturn.Add(termToAdd);
       }
     }
