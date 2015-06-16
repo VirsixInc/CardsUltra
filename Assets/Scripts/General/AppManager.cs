@@ -91,7 +91,8 @@ public class AppManager : MonoBehaviour {
       case AppState.Login :
         if(userExists){
           currentAppState = AppState.Initialize;
-          Application.LoadLevel("AssignmentMenu");
+//          Application.LoadLevel("AssignmentMenu");
+		  GUIManager.s_instance.SlideFromLoginToMain();
         }
         break;
       case AppState.Initialize :

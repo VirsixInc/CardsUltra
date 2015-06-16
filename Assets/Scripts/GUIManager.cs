@@ -17,6 +17,8 @@ public class GUIManager : MonoBehaviour {
 	public ScrollingMenu thisScrollingMenu;
 	public List<Sprite> listOfMenuImages;
 
+	public GameObject LoginPanel, MainMenuPanel;
+
 
 	void Start () {
 		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
@@ -73,6 +75,16 @@ public class GUIManager : MonoBehaviour {
 			thisScrollingMenu.lowerBoundPosition = Vector3.zero;
 		}
 		
+	}
+
+	public void SlideFromLoginToMain() {
+		LoginPanel.GetComponent<TransitionCard> ().StartLerpToOffScreen ();
+		MainMenuPanel.GetComponent<TransitionCard> ().StartLerpToOnScreen ();
+	}
+
+	public void SlideFromMainToLogin() {
+		LoginPanel.GetComponent<TransitionCard> ().StartLerpToOnScreen ();
+		MainMenuPanel.GetComponent<TransitionCard> ().StartLerpToOffScreen ();
 	}
 	
 }
