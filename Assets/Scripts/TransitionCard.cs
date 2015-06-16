@@ -7,7 +7,7 @@ using System.Collections;
 public class TransitionCard : MonoBehaviour {
 	
 	float lerpTime = 3f;
-	float currentLerpTime;
+	float currentLerpTime =5f;
 	
 	float moveDistance = 10f;
 	public bool isOnScreen = false;
