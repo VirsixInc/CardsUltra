@@ -20,6 +20,7 @@ public class ColorLerp : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
+		idle = GetComponent<Image> ().color;
 		gameObject.GetComponent<Image> ().color = idle;
 		thisEventTrigger = GetComponent<EventTrigger>();
 		entry.eventID = EventTriggerType.PointerDown;

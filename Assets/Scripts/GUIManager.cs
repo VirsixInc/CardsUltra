@@ -16,6 +16,7 @@ public class GUIManager : MonoBehaviour {
 	public Canvas myCanvas;
 	public ScrollingMenu thisScrollingMenu;
 	public List<Sprite> listOfMenuImages;
+	public Text errorText;
 
 	public GameObject LoginPanel, MainMenuPanel;
 
@@ -30,6 +31,11 @@ public class GUIManager : MonoBehaviour {
 	void Awake () {
 		s_instance = this;
 	}
+
+	public void SetErrorText(string x) {
+		errorText.text = x;
+	}
+
 	// Use this for initialization
 	public void LoadAllAssignments(List<Assignment> arrayOfAssignments){
 		//parse associatedGameObjects into either mastered or unmastered
