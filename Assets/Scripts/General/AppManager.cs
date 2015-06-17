@@ -48,7 +48,7 @@ public class Assignment {
 
 public class AppManager : MonoBehaviour {
 
-  public bool localDebug, pabloDebug;
+  public bool localDebug, pabloDebug, userDebug;
 	private AppState currentAppState;
 	public static AppManager s_instance;
   public List<Assignment> currentAssignments = new List<Assignment>();
@@ -77,6 +77,8 @@ public class AppManager : MonoBehaviour {
 			}else{
         serverURL = "http://localhost:8080/client";
 			}
+    }
+    if(userDebug){
       username = "AGutierrez";
       password = "Password1357";
       userExists = true;

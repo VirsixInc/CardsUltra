@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 
 public class Card{
 
@@ -37,13 +38,23 @@ public class Term{
   public int mastery = 0;
   public bool mastered = false;
   public string imgPath;
-  public Term(string newQuestion, string newAnswer, Texture2D imgToUse = null){
-    if(imgToUse != null){
-      imgAssoc = Sprite.Create(imgToUse,new Rect(0,0,imgToUse.width, imgToUse.height),new Vector2(0.5f, 0.5f));//Resources.Load<Sprite>(filePathForImg);
+  public Term(string newQuestion, string newAnswer, string imgPathToUse = null){
+    if(imgPathToUse != null){
+      imgPath = imgPathToUse;
     }
     question = newQuestion;
     answer = newAnswer;
+
   }
+  /*
+  public Sprite loadImg(string imgPath){
+    byte[] currImg = File.ReadAllBytes(imgPath);
+    Texture2D newImg = new Texture2D(2,2);
+    newImg.LoadImage(currImg);
+    Sprite imgToReturn = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
+    return imgToReturn;
+  }
+  */
   /*
   public IEnumerator loadImg(){
     WWW imgToPull = new WWW(imgPath);
@@ -85,6 +96,7 @@ public class cardManager : MonoBehaviour {
   public List<Card> allCards = new List<Card>();
   public List<Term> allTerms = new List<Term>();
   public List<Term> unmasteredTerms = new List<Term>();
+  public List<Thread> loadThreads = new List<Thread>();
   
   private string direct;
 
@@ -116,7 +128,23 @@ public class cardManager : MonoBehaviour {
   private Vector3 questDispStart, questDispEnd;
 
   public AppManager manager;
-	
+  public GameObject loadingBar;
+  Thread imgLoadThread;
+
+  bool termsLoaded;
+
+  void loadImages(){
+    if(termsLoaded){
+      for(int i =0;i<allTerms.Count;i++){
+        byte[] currImg = File.ReadAllBytes(allTerms[i].imgPath);
+        Texture2D newImg = new Texture2D(2,2);
+        newImg.LoadImage(currImg);
+        allTerms[i].imgAssoc = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
+        print(i);
+      }
+    }
+  }
+
   public void configureGame(Assignment assignToUse){
     useImages = assignToUse.hasImages;
     if(useImages){
@@ -124,8 +152,11 @@ public class cardManager : MonoBehaviour {
     }
     contentForAssign = assignToUse.content;
     currMastery = AppManager.s_instance.pullAssignMastery(assignToUse);
+    imgLoadThread = new Thread(loadImages); 
+    imgLoadThread.Start();
     readyToConfigure = true;
   }
+
 	void Update () {
     switch(currentState){
       case GameState.Idle:
@@ -151,6 +182,7 @@ public class cardManager : MonoBehaviour {
           allCards.Add(newCard);
         }
         allTerms = convertCSV(parseContent(contentForAssign));
+        termsLoaded = true;
         unmasteredTerms = allTerms.ToList();
 
         totalMastery = unmasteredTerms.Count*requiredMastery;
@@ -158,6 +190,7 @@ public class cardManager : MonoBehaviour {
         currentState = GameState.ResetCards;
         break;
       case GameState.ResetCards:
+        loadingBar.SetActive(false);
         masteryMeter.value = getMastery();
         Timer1.s_instance.Reset(15f);
         foreach(Card currCard in allCards){
@@ -405,28 +438,11 @@ public class cardManager : MonoBehaviour {
           }
           string imgPathToUse =  direct + "/" + thisLine[1].ToLower() + ".png";
           imgPathToUse = imgPathToUse.Replace("\"", "");
-          /*
-          DirectoryInfo persistent = new DirectoryInfo(direct);
-          FileInfo[] fileInfo = persistent.GetFiles("*",SearchOption.AllDirectories);
-          foreach(FileInfo file in fileInfo){
-            print(file);
-            print(imgPathToUse);
-          }
-          */
-          //string imgPathToUse = Path.Combine(direct.FullName, thisLine[1] + ".png");
-          if(File.Exists(imgPathToUse)){
-            byte[] currImg = File.ReadAllBytes(imgPathToUse);
-            Texture2D newImg = new Texture2D(2,2);
-            newImg.LoadImage(currImg);
-            termToAdd = new Term(thisLine[0], thisLine[1], newImg);
-          }else{
-            termToAdd = new Term(thisLine[0], thisLine[1]);//, newImg);
-          }
+          termToAdd = new Term(thisLine[0], thisLine[1], imgPathToUse);//, newImg);
         }else{
           termToAdd = new Term(thisLine[0], thisLine[1]);
         }
         termToAdd.mastery = ((int)Mathf.Ceil(((float)(currMastery/100f))*requiredMastery));
-        print(termToAdd.mastery);
         listToReturn.Add(termToAdd);
       }
     }
