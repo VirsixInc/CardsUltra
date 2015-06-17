@@ -18,7 +18,7 @@ public class GUIManager : MonoBehaviour {
 	public List<Sprite> listOfMenuImages;
 	public Text errorText;
 
-	public GameObject LoginPanel, MainMenuPanel;
+	public GameObject loginPanel, MainMenuPanel;
 
 
 	void Start () {
@@ -85,13 +85,13 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	public void SlideFromLoginToMain() {
-		LoginPanel.GetComponent<TransitionCard> ().StartLerpToOffScreen ();
+		loginPanel.GetComponent<TransitionCard> ().StartLerpToOffScreen ();
 		MainMenuPanel.GetComponent<TransitionCard> ().StartLerpToOnScreen ();
 		ScrollingMenu.s_instance.Initialize ();
 	}
 
 	public void SlideFromMainToLogin() {
-		LoginPanel.GetComponent<TransitionCard> ().StartLerpToOnScreen ();
+		loginPanel.GetComponent<TransitionCard> ().StartLerpToOnScreen ();
 		MainMenuPanel.GetComponent<TransitionCard> ().StartLerpToOffScreen ();
 	}
 	
