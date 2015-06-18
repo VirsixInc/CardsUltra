@@ -180,7 +180,7 @@ public class AppManager : MonoBehaviour {
       string hasImages = (string)(allAssignments[i].GetField("hasImages").ToString());
       string directoryPath = Application.persistentDataPath + "/images/";
       string imgDirPath = directoryPath + thisAssign.Replace("\"", "") + "-images";
-      if(hasImages == "true" && !Directory.Exists(imgDirPath)){
+      if(!Directory.Exists(imgDirPath)){
         if(!Directory.Exists(directoryPath)){
           Directory.CreateDirectory(directoryPath);
         }
