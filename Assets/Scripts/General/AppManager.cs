@@ -48,8 +48,8 @@ public class Assignment {
 
 public class AppManager : MonoBehaviour {
 
-  public bool localDebug, pabloDebug;
-	private AppState currentAppState;
+  public bool localDebug, pabloDebug, userDebug;
+	public AppState currentAppState;
 	public static AppManager s_instance;
   public List<Assignment> currentAssignments = new List<Assignment>();
 	public List<GameObject> userAssignments;
@@ -77,6 +77,8 @@ public class AppManager : MonoBehaviour {
 			}else{
         serverURL = "http://localhost:8080/client";
 			}
+    }
+    if(userDebug){
       username = "AGutierrez";
       password = "Password1357";
       userExists = true;

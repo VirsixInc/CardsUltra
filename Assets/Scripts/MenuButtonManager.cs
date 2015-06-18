@@ -13,7 +13,6 @@ public class MenuButtonManager : MonoBehaviour {
 	
 	public void EnableMenu() {
 		ActivateMenuButtons ();
-		print ("enable");
 	}
 	
 	public void ActivateMenuButtons () {
