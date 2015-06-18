@@ -131,20 +131,23 @@ public class GUIManager : MonoBehaviour {
 	}
 	
 	public void DeActivateMenuButtons () {
-		GameObject.FindGameObjectWithTag("MainCamera").GetComponent<GUIManager>().UnBlur();
+		UnBlur ();
 		if (GameObject.FindGameObjectWithTag ("scrollingMenu") != null) {
 			GameObject.FindGameObjectWithTag ("scrollingMenu").GetComponent<ScrollingMenu>().isInMenu = false;
 		}
-		if (faders != null) {
-			foreach (Fader f in faders) {
-				f.StartFadeOut (0.2f);
-			}
-		}
-		if (animationSlides != null) {
-			foreach (AnimationSlide a in animationSlides) {
-				a.Slide ();
-			}
-		}
+		bottomMenuButton.SetActive (false);
+		topMenuButton.SetActive (false);
+//		if (faders != null) {
+//			foreach (Fader f in faders) {
+//				f.StartFadeOut (0.2f);
+//			}
+//		}
+//		if (animationSlides != null) {
+//			foreach (AnimationSlide a in animationSlides) {
+//				print ("A SLIDE");
+//				a.Slide ();
+//			}
+//		}
 	}
 
 	public void LoadLevel() {
@@ -204,7 +207,17 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	public void BlurMenuButton2 () {
-
+		switch (AppManager.s_instance.currentAppState) {
+		case AppState.Playing :
+			
+			;
+			break;
+		case AppState.AssignmentMenu :
+			AppManager.s_instance.ClickHandler(thisScrollingMenu.currentLevelToBePlayed);
+			;
+			break;
+		}
+		DeActivateMenuButtons ();
 	}
 	
 
