@@ -176,16 +176,11 @@ public class cardManager : MonoBehaviour {
           allCards.Add(newCard);
         }
         allTerms = convertCSV(parseContent(contentForAssign));
-        //unmasteredTerms = allTerms.ToList();
 
         totalMastery = allTerms.Count*requiredMastery;
-//        baseImagePath = baseImagePath + manager.currentAssignments[manager.currIndex];
         currentState = GameState.ImageLoad;
         break;
       case GameState.ImageLoad:
-        loadSlider.value = (float)(currentImageIt)/(float)(allTerms.Count);
-        print(loadSlider.value);
-        print(currentImageIt);
         if(loadDelay + timeSinceLoad < Time.time){
           if(currentImageIt < allTerms.Count){
             if(!allTerms[currentImageIt].imageLoaded){
@@ -198,6 +193,8 @@ public class cardManager : MonoBehaviour {
             unmasteredTerms = allTerms.ToList();
             currentState = GameState.ResetCards;
           }
+        }else{
+          loadSlider.value = ((float)(Mathf.InverseLerp(timeSinceLoad,timeSinceLoad+loadDelay,Time.time)*1+(currentImageIt))/(float)(allTerms.Count));
         }
         break;
       case GameState.ResetCards:
