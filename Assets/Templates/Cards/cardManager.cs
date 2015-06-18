@@ -37,13 +37,31 @@ public class Term{
   public int mastery = 0;
   public bool mastered = false;
   public string imgPath;
-  public Term(string newQuestion, string newAnswer, Texture2D imgToUse = null){
-    if(imgToUse != null){
-      imgAssoc = Sprite.Create(imgToUse,new Rect(0,0,imgToUse.width, imgToUse.height),new Vector2(0.5f, 0.5f));//Resources.Load<Sprite>(filePathForImg);
+  public bool imageLoaded;
+  public Term(string newQuestion, string newAnswer, string imgPathToUse = null){
+    if(imgPathToUse != null){
+      imgPath = imgPathToUse;
     }
     question = newQuestion;
     answer = newAnswer;
+
   }
+  public void loadImage(string path){
+    byte[] currImg = File.ReadAllBytes(path);
+    Texture2D newImg = new Texture2D(2,2);
+    newImg.LoadImage(currImg);
+    imgAssoc = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
+    imageLoaded = true;
+  }
+  /*
+  public Sprite loadImg(string imgPath){
+    byte[] currImg = File.ReadAllBytes(imgPath);
+    Texture2D newImg = new Texture2D(2,2);
+    newImg.LoadImage(currImg);
+    Sprite imgToReturn = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
+    return imgToReturn;
+  }
+  */
   /*
   public IEnumerator loadImg(){
     WWW imgToPull = new WWW(imgPath);
@@ -66,6 +84,7 @@ public class cardManager : MonoBehaviour {
     Idle,
     ConfigGame,
     ConfigCards,
+    ImageLoad,
     PlayingCards,
     ResetCards,
     ConfigKeyboard,
@@ -103,12 +122,16 @@ public class cardManager : MonoBehaviour {
   private int requiredMastery = 4;
   private int currentPhase;
   private int levenThresh = 3;
+  private int currentImageIt;
 
   private string[] contentForAssign;
   public string baseImagePath;
 	public GameObject winningSlide;
 	
   public Slider masteryMeter;
+  public Slider loadSlider;
+  public float loadDelay = 0.5f;
+  public float timeSinceLoad;
 
 	bool soundHasPlayed = false;
   bool readyToConfigure;
@@ -116,7 +139,8 @@ public class cardManager : MonoBehaviour {
   private Vector3 questDispStart, questDispEnd;
 
   public AppManager manager;
-	
+  public GameObject loadingBar;
+
   public void configureGame(Assignment assignToUse){
     useImages = assignToUse.hasImages;
     if(useImages){
@@ -126,6 +150,7 @@ public class cardManager : MonoBehaviour {
     currMastery = AppManager.s_instance.pullAssignMastery(assignToUse);
     readyToConfigure = true;
   }
+
 	void Update () {
     switch(currentState){
       case GameState.Idle:
@@ -151,13 +176,32 @@ public class cardManager : MonoBehaviour {
           allCards.Add(newCard);
         }
         allTerms = convertCSV(parseContent(contentForAssign));
-        unmasteredTerms = allTerms.ToList();
+        //unmasteredTerms = allTerms.ToList();
 
-        totalMastery = unmasteredTerms.Count*requiredMastery;
+        totalMastery = allTerms.Count*requiredMastery;
 //        baseImagePath = baseImagePath + manager.currentAssignments[manager.currIndex];
-        currentState = GameState.ResetCards;
+        currentState = GameState.ImageLoad;
+        break;
+      case GameState.ImageLoad:
+        loadSlider.value = (float)(currentImageIt)/(float)(allTerms.Count);
+        print(loadSlider.value);
+        print(currentImageIt);
+        if(loadDelay + timeSinceLoad < Time.time){
+          if(currentImageIt < allTerms.Count){
+            if(!allTerms[currentImageIt].imageLoaded){
+              allTerms[currentImageIt].loadImage(allTerms[currentImageIt].imgPath);
+              timeSinceLoad = Time.time;
+            }else{
+              currentImageIt++;
+            }
+          }else{
+            unmasteredTerms = allTerms.ToList();
+            currentState = GameState.ResetCards;
+          }
+        }
         break;
       case GameState.ResetCards:
+        loadingBar.SetActive(false);
         masteryMeter.value = getMastery();
         Timer1.s_instance.Reset(15f);
         foreach(Card currCard in allCards){
@@ -405,28 +449,11 @@ public class cardManager : MonoBehaviour {
           }
           string imgPathToUse =  direct + "/" + thisLine[1].ToLower() + ".png";
           imgPathToUse = imgPathToUse.Replace("\"", "");
-          /*
-          DirectoryInfo persistent = new DirectoryInfo(direct);
-          FileInfo[] fileInfo = persistent.GetFiles("*",SearchOption.AllDirectories);
-          foreach(FileInfo file in fileInfo){
-            print(file);
-            print(imgPathToUse);
-          }
-          */
-          //string imgPathToUse = Path.Combine(direct.FullName, thisLine[1] + ".png");
-          if(File.Exists(imgPathToUse)){
-            byte[] currImg = File.ReadAllBytes(imgPathToUse);
-            Texture2D newImg = new Texture2D(2,2);
-            newImg.LoadImage(currImg);
-            termToAdd = new Term(thisLine[0], thisLine[1], newImg);
-          }else{
-            termToAdd = new Term(thisLine[0], thisLine[1]);//, newImg);
-          }
+          termToAdd = new Term(thisLine[0], thisLine[1], imgPathToUse);//, newImg);
         }else{
           termToAdd = new Term(thisLine[0], thisLine[1]);
         }
         termToAdd.mastery = ((int)Mathf.Ceil(((float)(currMastery/100f))*requiredMastery));
-        print(termToAdd.mastery);
         listToReturn.Add(termToAdd);
       }
     }
