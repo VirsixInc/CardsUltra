@@ -5,7 +5,6 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading;
 
 public class Card{
 
@@ -38,6 +37,7 @@ public class Term{
   public int mastery = 0;
   public bool mastered = false;
   public string imgPath;
+  public bool imageLoaded;
   public Term(string newQuestion, string newAnswer, string imgPathToUse = null){
     if(imgPathToUse != null){
       imgPath = imgPathToUse;
@@ -45,6 +45,13 @@ public class Term{
     question = newQuestion;
     answer = newAnswer;
 
+  }
+  public void loadImage(string path){
+    byte[] currImg = File.ReadAllBytes(path);
+    Texture2D newImg = new Texture2D(2,2);
+    newImg.LoadImage(currImg);
+    imgAssoc = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
+    imageLoaded = true;
   }
   /*
   public Sprite loadImg(string imgPath){
@@ -77,6 +84,7 @@ public class cardManager : MonoBehaviour {
     Idle,
     ConfigGame,
     ConfigCards,
+    ImageLoad,
     PlayingCards,
     ResetCards,
     ConfigKeyboard,
@@ -96,7 +104,6 @@ public class cardManager : MonoBehaviour {
   public List<Card> allCards = new List<Card>();
   public List<Term> allTerms = new List<Term>();
   public List<Term> unmasteredTerms = new List<Term>();
-  public List<Thread> loadThreads = new List<Thread>();
   
   private string direct;
 
@@ -115,12 +122,16 @@ public class cardManager : MonoBehaviour {
   private int requiredMastery = 4;
   private int currentPhase;
   private int levenThresh = 3;
+  private int currentImageIt;
 
   private string[] contentForAssign;
   public string baseImagePath;
 	public GameObject winningSlide;
 	
   public Slider masteryMeter;
+  public Slider loadSlider;
+  public float loadDelay = 0.5f;
+  public float timeSinceLoad;
 
 	bool soundHasPlayed = false;
   bool readyToConfigure;
@@ -129,21 +140,6 @@ public class cardManager : MonoBehaviour {
 
   public AppManager manager;
   public GameObject loadingBar;
-  Thread imgLoadThread;
-
-  bool termsLoaded;
-
-  void loadImages(){
-    if(termsLoaded){
-      for(int i =0;i<allTerms.Count;i++){
-        byte[] currImg = File.ReadAllBytes(allTerms[i].imgPath);
-        Texture2D newImg = new Texture2D(2,2);
-        newImg.LoadImage(currImg);
-        allTerms[i].imgAssoc = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
-        print(i);
-      }
-    }
-  }
 
   public void configureGame(Assignment assignToUse){
     useImages = assignToUse.hasImages;
@@ -152,8 +148,6 @@ public class cardManager : MonoBehaviour {
     }
     contentForAssign = assignToUse.content;
     currMastery = AppManager.s_instance.pullAssignMastery(assignToUse);
-    imgLoadThread = new Thread(loadImages); 
-    imgLoadThread.Start();
     readyToConfigure = true;
   }
 
@@ -182,12 +176,28 @@ public class cardManager : MonoBehaviour {
           allCards.Add(newCard);
         }
         allTerms = convertCSV(parseContent(contentForAssign));
-        termsLoaded = true;
-        unmasteredTerms = allTerms.ToList();
+        //unmasteredTerms = allTerms.ToList();
 
-        totalMastery = unmasteredTerms.Count*requiredMastery;
+        totalMastery = allTerms.Count*requiredMastery;
 //        baseImagePath = baseImagePath + manager.currentAssignments[manager.currIndex];
-        currentState = GameState.ResetCards;
+        currentState = GameState.ImageLoad;
+        break;
+      case GameState.ImageLoad:
+        loadSlider.value = currentImageIt/allTerms.Count;
+        print(currentImageIt);
+        if(loadDelay + timeSinceLoad < Time.time){
+          if(currentImageIt < allTerms.Count){
+            if(!allTerms[currentImageIt].imageLoaded){
+              allTerms[currentImageIt].loadImage(allTerms[currentImageIt].imgPath);
+              timeSinceLoad = Time.time;
+            }else{
+              currentImageIt++;
+            }
+          }else{
+            unmasteredTerms = allTerms.ToList();
+            currentState = GameState.ResetCards;
+          }
+        }
         break;
       case GameState.ResetCards:
         loadingBar.SetActive(false);
