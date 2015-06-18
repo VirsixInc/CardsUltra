@@ -49,7 +49,7 @@ public class Assignment {
 public class AppManager : MonoBehaviour {
 
   public bool localDebug, pabloDebug;
-	private AppState currentAppState;
+	public AppState currentAppState;
 	public static AppManager s_instance;
   public List<Assignment> currentAssignments = new List<Assignment>();
 	public List<GameObject> userAssignments;

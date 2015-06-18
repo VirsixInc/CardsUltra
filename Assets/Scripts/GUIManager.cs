@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityStandardAssets.ImageEffects;
 
 
 public class GUIManager : MonoBehaviour {
@@ -17,9 +18,22 @@ public class GUIManager : MonoBehaviour {
 	public ScrollingMenu thisScrollingMenu;
 	public List<Sprite> listOfMenuImages;
 	public Text errorText;
+	public Image blackBackground;
+	public GameObject topMenuButton, bottomMenuButton;
 
 	public GameObject loginPanel, MainMenuPanel;
 
+
+	//MenuButton fields
+	Fader[] faders;
+	AnimationSlide[] animationSlides;
+
+	void Awake(){
+		DontDestroyOnLoad(transform.gameObject);
+		s_instance = this;
+		faders = GetComponentsInChildren<Fader> ();
+		animationSlides = GetComponentsInChildren<AnimationSlide> ();
+	}
 
 	void Start () {
 		errorText = GameObject.Find ("UserMessage").GetComponent<Text>();
@@ -27,10 +41,6 @@ public class GUIManager : MonoBehaviour {
 		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
 		screenHeight = myCanvas.GetComponent <RectTransform> ().rect.height;
 //		assignmentCardHeight = assignmentGUIPrefab.GetComponent<RectTransform> ().rect.width;
-	}
-	
-	void Awake () {
-		s_instance = this;
 	}
 
 	public void SetErrorText(string x) {
@@ -94,5 +104,109 @@ public class GUIManager : MonoBehaviour {
 		loginPanel.GetComponent<TransitionCard> ().StartLerpToOnScreen ();
 		MainMenuPanel.GetComponent<TransitionCard> ().StartLerpToOffScreen ();
 	}
+
+	//------------------------------ MENUBUTTON MANAGER ------------------------------//
+
+
 	
+	public void EnableMenu() {
+		ActivateMenuButtons ();
+		SetBlur ();
+	}
+	
+	public void ActivateMenuButtons () {
+		if (GameObject.FindGameObjectWithTag ("scrollingMenu") != null) {
+			GameObject.FindGameObjectWithTag ("scrollingMenu").GetComponent<ScrollingMenu>().isInMenu = true;
+		}
+		if (faders != null) {
+			foreach (Fader f in faders) {
+				f.StartFadeIn ();
+			}
+		}
+		if (animationSlides != null) {
+			foreach (AnimationSlide a in animationSlides) {
+				a.Reset ();
+			}
+		}
+	}
+	
+	public void DeActivateMenuButtons () {
+		GameObject.FindGameObjectWithTag("MainCamera").GetComponent<GUIManager>().UnBlur();
+		if (GameObject.FindGameObjectWithTag ("scrollingMenu") != null) {
+			GameObject.FindGameObjectWithTag ("scrollingMenu").GetComponent<ScrollingMenu>().isInMenu = false;
+		}
+		if (faders != null) {
+			foreach (Fader f in faders) {
+				f.StartFadeOut (0.2f);
+			}
+		}
+		if (animationSlides != null) {
+			foreach (AnimationSlide a in animationSlides) {
+				a.Slide ();
+			}
+		}
+	}
+
+	public void LoadLevel() {
+		StartCoroutine ("FadeOutBeforeLoad");
+	}
+
+	IEnumerator FadeOutBeforeLoad () {
+		
+		yield return new WaitForSeconds (3f);
+		AppManager.s_instance.ClickHandler(GameObject.FindGameObjectWithTag("scrollingMenu").GetComponent<ScrollingMenu>().currentLevelToBePlayed);
+	}
+
+	//------------------------------ BLUR & IN GAME MENU ------------------------------//
+
+	public void SetBlur () {
+		topMenuButton.SetActive (true);
+		bottomMenuButton.SetActive (true);
+		Camera.main.gameObject.GetComponent<Blur>().enabled = true;
+		StartCoroutine ("BlurIn");
+	}
+	public void UnBlur() {
+		StartCoroutine ("BlurOut");
+		
+	}
+	
+	IEnumerator BlurIn () {
+		while (Camera.main.GetComponent<Blur> ().iterations < 12) {
+			Camera.main.GetComponent<Blur> ().iterations += 1;
+			yield return new WaitForSeconds(0.03f);
+		}
+	}
+	
+	IEnumerator BlurOut () {
+		while (Camera.main.GetComponent<Blur> ().iterations > 0) {
+			Camera.main.GetComponent<Blur> ().iterations -= 1;
+			yield return new WaitForSeconds(0.03f);
+		}
+		Camera.main.GetComponent<Blur>().enabled = false;
+		topMenuButton.SetActive (false);
+		bottomMenuButton.SetActive (false);
+		
+	}
+
+	//------------------------------ Blur Menu Button Functionality ------------------------------//
+
+	public void BlurMenuButton1 () {
+		switch (AppManager.s_instance.currentAppState) {
+		case AppState.Playing :
+
+			;
+			break;
+		case AppState.AssignmentMenu :
+
+			;
+			break;
+		}
+	}
+
+	public void BlurMenuButton2 () {
+
+	}
+	
+
+
 }

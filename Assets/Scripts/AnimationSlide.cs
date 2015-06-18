@@ -12,35 +12,32 @@ public class AnimationSlide : MonoBehaviour {
 	Vector3 startPos, endPos, moveDirection;
 	bool isSliding = false;
 
-	void Awake () {
+	void Start () {
+		startPos = transform.localPosition;
+		endPos = transform.localPosition + moveDirection * moveDistance;
 		switch (thisSlideDirection) {
 		case SlideDirection.Down :
-			moveDirection = -transform.up;
+			moveDirection = new Vector3(0,-1,0);
 			break;
-
+			
 		case SlideDirection.Up :
-			moveDirection = transform.up;
+			moveDirection = new Vector3(0,1,0);
 			break;
-
+			
 		case SlideDirection.Left :
-			moveDirection = -transform.right;
+			moveDirection = new Vector3(1,0,0);
 			break;
-
+			
 		case SlideDirection.Right :
-			moveDirection = transform.right;
+			moveDirection = new Vector3(-1,0,0);
 			break;
 		}
-		endPos = transform.position + moveDirection * moveDistance;
-	}
-
-	void Start () {
-		startPos = transform.position;
 
 	}
 
 	public void Reset() {
 		isSliding = false;
-		transform.position = startPos;
+		transform.localPosition = startPos;
 	}
 
 	public void Slide() {
@@ -54,7 +51,7 @@ public class AnimationSlide : MonoBehaviour {
 			float fracJourney = timePassed / fadeTime;
 			//increment timer once per frame
 
-			transform.position = Vector3.Lerp (startPos, endPos, fracJourney);
+			transform.localPosition = Vector3.Lerp (startPos, endPos, fracJourney);
 			if (fracJourney >= 1) {
 				isSliding = false;
 			}
