@@ -183,7 +183,8 @@ public class cardManager : MonoBehaviour {
         currentState = GameState.ImageLoad;
         break;
       case GameState.ImageLoad:
-        loadSlider.value = currentImageIt/allTerms.Count;
+        loadSlider.value = (float)(currentImageIt)/(float)(allTerms.Count);
+        print(loadSlider.value);
         print(currentImageIt);
         if(loadDelay + timeSinceLoad < Time.time){
           if(currentImageIt < allTerms.Count){
