@@ -20,9 +20,11 @@ public class GUIManager : MonoBehaviour {
 	public Text errorText;
 	public Image blackBackground;
 	public GameObject topMenuButton, bottomMenuButton;
-
+	public Text topMenuButtonText, bottomMenuButtonText;
 	public GameObject loginPanel, MainMenuPanel;
+	public Image fadeToBlackImage;
 
+	float fadeoutTimer;
 
 	//MenuButton fields
 	Fader[] faders;
@@ -191,8 +193,7 @@ public class GUIManager : MonoBehaviour {
 			yield return new WaitForSeconds(0.03f);
 		}
 		Camera.main.GetComponent<Blur>().enabled = false;
-		topMenuButton.SetActive (false);
-		bottomMenuButton.SetActive (false);
+
 		
 	}
 
@@ -220,22 +221,33 @@ public class GUIManager : MonoBehaviour {
 			;
 			break;
 		case AppState.AssignmentMenu :
-			AppManager.s_instance.ClickHandler(thisScrollingMenu.currentLevelToBePlayed);
-			;
+			fadeToBlackImage.gameObject.SetActive(true);
+			fadeToBlackImage.GetComponent<Fader>().StartFadeIn	();
+			StartCoroutine("DelayedCallClickHandler");
 			break;
 		}
 		DeActivateMenuButtons ();
 	}
 
+	IEnumerator DelayedCallClickHandler() {
+		yield return new WaitForSeconds (2f);
+		AppManager.s_instance.ClickHandler(thisScrollingMenu.currentLevelToBePlayed);
+
+	}
+
 	public void SetBlurMenuButtons() {
 		switch (AppManager.s_instance.currentAppState) {
 		case AppState.Playing :
-			topMenuButton.GetComponentInChildren<Text>().text = "Resume";
-			bottomMenuButton.GetComponentInChildren<Text>().text = "Main Menu";
+			fadeToBlackImage.gameObject.SetActive(false);
+			if(topMenuButton.activeSelf && bottomMenuButton.activeSelf){
+				topMenuButtonText.GetComponentInChildren<Text>().text = "Resume";
+				bottomMenuButtonText.GetComponentInChildren<Text>().text = "Main Menu";
+			}
 			break;
 		case AppState.AssignmentMenu :
-			topMenuButton.GetComponentInChildren<Text>().text = "Back to Menu";
-			bottomMenuButton.GetComponentInChildren<Text>().text = "Play";
+			fadeToBlackImage.gameObject.SetActive(false);
+			topMenuButtonText.GetComponentInChildren<Text>().text = "Back to Menu";
+			bottomMenuButtonText.GetComponentInChildren<Text>().text = "Play";
 			break;
 		}
 	}
@@ -245,8 +257,6 @@ public class GUIManager : MonoBehaviour {
 		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
 		AppManager.s_instance.saveAssignmentMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex], masteryOutput);
 		StartCoroutine(AppManager.s_instance.uploadAssignTime(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].fullAssignTitle, (int)(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].timeAtLoad)));
-		//		int masteryOutput = Mathf.CeilToInt (mastery.value * 100);
-		//		AppManager.s_instance.saveAssignmentMastery (AppManager.s_instance.currentAssignments [AppManager.s_instance.currIndex], masteryOutput);
 		Application.LoadLevel ("AssignmentMenu");
 	}
 
