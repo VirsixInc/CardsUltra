@@ -4,14 +4,8 @@ using UnityEngine.UI;
 
 public class Quitbutton : MonoBehaviour {
 	//Set in inspector
-	public Slider mastery;
+	public void CallGUIManager () {
+		GUIManager.s_instance.EnableMenu ();
+	}
 
-	public void SaveAndQuit () {
-		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
-		AppManager.s_instance.saveAssignmentMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex], masteryOutput);
-		StartCoroutine(AppManager.s_instance.uploadAssignTime(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].fullAssignTitle, (int)(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].timeAtLoad)));
-		//		int masteryOutput = Mathf.CeilToInt (mastery.value * 100);
-		//		AppManager.s_instance.saveAssignmentMastery (AppManager.s_instance.currentAssignments [AppManager.s_instance.currIndex], masteryOutput);
-		Application.LoadLevel ("AssignmentMenu");
-}
 }
