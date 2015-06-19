@@ -48,7 +48,7 @@ public class Term{
   }
   public void loadImage(string path){
     byte[] currImg = File.ReadAllBytes(path);
-    Texture2D newImg = new Texture2D(2,2);
+    Texture2D newImg = new Texture2D(256,256);
     newImg.LoadImage(currImg);
     imgAssoc = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
     imageLoaded = true;
@@ -206,7 +206,7 @@ public class cardManager : MonoBehaviour {
         }
         correctTermIndex = Random.Range(0,unmasteredTerms.Count);
         currentDifficulty = Mathf.Clamp(currentDifficulty, unmasteredTerms[correctTermIndex].mastery,  3); 
-        amtOfCards = (int)(3*currentDifficulty);
+        amtOfCards = (int)(4.5*currentDifficulty);
         List<int> uniqueIndexes = generateUniqueRandomNum(amtOfCards, unmasteredTerms.Count, correctTermIndex);
         for(int i = 0; i<uniqueIndexes.Count;i++){
           if(!useImages){
