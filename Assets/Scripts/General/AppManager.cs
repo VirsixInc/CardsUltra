@@ -124,7 +124,8 @@ public class AppManager : MonoBehaviour {
 			GUIManager.s_instance.SlideFromLoginToMain();
 
         currentAppState = AppState.AssignmentMenu;
-        break;
+			GUIManager.s_instance.SetBlurMenuButtons();
+			break;
       case AppState.AssignmentMenu :
         if(clicked){
           Application.LoadLevel(currentAssignments[currIndex].type);
@@ -139,6 +140,7 @@ public class AppManager : MonoBehaviour {
           newMgr.SendMessage("configureGame", currentAssignments[currIndex]);
         }
         currentAppState = AppState.Playing;
+			GUIManager.s_instance.SetBlurMenuButtons();
         break;
       case AppState.Playing:
         if(Application.loadedLevelName == "AssignmentMenu"){

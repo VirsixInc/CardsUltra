@@ -120,6 +120,10 @@ public class GUIManager : MonoBehaviour {
 		}
 		if (faders != null) {
 			foreach (Fader f in faders) {
+				if (f.gameObject.GetComponent<Image>() != null)
+					f.gameObject.GetComponent<Image>().color = new Color(1f,1f,1f,0f);
+				if (f.gameObject.GetComponent<Text>() != null)
+					f.gameObject.GetComponent<Text>().color = new Color(1f,1f,1f,0f);
 				f.StartFadeIn ();
 			}
 		}
@@ -163,10 +167,11 @@ public class GUIManager : MonoBehaviour {
 	//------------------------------ BLUR & IN GAME MENU ------------------------------//
 
 	public void SetBlur () {
-		topMenuButton.SetActive (true);
-		bottomMenuButton.SetActive (true);
+
 		Camera.main.gameObject.GetComponent<Blur>().enabled = true;
 		StartCoroutine ("BlurIn");
+		topMenuButton.SetActive (true);
+		bottomMenuButton.SetActive (true);
 	}
 	public void UnBlur() {
 		StartCoroutine ("BlurOut");
@@ -204,12 +209,14 @@ public class GUIManager : MonoBehaviour {
 			;
 			break;
 		}
+		DeActivateMenuButtons ();
+
 	}
 
 	public void BlurMenuButton2 () {
 		switch (AppManager.s_instance.currentAppState) {
 		case AppState.Playing :
-			
+			SaveAndQuit();
 			;
 			break;
 		case AppState.AssignmentMenu :
@@ -223,15 +230,24 @@ public class GUIManager : MonoBehaviour {
 	public void SetBlurMenuButtons() {
 		switch (AppManager.s_instance.currentAppState) {
 		case AppState.Playing :
-			
-			;
+			topMenuButton.GetComponentInChildren<Text>().text = "Resume";
+			bottomMenuButton.GetComponentInChildren<Text>().text = "Main Menu";
 			break;
 		case AppState.AssignmentMenu :
-			 
-			;
+			topMenuButton.GetComponentInChildren<Text>().text = "Back to Menu";
+			bottomMenuButton.GetComponentInChildren<Text>().text = "Play";
 			break;
 		}
 	}
 
+	public void SaveAndQuit () {
+		Slider mastery = GameObject.FindGameObjectWithTag ("mastery").GetComponent<Slider>();
+		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
+		AppManager.s_instance.saveAssignmentMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex], masteryOutput);
+		StartCoroutine(AppManager.s_instance.uploadAssignTime(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].fullAssignTitle, (int)(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].timeAtLoad)));
+		//		int masteryOutput = Mathf.CeilToInt (mastery.value * 100);
+		//		AppManager.s_instance.saveAssignmentMastery (AppManager.s_instance.currentAssignments [AppManager.s_instance.currIndex], masteryOutput);
+		Application.LoadLevel ("AssignmentMenu");
+	}
 
 }
