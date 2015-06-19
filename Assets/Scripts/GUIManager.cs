@@ -200,6 +200,7 @@ public class GUIManager : MonoBehaviour {
 	//------------------------------ Blur Menu Button Functionality ------------------------------//
 
 	public void BlurMenuButton1 () {
+		print ("BUTTON CLICKED");
 		switch (AppManager.s_instance.currentAppState) {
 		case AppState.Playing :
 
@@ -218,7 +219,6 @@ public class GUIManager : MonoBehaviour {
 		switch (AppManager.s_instance.currentAppState) {
 		case AppState.Playing :
 			SaveAndQuit();
-			;
 			break;
 		case AppState.AssignmentMenu :
 			fadeToBlackImage.gameObject.SetActive(true);
@@ -239,10 +239,8 @@ public class GUIManager : MonoBehaviour {
 		switch (AppManager.s_instance.currentAppState) {
 		case AppState.Playing :
 			fadeToBlackImage.gameObject.SetActive(false);
-			if(topMenuButton.activeSelf && bottomMenuButton.activeSelf){
-				topMenuButtonText.GetComponentInChildren<Text>().text = "Resume";
-				bottomMenuButtonText.GetComponentInChildren<Text>().text = "Main Menu";
-			}
+			topMenuButtonText.text = "Resume";
+			bottomMenuButtonText.text = "Main Menu";
 			break;
 		case AppState.AssignmentMenu :
 			fadeToBlackImage.gameObject.SetActive(false);

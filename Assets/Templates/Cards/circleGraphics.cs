@@ -6,14 +6,14 @@ public class circleGraphics : MonoBehaviour {
 
 
   public Color[] colors = new Color[2];
-  Image imgToUse;
+  RawImage imgToUse;
   int colIndex;
   bool newCol;
   public float speed;
   private Color startColor;
 	// Use this for initialization
 	void Start () {
-    imgToUse = GetComponent<Image>();
+    imgToUse = GetComponent<RawImage>();
     startColor = imgToUse.color;
 	}
 	
