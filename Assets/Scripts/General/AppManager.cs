@@ -124,7 +124,6 @@ public class AppManager : MonoBehaviour {
 			GUIManager.s_instance.SlideFromLoginToMain();
 
         currentAppState = AppState.AssignmentMenu;
-			GUIManager.s_instance.SetBlurMenuButtons();
 			break;
       case AppState.AssignmentMenu :
         if(clicked){
@@ -145,6 +144,8 @@ public class AppManager : MonoBehaviour {
       case AppState.Playing:
         if(Application.loadedLevelName == "Login"){
           currentAppState = AppState.MenuConfig;
+			GUIManager.s_instance.SetBlurMenuButtons();
+
         }
         break;
     }

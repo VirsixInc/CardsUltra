@@ -31,8 +31,15 @@ public class GUIManager : MonoBehaviour {
 	AnimationSlide[] animationSlides;
 
 	void Awake(){
+		if (s_instance == null) {
+			s_instance = this;
+		} else {
+			if (s_instance!=this) {
+				Destroy(gameObject);
+			}
+		}
+
 		DontDestroyOnLoad(transform.gameObject);
-		s_instance = this;
 		faders = GetComponentsInChildren<Fader> ();
 		animationSlides = GetComponentsInChildren<AnimationSlide> ();
 	}
@@ -240,7 +247,9 @@ public class GUIManager : MonoBehaviour {
 			topMenuButtonText.text = "Resume";
 			bottomMenuButtonText.text = "Main Menu";
 			break;
-		case AppState.AssignmentMenu :
+		case AppState.MenuConfig :
+			print ("called menu config");
+
 			fadeToBlackImage.gameObject.SetActive(false);
 			topMenuButtonText.GetComponentInChildren<Text>().text = "Back to Menu";
 			bottomMenuButtonText.GetComponentInChildren<Text>().text = "Play";
