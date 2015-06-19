@@ -143,7 +143,7 @@ public class AppManager : MonoBehaviour {
 			GUIManager.s_instance.SetBlurMenuButtons();
         break;
       case AppState.Playing:
-        if(Application.loadedLevelName == "AssignmentMenu"){
+        if(Application.loadedLevelName == "Login"){
           currentAppState = AppState.MenuConfig;
         }
         break;

@@ -200,19 +200,7 @@ public class GUIManager : MonoBehaviour {
 	//------------------------------ Blur Menu Button Functionality ------------------------------//
 
 	public void BlurMenuButton1 () {
-		print ("BUTTON CLICKED");
-		switch (AppManager.s_instance.currentAppState) {
-		case AppState.Playing :
-
-			;
-			break;
-		case AppState.AssignmentMenu :
-
-			;
-			break;
-		}
 		DeActivateMenuButtons ();
-
 	}
 
 	public void BlurMenuButton2 () {
@@ -221,18 +209,28 @@ public class GUIManager : MonoBehaviour {
 			SaveAndQuit();
 			break;
 		case AppState.AssignmentMenu :
-			fadeToBlackImage.gameObject.SetActive(true);
-			fadeToBlackImage.GetComponent<Fader>().StartFadeIn	();
 			StartCoroutine("DelayedCallClickHandler");
 			break;
 		}
+		FadeOut();
 		DeActivateMenuButtons ();
 	}
 
 	IEnumerator DelayedCallClickHandler() {
 		yield return new WaitForSeconds (2f);
-		AppManager.s_instance.ClickHandler(thisScrollingMenu.currentLevelToBePlayed);
+		if (AppManager.s_instance.currentAppState == AppState.Playing) {
+			Application.LoadLevel ("Login");
 
+		} else if (AppManager.s_instance.currentAppState == AppState.AssignmentMenu) {
+			AppManager.s_instance.ClickHandler(thisScrollingMenu.currentLevelToBePlayed);
+		}
+
+
+	}
+
+	void FadeOut () {
+		fadeToBlackImage.gameObject.SetActive(true);
+		fadeToBlackImage.GetComponent<Fader>().StartFadeIn	();
 	}
 
 	public void SetBlurMenuButtons() {
@@ -255,7 +253,7 @@ public class GUIManager : MonoBehaviour {
 		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
 		AppManager.s_instance.saveAssignmentMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex], masteryOutput);
 		StartCoroutine(AppManager.s_instance.uploadAssignTime(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].fullAssignTitle, (int)(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].timeAtLoad)));
-		Application.LoadLevel ("AssignmentMenu");
+		StartCoroutine ("DelayedCallClickHandler");
 	}
 
 }
