@@ -219,7 +219,19 @@ public class GUIManager : MonoBehaviour {
 		}
 		DeActivateMenuButtons ();
 	}
-	
+
+	public void SetBlurMenuButtons() {
+		switch (AppManager.s_instance.currentAppState) {
+		case AppState.Playing :
+			
+			;
+			break;
+		case AppState.AssignmentMenu :
+			 
+			;
+			break;
+		}
+	}
 
 
 }
