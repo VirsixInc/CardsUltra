@@ -49,7 +49,6 @@ public class GUIManager : MonoBehaviour {
 		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
 		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
 		screenHeight = myCanvas.GetComponent <RectTransform> ().rect.height;
-//		assignmentCardHeight = assignmentGUIPrefab.GetComponent<RectTransform> ().rect.width;
 	}
 
 	public void SetErrorText(string x) {
@@ -227,12 +226,9 @@ public class GUIManager : MonoBehaviour {
 		yield return new WaitForSeconds (2f);
 		if (AppManager.s_instance.currentAppState == AppState.Playing) {
 			Application.LoadLevel ("Login");
-
 		} else if (AppManager.s_instance.currentAppState == AppState.AssignmentMenu) {
 			AppManager.s_instance.ClickHandler(thisScrollingMenu.currentLevelToBePlayed);
 		}
-
-
 	}
 
 	void FadeOut () {

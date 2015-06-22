@@ -120,6 +120,7 @@ public class AppManager : MonoBehaviour {
         currentAppState = AppState.MenuConfig;
         break;
       case AppState.MenuConfig:
+			print (currentAssignments.Count);
         GUIManager.s_instance.LoadAllAssignments(currentAssignments);
 			GUIManager.s_instance.SlideFromLoginToMain();
 
