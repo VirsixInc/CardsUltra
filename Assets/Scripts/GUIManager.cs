@@ -45,7 +45,6 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	void Start () {
-		errorText = GameObject.Find ("UserMessage").GetComponent<Text>();
 		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
 		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
 		screenHeight = myCanvas.GetComponent <RectTransform> ().rect.height;
