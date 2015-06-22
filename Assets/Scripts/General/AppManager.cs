@@ -120,10 +120,11 @@ public class AppManager : MonoBehaviour {
         currentAppState = AppState.MenuConfig;
         break;
       case AppState.MenuConfig:
-			print (currentAssignments.Count);
         GUIManager.s_instance.LoadAllAssignments(currentAssignments);
-			GUIManager.s_instance.SlideFromLoginToMain();
-
+        GUIManager.s_instance.SlideFromLoginToMain();
+        if(gameObject.name == "mgr"){
+          gameObject.name = "AppManager";
+        }
         currentAppState = AppState.AssignmentMenu;
 			break;
       case AppState.AssignmentMenu :
@@ -177,6 +178,12 @@ public class AppManager : MonoBehaviour {
         count++;
     }
     return count;
+  }
+
+  void OnLevelWasLoaded(int level){
+    if(gameObject.name == "mgr"){
+      Destroy(gameObject);
+    }
   }
 
 	IEnumerator DownloadListOfURLs(){
