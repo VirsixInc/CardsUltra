@@ -47,7 +47,10 @@ public class SequencingGame : MonoBehaviour {
 	Color start;
 	[SerializeField]
 	Color end;
-	
+
+	Canvas myCanvas;
+	float screenWidth;
+	float screenHeight;
 
 	void Update () 
 	{
@@ -114,7 +117,7 @@ public class SequencingGame : MonoBehaviour {
 				if (x.GetComponent<DraggableGUI> ().isSnapped) {
 					numberOfDraggablesSnapped++; //how many items are currently snapped +1
 				}
-				
+
 			}
 			if (numberOfDraggablesSnapped == draggables.Count)
 				submitButton.GetComponent<Image> ().color = new Color (1, 1, 1, 1); //show button 
@@ -129,11 +132,15 @@ public class SequencingGame : MonoBehaviour {
 	}
 
 	void ConfigureAssignment() {
+		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
+		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
+		screenHeight = myCanvas.GetComponent<RectTransform> ().rect.height;
+
 		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
-		scaleFactor = GameObject.Find ("GameCanvas").GetComponent<Canvas> ().scaleFactor;
+		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
 //		timer = GameObject.Find("TimerText").GetComponent<Timer1>();
 		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
-		parentCanvas = GameObject.Find ("GameCanvas");
+		parentCanvas = GameObject.Find ("Canvas");
 		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
 		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
 		Input.multiTouchEnabled = true;
@@ -198,14 +205,15 @@ public class SequencingGame : MonoBehaviour {
 	
 		for (int i = 1; i < currentSequence.Count; i++) { //NOTE I HAD TO DO A SECOND LOOP FOR LAYERING ISSUES
 			//calculate position of target based on i and sS.Count
-			Rect r = Camera.main.pixelRect;
-			float spaceBetweenTargets = r.width/7;
+
+			float spaceBetweenTargets = screenWidth/7;
 			float totalNumberOfTargets = currentSequence.Count+1;
-			float xPositionOfTarget =  r.width/2+(-totalNumberOfTargets * spaceBetweenTargets)/2 + i*spaceBetweenTargets + spaceBetweenTargets/2; //makes targets centered
+			float xPositionOfTarget =  (-totalNumberOfTargets * spaceBetweenTargets)/2 + i*spaceBetweenTargets + spaceBetweenTargets/2; //makes targets centered
+			print (xPositionOfTarget);
 			GameObject tempTarget = (GameObject)Instantiate(GUITargetPrefab);
 			tempTarget.transform.SetParent(targetHolder.transform, false);
 //			tempTarget.transform.localScale = new Vector3(1f,1f,1f);
-			tempTarget.transform.position = new Vector3(xPositionOfTarget,tempTarget.transform.position.y,0);
+			tempTarget.transform.localPosition = new Vector3(xPositionOfTarget,tempTarget.transform.localPosition.y,0);
 			tempTarget.GetComponent<TargetGUI>().correctAnswer = randomizedListSequences[currentRow].sequenceOfStrings[i];
 			targets.Add (tempTarget);
 			
