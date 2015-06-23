@@ -18,7 +18,6 @@ public class GUIManager : MonoBehaviour {
 	public ScrollingMenu thisScrollingMenu;
 	public List<Sprite> listOfMenuImages;
 	public Text errorText;
-	public Image blackBackground;
 	public GameObject topMenuButton, bottomMenuButton;
 	public Text topMenuButtonText, bottomMenuButtonText;
 	public GameObject loginPanel, MainMenuPanel;
@@ -48,6 +47,26 @@ public class GUIManager : MonoBehaviour {
 		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
 		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
 		screenHeight = myCanvas.GetComponent <RectTransform> ().rect.height;
+	}
+
+	void OnLevelWasLoaded(int level){
+		if (level == 0) {
+			parentAssignmentHolder = GameObject.FindGameObjectWithTag ("scrollingMenu").transform;
+			thisScrollingMenu = GameObject.FindGameObjectWithTag ("scrollingMenu").GetComponent<ScrollingMenu> ();
+			myCanvas = GameObject.FindGameObjectWithTag ("menuCanvas").GetComponent<Canvas> ();
+			loginPanel = GameObject.FindGameObjectWithTag ("loginPanel");
+			MainMenuPanel = GameObject.FindGameObjectWithTag ("menuPanel");
+			fadeToBlackImage.enabled = false;
+			SetBlurMenuButtons(true);
+		} else {
+			incompleteAssignments.Clear ();
+			completedAssignments.Clear ();
+			SetBlurMenuButtons(false);
+
+		}
+
+
+
 	}
 
 	public void SetErrorText(string x) {
@@ -209,6 +228,8 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	public void BlurMenuButton2 () {
+		print ("BUTTON 2 in " + AppManager.s_instance.currentAppState);
+
 		switch (AppManager.s_instance.currentAppState) {
 		case AppState.Playing :
 			SaveAndQuit();
@@ -235,20 +256,16 @@ public class GUIManager : MonoBehaviour {
 		fadeToBlackImage.GetComponent<Fader>().StartFadeIn	();
 	}
 
-	public void SetBlurMenuButtons() {
-		switch (AppManager.s_instance.currentAppState) {
-		case AppState.Playing :
-			fadeToBlackImage.gameObject.SetActive(false);
+	public void SetBlurMenuButtons(bool isMenu) {
+		if (!isMenu) {
+			fadeToBlackImage.gameObject.SetActive (false);
 			topMenuButtonText.text = "Resume";
 			bottomMenuButtonText.text = "Main Menu";
-			break;
-		case AppState.MenuConfig :
-			print ("called menu config");
-
+		}
+		else {
 			fadeToBlackImage.gameObject.SetActive(false);
-			topMenuButtonText.GetComponentInChildren<Text>().text = "Back to Menu";
-			bottomMenuButtonText.GetComponentInChildren<Text>().text = "Play";
-			break;
+			topMenuButtonText.text = "Back to Menu";
+			bottomMenuButtonText.text = "Play";
 		}
 	}
 

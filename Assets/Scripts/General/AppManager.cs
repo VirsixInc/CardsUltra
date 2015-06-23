@@ -128,7 +128,8 @@ public class AppManager : MonoBehaviour {
         currentAppState = AppState.AssignmentMenu;
 			break;
       case AppState.AssignmentMenu :
-        if(clicked){
+
+			if(clicked){
           Application.LoadLevel(currentAssignments[currIndex].type);
           currentAssignments[currIndex].timeAtLoad = Time.time;
           clicked = false;
@@ -141,12 +142,10 @@ public class AppManager : MonoBehaviour {
           newMgr.SendMessage("configureGame", currentAssignments[currIndex]);
         }
         currentAppState = AppState.Playing;
-			GUIManager.s_instance.SetBlurMenuButtons();
         break;
       case AppState.Playing:
         if(Application.loadedLevelName == "Login"){
-          currentAppState = AppState.AssignmentMenu;
-			GUIManager.s_instance.SetBlurMenuButtons();
+          currentAppState = AppState.MenuConfig;
 
         }
         break;
