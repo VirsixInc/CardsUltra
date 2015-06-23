@@ -83,9 +83,13 @@ public class AppManager : MonoBehaviour {
       password = "Password1357";
       userExists = true;
     }
-    s_instance = this;
     masteryFilePath = Application.persistentDataPath + "/mastery.info";
     DontDestroyOnLoad(transform.gameObject);
+    if(s_instance == null){
+      s_instance = this;
+    }else{
+      Destroy(gameObject);
+    }
 	}
 	 
 	void Update () {
@@ -122,9 +126,6 @@ public class AppManager : MonoBehaviour {
       case AppState.MenuConfig:
         GUIManager.s_instance.LoadAllAssignments(currentAssignments);
         GUIManager.s_instance.SlideFromLoginToMain();
-        if(gameObject.name == "mgr"){
-          gameObject.name = "AppManager";
-        }
         currentAppState = AppState.AssignmentMenu;
 			break;
       case AppState.AssignmentMenu :
@@ -177,12 +178,6 @@ public class AppManager : MonoBehaviour {
         count++;
     }
     return count;
-  }
-
-  void OnLevelWasLoaded(int level){
-    if(gameObject.name == "mgr"){
-      Destroy(gameObject);
-    }
   }
 
 	IEnumerator DownloadListOfURLs(){
