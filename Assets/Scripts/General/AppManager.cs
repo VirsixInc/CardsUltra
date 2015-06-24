@@ -191,7 +191,7 @@ public class AppManager : MonoBehaviour {
       string hasImages = (string)(allAssignments[i].GetField("hasImages").ToString());
       string directoryPath = Application.persistentDataPath + "/images/";
       string imgDirPath = directoryPath + thisAssign.Replace("\"", "") + "-images";
-      if(!Directory.Exists(imgDirPath)){
+      if(!Directory.Exists(imgDirPath) && imgDirPath.Contains("cards")){
         if(!Directory.Exists(directoryPath)){
           Directory.CreateDirectory(directoryPath);
         }

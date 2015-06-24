@@ -64,19 +64,10 @@ public class bucketManager : MonoBehaviour {
     ImageLoad,
     PlayingCards,
     ResetCards,
-    ConfigKeyboard,
-    ResetKeyboard,
-    PlayingKeyboard,
     End};
   public GameState currentState; //public for debug purposes 
-  public GameObject circGraphic;
-  public GameObject background;
-
-  public Text questDisplay;
-  public InputField keyboardText;
-  public Text keyboardDispText;
-  public GameObject cardsView;
-  public GameObject keyboardView;
+  public GameObject bucketFab;
+  public Transform bucketHolder;
 
   public List<Card> allCards = new List<Card>();
   public List<Term> allTerms = new List<Term>();
@@ -139,10 +130,11 @@ public class bucketManager : MonoBehaviour {
         currentState = GameState.ConfigCards;
         break;
       case GameState.ConfigCards:
+        /*
         keyboardView.SetActive(false);
         cardsView.SetActive(true);
         currentDifficulty = 1;
-        GameObject[] cardObjs = GameObject.FindGameObjectsWithTag("card");
+        GameObject[] cardObjs = GameObject.FindGameObjectsWithTag("Bucket");
         cardObjs = cardObjs.OrderBy(c=>c.name).ToArray();
         questDispStart = circGraphic.transform.localPosition;
         questDispEnd = circGraphic.transform.localPosition;
@@ -156,6 +148,7 @@ public class bucketManager : MonoBehaviour {
 
         totalMastery = allTerms.Count*requiredMastery;
         currentState = GameState.ImageLoad;
+        */
         break;
       case GameState.ImageLoad:
         if(loadDelay + timeSinceLoad < Time.time){
@@ -175,6 +168,7 @@ public class bucketManager : MonoBehaviour {
         }
         break;
       case GameState.ResetCards:
+        /*
         loadingBar.SetActive(false);
         masteryMeter.value = getMastery();
         Timer1.s_instance.Reset(15f);
@@ -195,8 +189,10 @@ public class bucketManager : MonoBehaviour {
         questDisplay.text = unmasteredTerms[correctTermIndex].question;
         firstPress = true;
         currentState = GameState.PlayingCards;
+        */
         break;
       case GameState.PlayingCards:
+        /*
         if(circleDrag.c_instance.tapped){
         }else if(!circleDrag.c_instance.tapped && circleDrag.c_instance.lastCardHit != null){
           cardHandler(int.Parse(circleDrag.c_instance.lastCardHit.gameObject.name));
@@ -232,7 +228,7 @@ public class bucketManager : MonoBehaviour {
           handleCardPress = false;
           //masteryMeter.value = getMastery();
           if(getMastery() >= 1f){
-            currentState = GameState.ConfigKeyboard;
+            //currentState = GameState.ConfigKeyboard;
           }
 
 
@@ -241,56 +237,10 @@ public class bucketManager : MonoBehaviour {
           Timer1.s_instance.Pause();
           unmasteredTerms[correctTermIndex].mastery -=2;
         }
-        break;
-      case GameState.ConfigKeyboard:
-        keyboardView.SetActive(true);
-        cardsView.SetActive(false);
-        circGraphic.transform.localPosition = questDispStart;
-
-        unmasteredTerms = allTerms.ToList();
-        currentState = GameState.ResetKeyboard;
-        masteryMeter.value = 0f;
-        break;
-      case GameState.ResetKeyboard:
-        Timer1.s_instance.Reset(15f);
-        firstSubmit = true;
-        correctTermIndex = Random.Range(0,unmasteredTerms.Count);
-        questDisplay.text = unmasteredTerms[correctTermIndex].question;
-        keyboardDispText.text = "Enter text...";
-
-        
-        currentState = GameState.PlayingKeyboard;
-        break;
-      case GameState.PlayingKeyboard:
-        if(handleKeyboardSubmit){
-          if(levenThresh > levenDist(keyboardText.text.ToLower(),unmasteredTerms[correctTermIndex].answer)){
-            if(firstSubmit){
-              unmasteredTerms[correctTermIndex].mastery++;
-            }
-            currentState = GameState.ResetKeyboard;
-            if(unmasteredTerms[correctTermIndex].mastery == requiredMastery*.25f){
-              unmasteredTerms.RemoveAt(correctTermIndex);
-            }
-          }else if(firstSubmit){
-            keyboardDispText.text = unmasteredTerms[correctTermIndex].answer;
-            unmasteredTerms[correctTermIndex].mastery -= 2;
-          }
-          Timer1.s_instance.Pause();
-          firstSubmit = false;
-          handleKeyboardSubmit = false;
-          keyboardText.text = "";
-          masteryMeter.value = getMastery();
-          if(getMastery() >= 1f){
-            currentState = GameState.End;
-            timeAtEnd = Time.time;
-          }
-        }
-        if(Timer1.s_instance.timesUp && !Timer1.s_instance.pause){
-          Timer1.s_instance.Pause();
-          unmasteredTerms[correctTermIndex].mastery -=2;
-        }
+        */
         break;
       case GameState.End:
+        /*
         winningSlide.SetActive(true);
         if (soundHasPlayed == false) {
           if(SoundManager.s_instance!=null)SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_correct);
@@ -305,6 +255,7 @@ public class bucketManager : MonoBehaviour {
           AppManager.s_instance.currentAssignments[currIndex].mastery = 100;
         }
         
+        */
         break;
     }
   }
@@ -315,37 +266,8 @@ public class bucketManager : MonoBehaviour {
 
   }
 
-  public void keyboardHandler(){
-    handleKeyboardSubmit = true;
-  }
-
   public void switchState(int newState){
     currentState = (GameState)newState;
-  }
-
-  public int levenDist(string s, string t){
-    int n = s.Length;
-    int m = t.Length;
-    int[,] d = new int[n + 1, m + 1];
-
-    // Step 1
-    if (n == 0){
-      return m;
-    }
-
-    if (m == 0){
-      return n;
-    }
-    for (int i = 1; i <= n; i++){
-      for (int j = 1; j <= m; j++){
-        int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
-
-        d[i, j] = Mathf.Min(
-            Mathf.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
-            d[i - 1, j - 1] + cost);
-      }
-    }
-    return d[n, m];
   }
 
   bool checkForNewPhase(){
@@ -432,5 +354,17 @@ public class bucketManager : MonoBehaviour {
       }
     }
     return listToReturn;
+  }
+
+  void generateBuckets(string[] categories){
+    int maxBuckets = 6;
+    float screenChunk = Screen.width/categories.Length;
+    for(int i = 0; i<categories.Length;i++){
+      GameObject currentBucket = Instantiate(bucketFab) as GameObject;
+      currentBucket.transform.parent = bucketHolder;
+      float xPos = ((-1*categories.Length)*screenChunk)/2 + i*screenChunk + screenChunk/2;
+      print(xPos);
+      //currBktPos = new Vector3(,0f,0f);
+    }
   }
 }
