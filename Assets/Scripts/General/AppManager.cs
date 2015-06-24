@@ -131,6 +131,7 @@ public class AppManager : MonoBehaviour {
       case AppState.AssignmentMenu :
 
 			if(clicked){
+				print (currentAssignments[currIndex].type);
           Application.LoadLevel(currentAssignments[currIndex].type);
           currentAssignments[currIndex].timeAtLoad = Time.time;
           clicked = false;
