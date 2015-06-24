@@ -38,7 +38,7 @@ public class SequencingGame : MonoBehaviour {
 	float startTime, exitTime = 5f;
 	CSVParser thisCSVParser;
 	PopUpGraphic greenCheck, redX, greenCheckmark;//todo
-//	Timer1 timer; //TODO refactor to a generic timer
+	public Timer1 timer; //TODO refactor to a generic timer
 	public Image CircleMaterial;
 	public Slider mastery;
 	
@@ -119,8 +119,11 @@ public class SequencingGame : MonoBehaviour {
 				}
 
 			}
-			if (numberOfDraggablesSnapped == draggables.Count)
+			if (numberOfDraggablesSnapped == draggables.Count){
 				submitButton.GetComponent<Image> ().color = new Color (1, 1, 1, 1); //show button 
+				submitButton.transform.GetChild(0).GetComponent<Text>().color = new Color (0, 0, 0, 1f);
+			}
+
 		}
 	}
 
@@ -138,7 +141,6 @@ public class SequencingGame : MonoBehaviour {
 
 		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
 		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
-//		timer = GameObject.Find("TimerText").GetComponent<Timer1>();
 		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
 		parentCanvas = GameObject.Find ("Canvas");
 		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
@@ -212,7 +214,6 @@ public class SequencingGame : MonoBehaviour {
 			print (xPositionOfTarget);
 			GameObject tempTarget = (GameObject)Instantiate(GUITargetPrefab);
 			tempTarget.transform.SetParent(targetHolder.transform, false);
-//			tempTarget.transform.localScale = new Vector3(1f,1f,1f);
 			tempTarget.transform.localPosition = new Vector3(xPositionOfTarget,tempTarget.transform.localPosition.y,0);
 			tempTarget.GetComponent<TargetGUI>().correctAnswer = randomizedListSequences[currentRow].sequenceOfStrings[i];
 			targets.Add (tempTarget);
@@ -248,6 +249,7 @@ public class SequencingGame : MonoBehaviour {
 				totalSpotsFilled++;
 			}
 		}
+		timer.Reset (15f);
 
 	}
 
@@ -270,33 +272,32 @@ public class SequencingGame : MonoBehaviour {
 		}
 	}
 
-//	void AdjustMasteryMeter(bool didAnswerCorrect) {
-////		if (didAnswerCorrect && timer.timer > 1) {
-//			listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery += .25f;
-//		}
-//
-//		else {
-//			if (listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery > 0) {
-//				listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery -= .25f;
-//			}
-//		}
-//
-//		float totalMastery = 0f;
-//		foreach (Sequence x in listOfSequences) {
-//			totalMastery+=x.sequenceMastery;
-//		}
-//		totalMastery = totalMastery / listOfSequences.Count;
-//		mastery.value = totalMastery;
-////		timer.TrackWinLoss(didAnswerCorrect);
-////		timer.Reset();
-//
-//	}
+	void AdjustMasteryMeter(bool didAnswerCorrect) {
+		if (didAnswerCorrect && !timer.timesUp) {
+			listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery += .25f;
+		}
+
+		else {
+			if (listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery > 0) {
+				listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery -= .25f;
+			}
+		}
+
+		float totalMastery = 0f;
+		foreach (Sequence x in listOfSequences) {
+			totalMastery+=x.sequenceMastery;
+		}
+		totalMastery = totalMastery / listOfSequences.Count;
+		mastery.value = totalMastery;
+		timer.Reset(15f);
+
+	}
 
 	void AnswerWrong(){
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_wrong);
 
 		redX.StartFade (); //TODO change to drag this into inspector
-//		AdjustMasteryMeter (false);
+		AdjustMasteryMeter (false);
 		foreach(GameObject go in draggables){
 			if (go.GetComponent<DraggableGUI>().isMismatched == true) { //showing what you got right and wrong with red and green GUIs
 				GameObject gr = Instantiate(REDX) as GameObject;
@@ -312,7 +313,7 @@ public class SequencingGame : MonoBehaviour {
 			}
 		}
 		ResetDraggables();
-//		timer.TrackWinLoss(false);
+		timer.timesUp = true;
 		DisableSubmitButton ();
 
 	}
@@ -334,7 +335,7 @@ public class SequencingGame : MonoBehaviour {
 		draggables.Clear();
 		currentRow++;
 		CheckForSequenceMastery ();
-//		AdjustMasteryMeter (true);
+		AdjustMasteryMeter (true);
 		DisableSubmitButton ();
 
 		if (mastery.value > .97f) {
@@ -354,6 +355,7 @@ public class SequencingGame : MonoBehaviour {
 	}
 	void DisableSubmitButton(){
 		submitButton.GetComponent<Image> ().color = new Color (1, 1, 1, .3f); //allow
+		submitButton.transform.GetChild(0).GetComponent<Text>().color = new Color (0, 0, 0, .3f);
 		isButtonPressed = false;
 	}
 	public void PressSubmitButton () {
