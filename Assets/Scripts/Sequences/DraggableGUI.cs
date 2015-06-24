@@ -44,6 +44,7 @@ public class DraggableGUI : MonoBehaviour {
 
 	public void OnPointerDown () {
 		isDragging = true;
+		transform.GetChild (1).gameObject.SetActive (true);
 		if (isSnapped) {
 			currentTarget.GetComponent<TargetGUI> ().isOccupied = false;
 			isSnapped = false;
@@ -65,6 +66,8 @@ public class DraggableGUI : MonoBehaviour {
 
 	public void OnPointerUp () {
 		isDragging = false;
+		transform.GetChild (1).gameObject.SetActive (false);
+
 		RandomizeDirection ();
 
 	}
@@ -94,6 +97,8 @@ public class DraggableGUI : MonoBehaviour {
 		if (other.gameObject.tag == "Target" && other.gameObject.GetComponent<TargetGUI>().isOccupied == false) {
 			currentTarget= other.gameObject;
 			isDragging = false;
+			transform.GetChild (1).gameObject.SetActive (false);
+
 			SnapToTarget ();
 		}
 		else if (other.gameObject.tag == "Resetter") {
