@@ -26,7 +26,6 @@ public class SequencingGame : MonoBehaviour {
 	List<List<string>> matrixOfCSVData;
 	List<Sequence> listOfSequences, randomizedListSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
 
-	public TextAsset csvText, csvPics;
 	GameType gameType = GameType.Text;
 	GameState gameState = GameState.Config;
 	bool areDistractorTerms;
@@ -109,6 +108,10 @@ public class SequencingGame : MonoBehaviour {
 
 	}
 
+	public void configureGame (Assignment configAssignment) {
+
+	}
+
 	void CheckSequence(){
 		//checks to see how many items are currently snapped into place, keeps track of the number.
 		if (draggables != null) {
@@ -148,7 +151,6 @@ public class SequencingGame : MonoBehaviour {
 		Input.multiTouchEnabled = true;
 
 		//parse CSV
-		thisCSVParser = GetComponent<CSVParser> ();
 		matrixOfCSVData = new List<List<string>> ();
 
 		//list init
@@ -156,8 +158,7 @@ public class SequencingGame : MonoBehaviour {
 		randomizedListSequences = new List<Sequence> (); //can remove from this list once mastered
 		
 		//parsing
-		matrixOfCSVData = thisCSVParser.Parse (csvText);
-		
+
 		for (int i = 0; i < matrixOfCSVData.Count; i++) { //fill out list of Sequence class instances
 			Sequence tempSequence = new Sequence();
 			tempSequence.initIndex = i;
