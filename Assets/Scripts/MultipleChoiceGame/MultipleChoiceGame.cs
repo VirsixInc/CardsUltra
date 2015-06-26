@@ -122,10 +122,10 @@ public class MultipleChoiceGame : MonoBehaviour {
 	
 	void ConfigureAssignment() {
 		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
-		scaleFactor = GameObject.Find ("GameCanvas").GetComponent<Canvas> ().scaleFactor;
+		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
 //		timer = GameObject.Find("TimerText").GetComponent<Timer1>();
 		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
-		parentCanvas = GameObject.Find ("GameCanvas");
+		parentCanvas = GameObject.Find ("Canvas");
 		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
 		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
 		Input.multiTouchEnabled = true;

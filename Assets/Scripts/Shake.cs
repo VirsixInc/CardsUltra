@@ -6,10 +6,10 @@ public class Shake : MonoBehaviour {
 		
 	//This script takes a UI image and shakes it around in 2D directions to make look cool
 	
-	public float shakeAmount = 50f;
+	float shakeAmount = 20f;
 	float shakeSpeed = .025f;
 	bool isShaking;
-	public float shakeTime = 1f;
+	public float shakeTime = .2f;
 	float timeAtEnd;
 
 	void Start () {

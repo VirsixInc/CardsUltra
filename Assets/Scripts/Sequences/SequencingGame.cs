@@ -165,7 +165,7 @@ public class SequencingGame : MonoBehaviour {
 		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
 		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
 		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
-		parentCanvas = GameObject.Find ("Canvas");
+		parentCanvas = GameObject.FindGameObjectWithTag("shaker");
 		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
 		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
 		Input.multiTouchEnabled = true;
@@ -312,7 +312,7 @@ public class SequencingGame : MonoBehaviour {
 
 	void AnswerWrong(){
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_wrong);
-
+		GameObject.FindGameObjectWithTag ("shaker").GetComponent<Shake>().StartShake();
 		redX.StartFade (); //TODO change to drag this into inspector
 		AdjustMasteryMeter (false);
 		foreach(GameObject go in draggables){
