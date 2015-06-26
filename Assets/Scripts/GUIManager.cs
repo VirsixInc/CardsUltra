@@ -228,7 +228,6 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	public void BlurMenuButton2 () {
-		print ("BUTTON 2 in " + AppManager.s_instance.currentAppState);
 
 		switch (AppManager.s_instance.currentAppState) {
 		case AppState.Playing :

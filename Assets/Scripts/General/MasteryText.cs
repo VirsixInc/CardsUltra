@@ -9,13 +9,7 @@ public class MasteryText : MonoBehaviour {
 	public Slider masterySlider;
 	public bool isWinningSlide = false;
 
-	// Use this for initialization
-	void Start () {
-		if (masterySlider == null)
-			masterySlider = GameObject.Find ("MasteryMeter").GetComponent<Slider>();
-		percentage = GetComponent<Text>();
-	}
-	
+
 	// Update is called once per frame
 	void Update () {
 		masteryPercentage = masterySlider.value;

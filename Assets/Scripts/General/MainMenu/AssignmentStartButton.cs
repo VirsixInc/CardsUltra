@@ -35,7 +35,7 @@ public class AssignmentStartButton : MonoBehaviour {
 	}
 
 	void CallManager() {
-		if (Time.time - selectTimer < .2f && Vector3.Distance(positionAtFingerDown, transform.localPosition) < 1f && !ScrollingMenu.s_instance.isInMenu) {
+		if (Time.time - selectTimer < .1f && Vector3.Distance(positionAtFingerDown, transform.localPosition) < 1f && !ScrollingMenu.s_instance.isInMenu) {
 			//		SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_start);
 			GameObject.FindGameObjectWithTag ("scrollingMenu").GetComponent<ScrollingMenu>().currentLevelToBePlayed =
 				gameObject.GetComponent<AssignmentGUI>().assignmentIndex;
