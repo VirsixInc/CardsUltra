@@ -207,8 +207,14 @@ public class SequencingGame : MonoBehaviour {
 	}
 
 	public void LoadMainMenu() {
-		Application.LoadLevel("AssignmentMenu");
+		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
+		AppManager.s_instance.uploadAssignMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].assignmentTitle, masteryOutput);
+		StartCoroutine ("LoadMain");
 
+	}
+	IEnumerator LoadMain() {
+		yield return new WaitForSeconds (5f);
+		Application.LoadLevel ("Login");
 	}
 	void WinRound() {
 		GameObject winCard = Instantiate (winningConditionPopUp) as GameObject;

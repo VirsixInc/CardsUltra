@@ -23,7 +23,7 @@ public class MasteryAnimator : MonoBehaviour {
 
 			}
 		}
-		touchToPlay.SetActive(true);
+		if (touchToPlay!=null)touchToPlay.SetActive(true);
 		print ("TRUE");
 	}
 
