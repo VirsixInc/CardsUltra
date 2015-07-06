@@ -10,23 +10,14 @@ public class Bucket{
 
   public GameObject objAssoc;
   public Text objText;
-  public Image objImg;
-  public string answer;
-  public string question;
+  public string category;
   public indiCard thisIndiCard;
-  public Bucket(GameObject objRef, Text objTxtRef, Image objImageRef){
+  public Bucket(GameObject objRef, Text objTxtRef, string categoryToUse){
     objAssoc = objRef;
-    objImg = objImageRef;
     objText = objTxtRef;
-  }
-  public void setCard(Term termToUse, bool useImage){
-    if(useImage){
-      objImg.sprite = termToUse.imgAssoc; 
-    }
-    answer = termToUse.answer;
-    question = termToUse.question;
-    objText.text = answer;
-    objAssoc.SetActive(true);
+    category = categoryToUse;
+    objText.text = category;
+
   }
 };
 
@@ -46,13 +37,6 @@ public class bktTerm{
     answer = newAnswer;
 
   }
-  public void loadImage(string path){
-    byte[] currImg = File.ReadAllBytes(path);
-    Texture2D newImg = new Texture2D(256,256);
-    newImg.LoadImage(currImg);
-    imgAssoc = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
-    imageLoaded = true;
-  }
 }
 
 public class bucketManager : MonoBehaviour {
@@ -66,13 +50,13 @@ public class bucketManager : MonoBehaviour {
     ResetCards,
     End};
   public GameState currentState; //public for debug purposes 
-  public GameObject bucketFab;
+  public GameObject bucketFab, questionPanel;
   public Transform bucketHolder;
 
-  public List<Card> allCards = new List<Card>();
-  public List<Term> allTerms = new List<Term>();
-  public List<Term> unmasteredTerms = new List<Term>();
-  
+  private List<Bucket> allBuckets = new List<Bucket>();
+  private List<bktTerm> allTerms = new List<bktTerm>();
+  private List<bktTerm> unmasteredTerms = new List<bktTerm>();
+
   private string direct;
 
   private bool useImages, handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit;
@@ -122,6 +106,7 @@ public class bucketManager : MonoBehaviour {
 	void Update () {
     switch(currentState){
       case GameState.Idle:
+        readyToConfigure = true;
         if(readyToConfigure){
           currentState = GameState.ConfigGame;
         }
@@ -130,42 +115,25 @@ public class bucketManager : MonoBehaviour {
         currentState = GameState.ConfigCards;
         break;
       case GameState.ConfigCards:
+        generateBuckets(new string[3]);
+        questDispStart = questionPanel.transform.localPosition;
+        questDispEnd = questionPanel.transform.localPosition;
+        questDispEnd.y = questDispEnd.y*-1;
+
+        allTerms = convertCSV(parseContent(contentForAssign));
+        totalMastery = allTerms.Count*requiredMastery;
+        currentDifficulty = 1;
         /*
         keyboardView.SetActive(false);
         cardsView.SetActive(true);
-        currentDifficulty = 1;
         GameObject[] cardObjs = GameObject.FindGameObjectsWithTag("Bucket");
         cardObjs = cardObjs.OrderBy(c=>c.name).ToArray();
-        questDispStart = circGraphic.transform.localPosition;
-        questDispEnd = circGraphic.transform.localPosition;
-        questDispEnd.y = questDispEnd.y*-1;
         foreach(GameObject card in cardObjs){
           Card newCard = new Card(card, card.transform.Find("cardText").GetComponent<Text>(), card.transform.Find("Image").GetComponent<Image>());
           newCard.thisIndiCard = card.GetComponent<indiCard>();
           allCards.Add(newCard);
         }
-        allTerms = convertCSV(parseContent(contentForAssign));
-
-        totalMastery = allTerms.Count*requiredMastery;
-        currentState = GameState.ImageLoad;
         */
-        break;
-      case GameState.ImageLoad:
-        if(loadDelay + timeSinceLoad < Time.time){
-          if(currentImageIt < allTerms.Count){
-            if(!allTerms[currentImageIt].imageLoaded){
-              allTerms[currentImageIt].loadImage(allTerms[currentImageIt].imgPath);
-              timeSinceLoad = Time.time;
-            }else{
-              currentImageIt++;
-            }
-          }else{
-            unmasteredTerms = allTerms.ToList();
-            currentState = GameState.ResetCards;
-          }
-        }else{
-          loadSlider.value = ((float)(Mathf.InverseLerp(timeSinceLoad,timeSinceLoad+loadDelay,Time.time)*1+(currentImageIt))/(float)(allTerms.Count));
-        }
         break;
       case GameState.ResetCards:
         /*
@@ -260,10 +228,9 @@ public class bucketManager : MonoBehaviour {
     }
   }
 
-  public void cardHandler (int cardIndex) {
+  public void bucketHandler (int cardIndex) {
     handleCardPress = true;
     currIndex = cardIndex;
-
   }
 
   public void switchState(int newState){
@@ -272,6 +239,7 @@ public class bucketManager : MonoBehaviour {
 
   bool checkForNewPhase(){
     bool newPhase = false;
+    /*
     int amtOfMasteredTerms = allTerms.Count-unmasteredTerms.Count;
     int currentMastery = amtOfMasteredTerms*requiredMastery; 
     foreach(Term currTerm in unmasteredTerms){
@@ -282,9 +250,11 @@ public class bucketManager : MonoBehaviour {
       newPhase = true;
       print("NEW PHASE IS TRUE!");
     }
+    */
     return newPhase;
   }
 
+  /*
 	float getMastery(){
 		float floatToReturn;
 		float amtOfMasteredTerms = allTerms.Count-unmasteredTerms.Count;
@@ -295,6 +265,7 @@ public class bucketManager : MonoBehaviour {
 		floatToReturn = currentMastery / (allTerms.Count*requiredMastery);
 		return floatToReturn;
 	}
+    */
   List<int> generateUniqueRandomNum(int amt, int randRange, int noThisNum = -1){
     List<int> listToReturn = new List<int>();
     for(int i = 0; i<amt;i++){
@@ -334,21 +305,12 @@ public class bucketManager : MonoBehaviour {
 		return listToReturn;
 	}
 
-  List<Term> convertCSV(List<string[]> inputString){
-    List<Term> listToReturn = new List<Term>();
+  List<bktTerm> convertCSV(List<string[]> inputString){
+    List<bktTerm> listToReturn = new List<bktTerm>();
     foreach(string[] thisLine in inputString){
       if(thisLine.Length > 1){
-        Term termToAdd;
-        if(useImages){
-          if(thisLine[1][0] == ' '){
-            thisLine[1] = thisLine[1].Substring(1,thisLine[1].Length-1);
-          }
-          string imgPathToUse =  direct + "/" + thisLine[1].ToLower() + ".png";
-          imgPathToUse = imgPathToUse.Replace("\"", "");
-          termToAdd = new Term(thisLine[0], thisLine[1], imgPathToUse);//, newImg);
-        }else{
-          termToAdd = new Term(thisLine[0], thisLine[1]);
-        }
+        bktTerm termToAdd;
+        termToAdd = new bktTerm(thisLine[0], thisLine[1]);
         termToAdd.mastery = ((int)Mathf.Ceil(((float)(currMastery/100f))*requiredMastery));
         listToReturn.Add(termToAdd);
       }
@@ -358,13 +320,18 @@ public class bucketManager : MonoBehaviour {
 
   void generateBuckets(string[] categories){
     int maxBuckets = 6;
-    float screenChunk = Screen.width/categories.Length;
+    float screenChunk = 150f+(Screen.width/maxBuckets);
     for(int i = 0; i<categories.Length;i++){
       GameObject currentBucket = Instantiate(bucketFab) as GameObject;
-      currentBucket.transform.parent = bucketHolder;
+      currentBucket.transform.SetParent(bucketHolder);
+      currentBucket.transform.localScale = Vector3.one;
+      RectTransform currTrans = currentBucket.GetComponent<RectTransform>();
+      currentBucket.GetComponent<BoxCollider2D>().size = new Vector2(currTrans.rect.width,currTrans.rect.height);
       float xPos = ((-1*categories.Length)*screenChunk)/2 + i*screenChunk + screenChunk/2;
-      print(xPos);
-      //currBktPos = new Vector3(,0f,0f);
+      currentBucket.transform.localPosition = new Vector3(xPos,0f,0f);
+      Bucket currBucket = new Bucket(currentBucket, currentBucket.transform.GetChild(0).GetComponent<Text>(),categories[i]);
+      currentBucket.SendMessage("configBucket", i);
+      allBuckets.Add(currBucket);
     }
   }
 }

@@ -53,29 +53,6 @@ public class Term{
     imgAssoc = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
     imageLoaded = true;
   }
-  /*
-  public Sprite loadImg(string imgPath){
-    byte[] currImg = File.ReadAllBytes(imgPath);
-    Texture2D newImg = new Texture2D(2,2);
-    newImg.LoadImage(currImg);
-    Sprite imgToReturn = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
-    return imgToReturn;
-  }
-  */
-  /*
-  public IEnumerator loadImg(){
-    WWW imgToPull = new WWW(imgPath);
-    yield return imgToPull;
-    if(imgToPull.error == null){
-      Debug.Log("IMAGE IS DONE");
-      Texture2D tex = new Texture2D(256, 256, TextureFormat.RGB24, false);
-      imgToPull.LoadImageIntoTexture(tex);
-      //Texture2D tex = imgToPull.texture;
-    }else{
-      Debug.Log(imgToPull.error);
-    }
-  }
-  */
 }
 
 public class cardManager : MonoBehaviour {

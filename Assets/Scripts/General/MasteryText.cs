@@ -12,7 +12,7 @@ public class MasteryText : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		masteryPercentage = masterySlider.value;
+		//masteryPercentage = masterySlider.value;
 		int percentageValue = Mathf.RoundToInt(masteryPercentage*100);
 		if (isWinningSlide)
 			percentage.text = "Mastery Achieved! " + percentageValue.ToString () + "%";
