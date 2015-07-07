@@ -25,6 +25,7 @@ public class SequencingGame : MonoBehaviour {
 	List<GameObject> targets = new List<GameObject>();
 	bool isSequenceComplete = false, isButtonPressed = false;
 	List<string[]> matrixOfCSVData;
+	public TextAsset shortNoticeCSV;
 	List<Sequence> listOfSequences, randomizedListSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
 
 	GameType gameType = GameType.Text;
@@ -66,12 +67,12 @@ public class SequencingGame : MonoBehaviour {
 	{
 		switch (gameState) {
 		case GameState.Config :
-			if (hasReceivedServerData) {
-				print ("config assignment");
+//			if (hasReceivedServerData) {
+			configureGame();
 				ConfigureAssignment();
 				//check JSON to see if it is ReqIMG or not, if is set GameType to GameType.Image
 				gameState = GameState.Intro;
-			}
+//			}
 			break;
 		
 		case GameState.Intro : 
@@ -127,10 +128,15 @@ public class SequencingGame : MonoBehaviour {
 		ClockShader(); //shows rotating timer
 
 	}
-
-	public void configureGame (Assignment configAssignment) {
-		matrixOfCSVData = parseContent(configAssignment.content);
+	//demo build
+	public void configureGame () {
+		matrixOfCSVData = parseContent(shortNoticeCSV.ToString().Split ("\n" [0]));
+	
 	}
+
+//	public void configureGame (Assignment configAssignment) {
+//		matrixOfCSVData = parseContent(configAssignment.content);
+//	}
 
 	void CheckSequence(){
 		//checks to see how many items are currently snapped into place, keeps track of the number.
