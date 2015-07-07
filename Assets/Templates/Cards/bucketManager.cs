@@ -10,48 +10,59 @@ public class Bucket{
 
   public GameObject objAssoc;
   public Text objText;
-  public Image objImg;
-  public string answer;
-  public string question;
+  public string category;
   public indiCard thisIndiCard;
-  public Bucket(GameObject objRef, Text objTxtRef, Image objImageRef){
+  public Bucket(GameObject objRef, Text objTxtRef, string categoryToUse){
     objAssoc = objRef;
-    objImg = objImageRef;
     objText = objTxtRef;
-  }
-  public void setCard(Term termToUse, bool useImage){
-    if(useImage){
-      objImg.sprite = termToUse.imgAssoc; 
-    }
-    answer = termToUse.answer;
-    question = termToUse.question;
-    objText.text = answer;
-    objAssoc.SetActive(true);
+    category = categoryToUse;
+    objText.text = category;
+
   }
 };
 
+public class dispTerm{
+  public GameObject disp;
+  public Text txtDisp;
+  public string currArg;
+  public string reqArg;
+
+  public Vector3 start;
+  public Vector3 end;
+  public float current;
+
+  public dispTerm(GameObject dispToSet, Text txtToSet){
+    disp = dispToSet;
+    txtDisp = txtToSet;
+    start = disp.transform.localPosition;
+    end = start;
+    end.x = end.x*-1f;
+    current = 0f;
+  }
+  
+  public void setDisp(bktTerm termToUse){
+    currArg = termToUse.category;
+    reqArg = termToUse.answer;
+    txtDisp.text = currArg;
+  }
+
+}
+
 public class bktTerm{
   public string answer;
-  public string question;
+  public string category;
   public Sprite imgAssoc;
   public int mastery = 0;
   public bool mastered = false;
   public string imgPath;
   public bool imageLoaded;
-  public bktTerm(string newQuestion, string newAnswer, string imgPathToUse = null){
+  public bktTerm(string newcategory, string newAnswer, string imgPathToUse = null){
     if(imgPathToUse != null){
       imgPath = imgPathToUse;
     }
-    question = newQuestion;
+    category = newcategory;
     answer = newAnswer;
 
-  }
-  public void loadImage(string path){
-    byte[] currImg = File.ReadAllBytes(path);
-    Texture2D newImg = new Texture2D(256,256);
-    newImg.LoadImage(currImg);
-    imgAssoc = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
-    imageLoaded = true;
   }
 }
 
@@ -66,16 +77,16 @@ public class bucketManager : MonoBehaviour {
     ResetCards,
     End};
   public GameState currentState; //public for debug purposes 
-  public GameObject bucketFab;
+  public GameObject bucketFab, questionPanel;
   public Transform bucketHolder;
 
-  public List<Card> allCards = new List<Card>();
-  public List<Term> allTerms = new List<Term>();
-  public List<Term> unmasteredTerms = new List<Term>();
-  
+  private List<Bucket> allBuckets = new List<Bucket>();
+  private List<bktTerm> allTerms = new List<bktTerm>();
+  private List<bktTerm> unmasteredTerms = new List<bktTerm>();
+
   private string direct;
 
-  private bool useImages, handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit;
+  private bool useImages, handleBucketPress, firstPress, handleKeyboardSubmit, firstSubmit;
 
   private int currentDifficulty;
 
@@ -92,7 +103,7 @@ public class bucketManager : MonoBehaviour {
   private int levenThresh = 3;
   private int currentImageIt;
 
-  private string[] contentForAssign;
+  public string[] contentForAssign;
   public string baseImagePath;
 	public GameObject winningSlide;
 	
@@ -105,6 +116,8 @@ public class bucketManager : MonoBehaviour {
   bool readyToConfigure;
 
   private Vector3 questDispStart, questDispEnd;
+
+  private dispTerm disp;
 
   public AppManager manager;
   public GameObject loadingBar;
@@ -122,6 +135,7 @@ public class bucketManager : MonoBehaviour {
 	void Update () {
     switch(currentState){
       case GameState.Idle:
+        readyToConfigure = true;
         if(readyToConfigure){
           currentState = GameState.ConfigGame;
         }
@@ -130,114 +144,67 @@ public class bucketManager : MonoBehaviour {
         currentState = GameState.ConfigCards;
         break;
       case GameState.ConfigCards:
-        /*
-        keyboardView.SetActive(false);
-        cardsView.SetActive(true);
-        currentDifficulty = 1;
-        GameObject[] cardObjs = GameObject.FindGameObjectsWithTag("Bucket");
-        cardObjs = cardObjs.OrderBy(c=>c.name).ToArray();
-        questDispStart = circGraphic.transform.localPosition;
-        questDispEnd = circGraphic.transform.localPosition;
-        questDispEnd.y = questDispEnd.y*-1;
-        foreach(GameObject card in cardObjs){
-          Card newCard = new Card(card, card.transform.Find("cardText").GetComponent<Text>(), card.transform.Find("Image").GetComponent<Image>());
-          newCard.thisIndiCard = card.GetComponent<indiCard>();
-          allCards.Add(newCard);
-        }
-        allTerms = convertCSV(parseContent(contentForAssign));
+        generateBuckets(new string[3]{"proteins","parking","automotive"});
+        Text dispTxt = GameObject.Find("questText").gameObject.GetComponent<Text>();
+        disp = new dispTerm(questionPanel, dispTxt);
+        disp.txtDisp.text = "here";
 
+        allTerms = convertCSV(parseContent(contentForAssign));
+        unmasteredTerms = allTerms.ToList();
         totalMastery = allTerms.Count*requiredMastery;
-        currentState = GameState.ImageLoad;
-        */
-        break;
-      case GameState.ImageLoad:
-        if(loadDelay + timeSinceLoad < Time.time){
-          if(currentImageIt < allTerms.Count){
-            if(!allTerms[currentImageIt].imageLoaded){
-              allTerms[currentImageIt].loadImage(allTerms[currentImageIt].imgPath);
-              timeSinceLoad = Time.time;
-            }else{
-              currentImageIt++;
-            }
-          }else{
-            unmasteredTerms = allTerms.ToList();
-            currentState = GameState.ResetCards;
-          }
-        }else{
-          loadSlider.value = ((float)(Mathf.InverseLerp(timeSinceLoad,timeSinceLoad+loadDelay,Time.time)*1+(currentImageIt))/(float)(allTerms.Count));
-        }
+        currentDifficulty = 1;
+
+        currentState = GameState.ResetCards;
         break;
       case GameState.ResetCards:
-        /*
-        loadingBar.SetActive(false);
-        masteryMeter.value = getMastery();
+        //masteryMeter.value = getMastery();
         Timer1.s_instance.Reset(15f);
-        foreach(Card currCard in allCards){
-          currCard.objAssoc.SetActive(false);
-        }
         correctTermIndex = Random.Range(0,unmasteredTerms.Count);
         currentDifficulty = Mathf.Clamp(currentDifficulty, unmasteredTerms[correctTermIndex].mastery,  3); 
-        amtOfCards = (int)(4.5*currentDifficulty);
-        List<int> uniqueIndexes = generateUniqueRandomNum(amtOfCards, unmasteredTerms.Count, correctTermIndex);
-        for(int i = 0; i<uniqueIndexes.Count;i++){
-          if(!useImages){
-            allCards[i].setCard(unmasteredTerms[uniqueIndexes[i]], false);
-          }else{
-            allCards[i].setCard(unmasteredTerms[uniqueIndexes[i]], true);
-          }
-        }
-        questDisplay.text = unmasteredTerms[correctTermIndex].question;
+        disp.setDisp(unmasteredTerms[correctTermIndex]);
+        //questDisplay.text = unmasteredTerms[correctTermIndex].question;
         firstPress = true;
         currentState = GameState.PlayingCards;
-        */
         break;
       case GameState.PlayingCards:
-        /*
-        if(circleDrag.c_instance.tapped){
-        }else if(!circleDrag.c_instance.tapped && circleDrag.c_instance.lastCardHit != null){
-          cardHandler(int.Parse(circleDrag.c_instance.lastCardHit.gameObject.name));
-          circleDrag.c_instance.reset();
-        }else{
-          circGraphic.transform.localPosition = Vector3.Lerp(
-              questDispStart,
-              questDispEnd,
-              Timer1.s_instance.normTime
-              );
-        }
-        if(handleCardPress){
-          if(firstPress && allCards[currIndex].answer == unmasteredTerms[correctTermIndex].answer){
-            background.SendMessage("correct");
-					if(SoundManager.s_instance!=null)SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_correct);
-            unmasteredTerms[correctTermIndex].mastery++;
-            currentState = GameState.ResetCards;
-            if(unmasteredTerms[correctTermIndex].mastery == requiredMastery*.75f){
-              unmasteredTerms.RemoveAt(correctTermIndex);
+        if(handleBucketPress){
+          if(allBuckets[currIndex].category == disp.reqArg){
+            if(firstPress){
+            //background.SendMessage("correct");
+              if(SoundManager.s_instance!=null){
+                SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_correct);
+              }
+              unmasteredTerms[correctTermIndex].mastery++;
+              currentState = GameState.ResetCards;
+              if(unmasteredTerms[correctTermIndex].mastery == requiredMastery*.75f){
+                unmasteredTerms.RemoveAt(correctTermIndex);
+              }
+            }else{
+              //background.SendMessage("correct");
+              unmasteredTerms[correctTermIndex].mastery--;
+              currentState = GameState.ResetCards;
             }
-          }else if(allCards[currIndex].answer == unmasteredTerms[correctTermIndex].answer){
-            background.SendMessage("correct");
-            unmasteredTerms[correctTermIndex].mastery--;
-            currentState = GameState.ResetCards;
           }else{
-            allCards[currIndex].objAssoc.SendMessage("incorrectAnswer");
-					if(SoundManager.s_instance!=null)SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_wrong);
-
+            if(SoundManager.s_instance!=null)SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_wrong);
+            Timer1.s_instance.Pause();
+            firstPress = false;
+            handleBucketPress = false;
           }
-          background.SendMessage("incorrect");
-          Timer1.s_instance.Pause();
-          firstPress = false;
-          handleCardPress = false;
-          //masteryMeter.value = getMastery();
+          masteryMeter.value = getMastery();
           if(getMastery() >= 1f){
-            //currentState = GameState.ConfigKeyboard;
+            currentState = GameState.End;
           }
-
-
         }
+        disp.disp.transform.localPosition = Vector3.Lerp(
+            disp.start,
+            disp.end,
+            Timer1.s_instance.normTime
+            );
         if(Timer1.s_instance.timesUp && !Timer1.s_instance.pause){
           Timer1.s_instance.Pause();
           unmasteredTerms[correctTermIndex].mastery -=2;
         }
-        */
+        handleBucketPress = false;
         break;
       case GameState.End:
         /*
@@ -260,10 +227,9 @@ public class bucketManager : MonoBehaviour {
     }
   }
 
-  public void cardHandler (int cardIndex) {
-    handleCardPress = true;
+  public void bucketHandler (int cardIndex) {
+    handleBucketPress = true;
     currIndex = cardIndex;
-
   }
 
   public void switchState(int newState){
@@ -272,6 +238,7 @@ public class bucketManager : MonoBehaviour {
 
   bool checkForNewPhase(){
     bool newPhase = false;
+    /*
     int amtOfMasteredTerms = allTerms.Count-unmasteredTerms.Count;
     int currentMastery = amtOfMasteredTerms*requiredMastery; 
     foreach(Term currTerm in unmasteredTerms){
@@ -282,6 +249,7 @@ public class bucketManager : MonoBehaviour {
       newPhase = true;
       print("NEW PHASE IS TRUE!");
     }
+    */
     return newPhase;
   }
 
@@ -289,12 +257,13 @@ public class bucketManager : MonoBehaviour {
 		float floatToReturn;
 		float amtOfMasteredTerms = allTerms.Count-unmasteredTerms.Count;
 		float currentMastery = amtOfMasteredTerms*requiredMastery; 
-		foreach(Term currTerm in unmasteredTerms){
+		foreach(bktTerm currTerm in unmasteredTerms){
 			currentMastery += currTerm.mastery;
 		}
 		floatToReturn = currentMastery / (allTerms.Count*requiredMastery);
 		return floatToReturn;
 	}
+
   List<int> generateUniqueRandomNum(int amt, int randRange, int noThisNum = -1){
     List<int> listToReturn = new List<int>();
     for(int i = 0; i<amt;i++){
@@ -310,45 +279,41 @@ public class bucketManager : MonoBehaviour {
     return listToReturn;
   }
 
-	List<string[]> parseContent(string[] contentToParse){
-		List<string[]> listToReturn = new List<string[]>();
-		string[] lines = contentToParse;
-		for(int i = 0;i<lines.Length;i++){
-			string[] currLine = lines[i].Split(',');
-      if(currLine.Length > 0){
-        for(int j = 0;j<currLine.Length;j++){
-          currLine[j] = currLine[j].Replace('\\',',');
-          currLine[j] = currLine[j].ToLower();
+	List<string[]> parseContent(string[] lines){
+    if(lines != null){
+      List<string[]> listToReturn = new List<string[]>();
+      if(lines.Length > 0){
+        for(int i = 0;i<lines.Length;i++){
+          string[] currLine = lines[i].Split(',');
+          if(currLine.Length > 0){
+            for(int j = 0;j<currLine.Length;j++){
+              currLine[j] = currLine[j].Replace('\\',',');
+              currLine[j] = currLine[j].ToLower();
+            }
+            listToReturn.Add(currLine);
+          }
         }
-        listToReturn.Add(currLine);
       }
-		}
 
-		for(int i = 0; i < listToReturn.Count; i++){
-			for(int j = 0; j < listToReturn[i].Length; j++){
-				string temp = listToReturn[i][j].Replace('|',',');
-				listToReturn[i][j] = temp;
-			}
-		}
+      for(int i = 0; i < listToReturn.Count; i++){
+        for(int j = 0; j < listToReturn[i].Length; j++){
+          string temp = listToReturn[i][j].Replace('|',',');
+          listToReturn[i][j] = temp;
+        }
+      }
 
-		return listToReturn;
+      return listToReturn;
+    }else{
+      return null;
+    }
 	}
 
-  List<Term> convertCSV(List<string[]> inputString){
-    List<Term> listToReturn = new List<Term>();
+  List<bktTerm> convertCSV(List<string[]> inputString){
+    List<bktTerm> listToReturn = new List<bktTerm>();
     foreach(string[] thisLine in inputString){
       if(thisLine.Length > 1){
-        Term termToAdd;
-        if(useImages){
-          if(thisLine[1][0] == ' '){
-            thisLine[1] = thisLine[1].Substring(1,thisLine[1].Length-1);
-          }
-          string imgPathToUse =  direct + "/" + thisLine[1].ToLower() + ".png";
-          imgPathToUse = imgPathToUse.Replace("\"", "");
-          termToAdd = new Term(thisLine[0], thisLine[1], imgPathToUse);//, newImg);
-        }else{
-          termToAdd = new Term(thisLine[0], thisLine[1]);
-        }
+        bktTerm termToAdd;
+        termToAdd = new bktTerm(thisLine[0], thisLine[1]);
         termToAdd.mastery = ((int)Mathf.Ceil(((float)(currMastery/100f))*requiredMastery));
         listToReturn.Add(termToAdd);
       }
@@ -358,13 +323,18 @@ public class bucketManager : MonoBehaviour {
 
   void generateBuckets(string[] categories){
     int maxBuckets = 6;
-    float screenChunk = Screen.width/categories.Length;
+    float screenChunk = 150f+(Screen.width/maxBuckets);
     for(int i = 0; i<categories.Length;i++){
       GameObject currentBucket = Instantiate(bucketFab) as GameObject;
-      currentBucket.transform.parent = bucketHolder;
+      currentBucket.transform.SetParent(bucketHolder);
+      currentBucket.transform.localScale = Vector3.one;
+      RectTransform currTrans = currentBucket.GetComponent<RectTransform>();
+      currentBucket.GetComponent<BoxCollider2D>().size = new Vector2(currTrans.rect.width,currTrans.rect.height);
       float xPos = ((-1*categories.Length)*screenChunk)/2 + i*screenChunk + screenChunk/2;
-      print(xPos);
-      //currBktPos = new Vector3(,0f,0f);
+      currentBucket.transform.localPosition = new Vector3(xPos,0f,0f);
+      Bucket currBucket = new Bucket(currentBucket, currentBucket.transform.GetChild(0).GetComponent<Text>(),categories[i]);
+      currentBucket.SendMessage("configBucket", i);
+      allBuckets.Add(currBucket);
     }
   }
 }
