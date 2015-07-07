@@ -34,9 +34,9 @@ public class dispTerm{
   public dispTerm(GameObject dispToSet, Text txtToSet){
     disp = dispToSet;
     txtDisp = txtToSet;
-    start = disp.transform.position;
+    start = disp.transform.localPosition;
     end = start;
-    end = end*-1f;
+    end.x = end.x*-1f;
     current = 0f;
   }
   
@@ -86,7 +86,7 @@ public class bucketManager : MonoBehaviour {
 
   private string direct;
 
-  private bool useImages, handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit;
+  private bool useImages, handleBucketPress, firstPress, handleKeyboardSubmit, firstSubmit;
 
   private int currentDifficulty;
 
@@ -167,61 +167,44 @@ public class bucketManager : MonoBehaviour {
         currentState = GameState.PlayingCards;
         break;
       case GameState.PlayingCards:
-        if(handleCardPress){
-          if(disp.reqArg == allBuckets[currIndex].category){
-            print("correct!");
-            currentState = GameState.ResetCards;
-          }
-          handleCardPress = false;
-        }
-        /*
-        if(circleDrag.c_instance.tapped){
-        }else if(!circleDrag.c_instance.tapped && circleDrag.c_instance.lastCardHit != null){
-          cardHandler(int.Parse(circleDrag.c_instance.lastCardHit.gameObject.name));
-          circleDrag.c_instance.reset();
-        }else{
-          circGraphic.transform.localPosition = Vector3.Lerp(
-              questDispStart,
-              questDispEnd,
-              Timer1.s_instance.normTime
-              );
-        }
-        */
-        /*
-        if(handleCardPress){
-          if(firstPress && allCards[currIndex].answer == unmasteredTerms[correctTermIndex].answer){
-            background.SendMessage("correct");
-					if(SoundManager.s_instance!=null)SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_correct);
-            unmasteredTerms[correctTermIndex].mastery++;
-            currentState = GameState.ResetCards;
-            if(unmasteredTerms[correctTermIndex].mastery == requiredMastery*.75f){
-              unmasteredTerms.RemoveAt(correctTermIndex);
+        if(handleBucketPress){
+          if(allBuckets[currIndex].category == disp.reqArg){
+            if(firstPress){
+            //background.SendMessage("correct");
+              if(SoundManager.s_instance!=null){
+                SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_correct);
+              }
+              unmasteredTerms[correctTermIndex].mastery++;
+              currentState = GameState.ResetCards;
+              if(unmasteredTerms[correctTermIndex].mastery == requiredMastery*.75f){
+                unmasteredTerms.RemoveAt(correctTermIndex);
+              }
+            }else{
+              //background.SendMessage("correct");
+              unmasteredTerms[correctTermIndex].mastery--;
+              currentState = GameState.ResetCards;
             }
-          }else if(allCards[currIndex].answer == unmasteredTerms[correctTermIndex].answer){
-            background.SendMessage("correct");
-            unmasteredTerms[correctTermIndex].mastery--;
-            currentState = GameState.ResetCards;
           }else{
-            allCards[currIndex].objAssoc.SendMessage("incorrectAnswer");
-					if(SoundManager.s_instance!=null)SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_wrong);
-
+            if(SoundManager.s_instance!=null)SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_wrong);
+            Timer1.s_instance.Pause();
+            firstPress = false;
+            handleBucketPress = false;
           }
-          background.SendMessage("incorrect");
-          Timer1.s_instance.Pause();
-          firstPress = false;
-          handleCardPress = false;
-          //masteryMeter.value = getMastery();
+          masteryMeter.value = getMastery();
           if(getMastery() >= 1f){
-            //currentState = GameState.ConfigKeyboard;
+            currentState = GameState.End;
           }
-
-
         }
+        disp.disp.transform.localPosition = Vector3.Lerp(
+            disp.start,
+            disp.end,
+            Timer1.s_instance.normTime
+            );
         if(Timer1.s_instance.timesUp && !Timer1.s_instance.pause){
           Timer1.s_instance.Pause();
           unmasteredTerms[correctTermIndex].mastery -=2;
         }
-        */
+        handleBucketPress = false;
         break;
       case GameState.End:
         /*
@@ -245,7 +228,7 @@ public class bucketManager : MonoBehaviour {
   }
 
   public void bucketHandler (int cardIndex) {
-    handleCardPress = true;
+    handleBucketPress = true;
     currIndex = cardIndex;
   }
 
@@ -270,18 +253,17 @@ public class bucketManager : MonoBehaviour {
     return newPhase;
   }
 
-  /*
 	float getMastery(){
 		float floatToReturn;
 		float amtOfMasteredTerms = allTerms.Count-unmasteredTerms.Count;
 		float currentMastery = amtOfMasteredTerms*requiredMastery; 
-		foreach(Term currTerm in unmasteredTerms){
+		foreach(bktTerm currTerm in unmasteredTerms){
 			currentMastery += currTerm.mastery;
 		}
 		floatToReturn = currentMastery / (allTerms.Count*requiredMastery);
 		return floatToReturn;
 	}
-    */
+
   List<int> generateUniqueRandomNum(int amt, int randRange, int noThisNum = -1){
     List<int> listToReturn = new List<int>();
     for(int i = 0; i<amt;i++){
