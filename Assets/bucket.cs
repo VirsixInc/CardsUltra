@@ -20,7 +20,6 @@ public class bucket : MonoBehaviour {
   }
   
   void OnMouseDown(){
-    print("HERE");
     manager.SendMessage("bucketHandler", index);
   }
 

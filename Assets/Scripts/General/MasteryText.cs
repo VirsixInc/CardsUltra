@@ -14,9 +14,11 @@ public class MasteryText : MonoBehaviour {
 	void Update () {
 		//masteryPercentage = masterySlider.value;
 		int percentageValue = Mathf.RoundToInt(masteryPercentage*100);
+    /*
 		if (isWinningSlide)
 			percentage.text = "Mastery Achieved! " + percentageValue.ToString () + "%";
 		else
 			percentage.text = "Mastery: " + percentageValue.ToString () + "%";
+      */
 	}
 }
