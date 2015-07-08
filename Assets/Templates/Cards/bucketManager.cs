@@ -41,8 +41,8 @@ public class dispTerm{
   }
   
   public void setDisp(bktTerm termToUse){
-    currArg = termToUse.category;
-    reqArg = termToUse.answer;
+    currArg = termToUse.answer;
+    reqArg = termToUse.category;
     txtDisp.text = currArg;
   }
 
@@ -56,12 +56,12 @@ public class bktTerm{
   public bool mastered = false;
   public string imgPath;
   public bool imageLoaded;
-  public bktTerm(string newcategory, string newAnswer, string imgPathToUse = null){
+  public bktTerm(string newAnswer, string newCategory, string imgPathToUse = null){
     if(imgPathToUse != null){
       imgPath = imgPathToUse;
     }
-    category = newcategory;
     answer = newAnswer;
+    category = newCategory;
 
   }
 }
@@ -88,7 +88,6 @@ public class bucketManager : MonoBehaviour {
 
   private bool useImages, handleBucketPress, firstPress, handleKeyboardSubmit, firstSubmit;
 
-  private int currentDifficulty;
 
   private float timeBetweenCorrAnswers;
   private float timeAtEnd;
@@ -96,26 +95,22 @@ public class bucketManager : MonoBehaviour {
   private int currIndex;
   private int amtOfCards;
   private int correctTermIndex;
-  private int totalMastery;
   private int currMastery = 0;
   private int requiredMastery = 4;
   private int currentPhase;
-  private int levenThresh = 3;
   private int currentImageIt;
 
   public string[] contentForAssign;
   public string baseImagePath;
 	public GameObject winningSlide;
+	public GameObject background;
 	
   public Slider masteryMeter;
   public Slider loadSlider;
   public float loadDelay = 0.5f;
   public float timeSinceLoad;
 
-	bool soundHasPlayed = false;
   bool readyToConfigure;
-
-  private Vector3 questDispStart, questDispEnd;
 
   private dispTerm disp;
 
@@ -144,25 +139,21 @@ public class bucketManager : MonoBehaviour {
         currentState = GameState.ConfigCards;
         break;
       case GameState.ConfigCards:
-        generateBuckets(new string[3]{"proteins","parking","automotive"});
         Text dispTxt = GameObject.Find("questText").gameObject.GetComponent<Text>();
         disp = new dispTerm(questionPanel, dispTxt);
         disp.txtDisp.text = "here";
 
         allTerms = convertCSV(parseContent(contentForAssign));
+        generateBuckets(pullCategories(allTerms));
         unmasteredTerms = allTerms.ToList();
-        totalMastery = allTerms.Count*requiredMastery;
-        currentDifficulty = 1;
 
         currentState = GameState.ResetCards;
         break;
       case GameState.ResetCards:
-        //masteryMeter.value = getMastery();
+        masteryMeter.value = getMastery();
         Timer1.s_instance.Reset(15f);
         correctTermIndex = Random.Range(0,unmasteredTerms.Count);
-        currentDifficulty = Mathf.Clamp(currentDifficulty, unmasteredTerms[correctTermIndex].mastery,  3); 
         disp.setDisp(unmasteredTerms[correctTermIndex]);
-        //questDisplay.text = unmasteredTerms[correctTermIndex].question;
         firstPress = true;
         currentState = GameState.PlayingCards;
         break;
@@ -170,21 +161,22 @@ public class bucketManager : MonoBehaviour {
         if(handleBucketPress){
           if(allBuckets[currIndex].category == disp.reqArg){
             if(firstPress){
-            //background.SendMessage("correct");
               if(SoundManager.s_instance!=null){
                 SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_correct);
               }
+              background.SendMessage("correct");
               unmasteredTerms[correctTermIndex].mastery++;
               currentState = GameState.ResetCards;
               if(unmasteredTerms[correctTermIndex].mastery == requiredMastery*.75f){
                 unmasteredTerms.RemoveAt(correctTermIndex);
               }
             }else{
-              //background.SendMessage("correct");
+              background.SendMessage("correct");
               unmasteredTerms[correctTermIndex].mastery--;
               currentState = GameState.ResetCards;
             }
           }else{
+            background.SendMessage("incorrect");
             if(SoundManager.s_instance!=null)SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_wrong);
             Timer1.s_instance.Pause();
             firstPress = false;
@@ -207,22 +199,6 @@ public class bucketManager : MonoBehaviour {
         handleBucketPress = false;
         break;
       case GameState.End:
-        /*
-        winningSlide.SetActive(true);
-        if (soundHasPlayed == false) {
-          if(SoundManager.s_instance!=null)SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_correct);
-          soundHasPlayed = true;
-        }
-
-        if(timeAtEnd + 5f < Time.time){
-          Application.LoadLevel("AssignmentMenu");
-          AppManager.s_instance.uploadAssignMastery(
-              AppManager.s_instance.currentAssignments[currIndex].assignmentTitle,
-              100);
-          AppManager.s_instance.currentAssignments[currIndex].mastery = 100;
-        }
-        
-        */
         break;
     }
   }
@@ -234,23 +210,6 @@ public class bucketManager : MonoBehaviour {
 
   public void switchState(int newState){
     currentState = (GameState)newState;
-  }
-
-  bool checkForNewPhase(){
-    bool newPhase = false;
-    /*
-    int amtOfMasteredTerms = allTerms.Count-unmasteredTerms.Count;
-    int currentMastery = amtOfMasteredTerms*requiredMastery; 
-    foreach(Term currTerm in unmasteredTerms){
-      currentMastery += currTerm.mastery;
-    }
-	
-    if(currentMastery >= totalMastery/2){
-      newPhase = true;
-      print("NEW PHASE IS TRUE!");
-    }
-    */
-    return newPhase;
   }
 
 	float getMastery(){
@@ -336,5 +295,16 @@ public class bucketManager : MonoBehaviour {
       currentBucket.SendMessage("configBucket", i);
       allBuckets.Add(currBucket);
     }
+  }
+
+  string[] pullCategories(List<bktTerm> currList){
+    List<string> bktCategories = new List<string>();
+    foreach(bktTerm x in currList){
+      if(!bktCategories.Contains(x.category)){
+        bktCategories.Add(x.category);
+      }
+    }
+    string[] arrToReturn = bktCategories.ToArray();
+    return arrToReturn;
   }
 }
