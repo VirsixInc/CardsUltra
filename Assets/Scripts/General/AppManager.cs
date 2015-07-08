@@ -54,6 +54,7 @@ public class AppManager : MonoBehaviour {
   public List<Assignment> currentAssignments = new List<Assignment>();
 	public List<GameObject> userAssignments;
   public int currIndex;
+  public string[] supportedTemplates;
 
 	string[] assignmentURLs;
 	string serverURL = "http://96.126.100.208:8000/client", folderName,
@@ -73,7 +74,6 @@ public class AppManager : MonoBehaviour {
     if(localDebug){
 			if(pabloDebug){
 				serverURL = "http://192.168.1.12:8080/client";
-
 			}else{
         serverURL = "http://localhost:8080/client";
 			}
@@ -124,14 +124,21 @@ public class AppManager : MonoBehaviour {
         currentAppState = AppState.MenuConfig;
         break;
       case AppState.MenuConfig:
+        List<int> indexesToRemove = new List<int>();
+        for(int i = 0; i<currentAssignments.Count; i++){
+          if(!(supportedTemplates.Contains(currentAssignments[i].type))){
+            indexesToRemove.Add(i);
+          }
+        }
+        for(int i = indexesToRemove.Count-1;i>-1;i--){
+          currentAssignments.RemoveAt(indexesToRemove[i]);
+        }
         GUIManager.s_instance.LoadAllAssignments(currentAssignments);
         GUIManager.s_instance.SlideFromLoginToMain();
         currentAppState = AppState.AssignmentMenu;
-			break;
+        break;
       case AppState.AssignmentMenu :
-
-			if(clicked){
-				print (currentAssignments[currIndex].type);
+        if(clicked){
           Application.LoadLevel(currentAssignments[currIndex].type);
           currentAssignments[currIndex].timeAtLoad = Time.time;
           clicked = false;
