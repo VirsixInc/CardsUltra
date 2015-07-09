@@ -6,7 +6,7 @@ public class Shake : MonoBehaviour {
 		
 	//This script takes a UI image and shakes it around in 2D directions to make look cool
 	
-	float shakeAmount = 20f;
+	float shakeAmount = 2f;
 	float shakeSpeed = .025f;
 	bool isShaking;
 	public float shakeTime = .2f;

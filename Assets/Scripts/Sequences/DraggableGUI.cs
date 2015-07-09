@@ -19,8 +19,6 @@ public class DraggableGUI : MonoBehaviour {
 		image = GetComponentInChildren<Button> ();
 		RandomizeDirection ();
 		myCanvas = GameObject.Find ("Canvas");
-
-
 	}
 
 	void RandomizeDirection(){
