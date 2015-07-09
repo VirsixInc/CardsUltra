@@ -380,7 +380,7 @@ public class SequencingGame : MonoBehaviour {
 		for (int i = 1; i < currentSequence.Count; i++) {
 			if (draggables[i-1].GetComponent<DraggableGUI>().isMismatched){
 				draggables[i-1].GetComponent<DraggableGUI>().isSnapped = false;
-				draggables[i-1].transform.position = new Vector3 (Screen.width/2, Screen.height/2, 0);
+				draggables[i-1].transform.localPosition = new Vector3 (0, 0, 0);
 			}
 		}
 	}
