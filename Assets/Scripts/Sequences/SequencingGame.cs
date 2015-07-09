@@ -303,12 +303,12 @@ public class SequencingGame : MonoBehaviour {
 
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
 		if (didAnswerCorrect && !timer.timesUp) {
-			listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery += .25f;
+			listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery += .5f;
 		}
 
 		else {
 			if (listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery > 0) {
-				listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery -= .25f;
+				listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery -= .5f;
 			}
 		}
 

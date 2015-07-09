@@ -20,19 +20,20 @@ public class MultipleChoiceGame : MonoBehaviour {
 	private string direct;
 	private int currMastery;
 	public Timer1 timer;
-
+	public GameObject winCard;
 
 	bool hasReceivedServerData = false, readyToConfigure;
 
 
 	GameObject parentCanvas, draggableGUIHolder;
+	public GameObject introScreen;
 	List<GameObject> draggables = new List<GameObject>();
 	bool isSequenceComplete = false, isButtonPressed = false;
 	List<List<string>> matrixOfCSVData;
 	List<Sequence> listOfSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
 	
 	GameType gameType = GameType.Text;
-	GameState gameState = GameState.Config;
+	GameState gameState = GameState.Intro;
 	bool areDistractorTerms;
 	int currentRow = 0; //currentRow is the iterator that goes through the remaining sequences
 	int xRandomRange, yRandomRange;
@@ -58,9 +59,25 @@ public class MultipleChoiceGame : MonoBehaviour {
 		currMastery = AppManager.s_instance.pullAssignMastery(assignToUse);
 		readyToConfigure = true;
 	}
+
+	bool userClickedStart = false;
+	
+	void OnGUI () {
+		Event e = Event.current;
+		if (e.type == EventType.mouseDown && gameState == GameState.Intro) {
+			userClickedStart = true;
+			introScreen.SetActive(false);
+		}
+	}
+
 	
 	void Update () {
 		switch(gameState){
+		case GameState.Intro :
+			if (userClickedStart){
+				gameState = GameState.Idle;
+			}
+			break;
 		case GameState.Idle:
 			#if UNITY_EDITOR
 			readyToConfigure = true;
@@ -114,13 +131,13 @@ public class MultipleChoiceGame : MonoBehaviour {
 			break;
 			
 		case GameState.WinScreen :
+			WinRound();
 			if ((Time.time - startTime) > exitTime) {
 				LoadMainMenu();
 			}
 			break;
 		}
-		ClockShader(); //shows rotating timer
-		
+
 	}
 	
 	void CheckSequence(){
@@ -136,13 +153,6 @@ public class MultipleChoiceGame : MonoBehaviour {
 			if (numberOfDraggablesSnapped == 1)
 				submitButton.GetComponent<Image> ().color = new Color (1, 1, 1, 1); //show button 
 		}
-	}
-	
-	void ClockShader(){
-		//COUNTDOWN CLOCK SHADER
-//		float fractionOfTimer = (timer.startTime - timer.elapsedTime) / timer.startTime; 
-//		CircleMaterial.material.SetFloat ("_Angle", Mathf.Lerp (-3.14f, 3.14f, fractionOfTimer));
-//		CircleMaterial.material.SetColor ("_Color", Color.Lerp (start, end, fractionOfTimer));
 	}
 	
 	void ConfigureAssignment() {
@@ -189,14 +199,11 @@ public class MultipleChoiceGame : MonoBehaviour {
 	}
 	
 	public void LoadMainMenu() {
-		Application.LoadLevel("AssignmentMenu");
+		Application.LoadLevel("Login");
 		
 	}
 	void WinRound() {
-		GameObject winCard = Instantiate (winningConditionPopUp) as GameObject;
-		winCard.transform.SetParent(parentCanvas.transform);
-		winCard.transform.localScale *= scaleFactor;
-		winCard.GetComponent<RectTransform>().localPosition = new Vector3(0,0,0);
+		winCard.SetActive(true);
 		gameState = GameState.WinScreen; //i know that this is the wrong way to change gamestate but I have to do it until a major refactor
 		startTime = Time.time;
 	}
@@ -239,12 +246,12 @@ public class MultipleChoiceGame : MonoBehaviour {
 	
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
 		if (didAnswerCorrect && !timer.timesUp) {
-			listOfSequences[currentRow].sequenceMastery += .25f;
+			listOfSequences[currentRow].sequenceMastery += .5f;
 		}
 		
 		else {
 			if (listOfSequences[currentRow].sequenceMastery > 0) {
-				listOfSequences[currentRow].sequenceMastery -= .25f;
+				listOfSequences[currentRow].sequenceMastery -= .5f;
 			}
 		}
 		
@@ -263,20 +270,6 @@ public class MultipleChoiceGame : MonoBehaviour {
 		
 		redX.StartFade (); //TODO change to drag this into inspector
 		AdjustMasteryMeter (false);
-//		foreach(GameObject go in draggables){
-//			if (go.GetComponent<DraggableGUI>().isMismatched == true) { //showing what you got right and wrong with red and green GUIs
-//				GameObject gr = Instantiate(REDX) as GameObject;
-//				gr.transform.SetParent(parentCanvas.transform);//Set in inspector
-//				gr.transform.position = go.transform.position;
-//				gr.transform.localScale = new Vector3(1f,1f,1f);
-//			}
-//			else {
-//				GameObject gc = Instantiate(GREENCHECKMARK) as GameObject;
-//				gc.transform.SetParent(parentCanvas.transform);
-//				gc.transform.position = go.transform.position;		
-//				gc.transform.localScale = new Vector3(1f,1f,1f);
-//			}
-//		}
 		timer.timesUp = true;
 		ResetDraggables();
 		DisableSubmitButton ();
@@ -288,9 +281,6 @@ public class MultipleChoiceGame : MonoBehaviour {
 		
 		greenCheck.StartFade (); //TODO set in inspector
 		foreach(GameObject go in draggables) {
-			//			GameObject gc = Instantiate(GREENCHECKMARK) as GameObject;
-			//			gc.transform.SetParent(GameObject.Find ("GameCanvas").transform);
-			//			gc.transform.position = go.transform.position;
 			Destroy (go);
 		}
 		target.GetComponent<TargetGUI> ().Reset ();
