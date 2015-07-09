@@ -48,7 +48,7 @@ public class Assignment {
 
 public class AppManager : MonoBehaviour {
 
-  public bool localDebug, pabloDebug, userDebug;
+  public bool development, userDebug;
 	public AppState currentAppState;
 	public static AppManager s_instance;
   public List<Assignment> currentAssignments = new List<Assignment>();
@@ -72,12 +72,8 @@ public class AppManager : MonoBehaviour {
   bool urlsDownloaded, clicked, userExists;
 
 	void Awake() {
-    if(localDebug){
-			if(pabloDebug){
-				serverURL = "http://192.168.1.12:8080/client";
-			}else{
-        serverURL = "http://localhost:8080/client";
-			}
+    if(development){
+      serverURL = "http://96.126.100.208:9999/client";
     }
     if(userDebug){
       username = "AGutierrez";
@@ -160,14 +156,14 @@ public class AppManager : MonoBehaviour {
       case AppState.PlayConfig:
         GameObject newMgr = GameObject.Find("GameManager");
         if(currentAssignments[currIndex].type != "hotspots"){
-          newMgr.SendMessage("configureGame", currentAssignments[currIndex]);
+          newMgr.SendMessage("configureGame", currIndex);//currentAssignments[currIndex]);
         }
         currentAppState = AppState.Playing;
         break;
       case AppState.Playing:
         if(Application.loadedLevelName == "Login"){
-          currentAppState = AppState.MenuConfig;
 
+          currentAppState = AppState.MenuConfig;
         }
         break;
     }
