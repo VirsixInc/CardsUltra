@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.IO;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
@@ -9,7 +10,7 @@ public class Sequence  {
 	public List<string> sequenceOfStrings;
 	public float sequenceMastery = 0; //incremented by .25, used to adjust difficulty
 	public int initIndex; //used to keep track of sequences throughout scene switching etc... similar to an ID
-	public Image imgAssoc;
+	public Sprite imgAssoc;
 	bool imageLoaded = false;
 
 	public void loadImage(string path){
