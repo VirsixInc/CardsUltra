@@ -135,7 +135,9 @@ public class bucketManager : MonoBehaviour {
 	void Update () {
     switch(currentState){
       case GameState.Idle:
+#if UNITY_EDITOR
         readyToConfigure = true;
+#endif
         if(readyToConfigure){
           currentState = GameState.ConfigGame;
         }

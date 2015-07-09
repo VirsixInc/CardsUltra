@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 public enum GameType {Text, Image};
-public enum GameState {Config, Intro, SetRound, Playing, CheckAnswer, WrongAnswer, CorrectAnswer, WinScreen};
+public enum GameState {Idle, Config, Intro, SetRound, Playing, CheckAnswer, WrongAnswer, CorrectAnswer, WinScreen};
 
 public class SequencingGame : MonoBehaviour {
 
@@ -63,7 +63,7 @@ public class SequencingGame : MonoBehaviour {
 		}
 	}
 		
-		void Update () 
+	void Update () 
 	{
 		switch (gameState) {
 		case GameState.Config :

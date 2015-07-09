@@ -15,7 +15,16 @@ public class MultipleChoiceGame : MonoBehaviour {
 	public GameObject target;
 	public List<Image> pictures;
 	public Image picture;
-	
+	public string[] contentForAssign;
+	bool useImages;
+	private string direct;
+	private int currMastery;
+	public Timer1 timer;
+
+
+	bool hasReceivedServerData = false, readyToConfigure;
+
+
 	GameObject parentCanvas, draggableGUIHolder;
 	List<GameObject> draggables = new List<GameObject>();
 	bool isSequenceComplete = false, isButtonPressed = false;
@@ -39,11 +48,27 @@ public class MultipleChoiceGame : MonoBehaviour {
 	Color start;
 	[SerializeField]
 	Color end;
+
+	public void configureGame(Assignment assignToUse){
+		useImages = assignToUse.hasImages;
+		if(useImages){
+			direct = assignToUse.imgDir;
+		}
+		contentForAssign = assignToUse.content;
+		currMastery = AppManager.s_instance.pullAssignMastery(assignToUse);
+		readyToConfigure = true;
+	}
 	
-	
-	void Update () 
-	{
-		switch (gameState) {
+	void Update () {
+		switch(gameState){
+		case GameState.Idle:
+			#if UNITY_EDITOR
+			readyToConfigure = true;
+			#endif
+			if(readyToConfigure){
+				gameState = GameState.Config;
+			}
+			break;
 		case GameState.Config :
 			ConfigureAssignment();
 			//check JSON to see if it is ReqIMG or not, if is set GameType to GameType.Image
@@ -146,6 +171,7 @@ public class MultipleChoiceGame : MonoBehaviour {
 			tempSequence.sequenceOfStrings = matrixOfCSVData[i];
 			listOfSequences.Add(tempSequence);
 		}
+		timer.Reset(15f);
 
 	}
 	
@@ -211,33 +237,32 @@ public class MultipleChoiceGame : MonoBehaviour {
 		}
 	}
 	
-//	void AdjustMasteryMeter(bool didAnswerCorrect) {
-////		if (didAnswerCorrect && timer.timer > 1) {
-//			listOfSequences[listOfSequences[currentRow].initIndex].sequenceMastery += .25f;
-//		}
-//		
-//		else {
-//			if (listOfSequences[listOfSequences[currentRow].initIndex].sequenceMastery > 0) {
-//				listOfSequences[listOfSequences[currentRow].initIndex].sequenceMastery -= .25f;
-//			}
-//		}
-//		
-//		float totalMastery = 0f;
-//		foreach (Sequence x in listOfSequences) {
-//			totalMastery+=x.sequenceMastery;
-//		}
-//		totalMastery = totalMastery / listOfSequences.Count;
-//		mastery.value = totalMastery;
-////		timer.TrackWinLoss(didAnswerCorrect);
-////		timer.Reset();
-//		
-//	}
+	void AdjustMasteryMeter(bool didAnswerCorrect) {
+		if (didAnswerCorrect && !timer.timesUp) {
+			listOfSequences[currentRow].sequenceMastery += .25f;
+		}
+		
+		else {
+			if (listOfSequences[currentRow].sequenceMastery > 0) {
+				listOfSequences[currentRow].sequenceMastery -= .25f;
+			}
+		}
+		
+		float totalMastery = 0f;
+		foreach (Sequence x in listOfSequences) {
+			totalMastery+=x.sequenceMastery;
+		}
+		totalMastery = totalMastery / listOfSequences.Count;
+		mastery.value = totalMastery;
+		timer.Reset(15f);
+		
+	}
 	
 	void AnswerWrong(){
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_wrong);
 		
 		redX.StartFade (); //TODO change to drag this into inspector
-//		AdjustMasteryMeter (false);
+		AdjustMasteryMeter (false);
 //		foreach(GameObject go in draggables){
 //			if (go.GetComponent<DraggableGUI>().isMismatched == true) { //showing what you got right and wrong with red and green GUIs
 //				GameObject gr = Instantiate(REDX) as GameObject;
@@ -272,7 +297,7 @@ public class MultipleChoiceGame : MonoBehaviour {
 		draggables.Clear();
 		currentRow++;
 		CheckForSequenceMastery ();
-//		AdjustMasteryMeter (true);
+		AdjustMasteryMeter (true);
 		DisableSubmitButton ();
 		
 		if (mastery.value > .97f) {
@@ -295,5 +320,28 @@ public class MultipleChoiceGame : MonoBehaviour {
 		if (submitButton.GetComponent<Image> ().color.a == 1f) {
 			isButtonPressed = true;
 		}
+	}
+
+	private List<string[]> parseContent(string[] contentToParse){
+		List<string[]> listToReturn = new List<string[]>();
+		string[] lines = contentToParse;
+		for(int i = 0;i<lines.Length;i++){
+			string[] currLine = lines[i].Split(',');
+			if(currLine.Length > 0){
+				for(int j = 0;j<currLine.Length;j++){
+					currLine[j] = currLine[j].Replace('\\',',');
+					currLine[j] = currLine[j].ToLower();
+				}
+				listToReturn.Add(currLine);
+			}
+		}
+		for(int i = 0; i < listToReturn.Count; i++){
+			for(int j = 0; j < listToReturn[i].Length; j++){
+				string temp = listToReturn[i][j].Replace('|',',');
+				listToReturn[i][j] = temp;
+			}
+		}
+		hasReceivedServerData = true;
+		return listToReturn;
 	}
 }
