@@ -91,7 +91,7 @@ public class cardManager : MonoBehaviour {
   private float timeBetweenCorrAnswers;
   private float timeAtEnd;
 
-  private int currIndex;
+  private int currIndex, assignIndex;
   private int amtOfCards;
   private int correctTermIndex;
   private int totalMastery;
@@ -118,7 +118,9 @@ public class cardManager : MonoBehaviour {
   public AppManager manager;
   public GameObject loadingBar;
 
-  public void configureGame(Assignment assignToUse){
+  public void configureGame(int index){
+    assignIndex = index;
+    Assignment assignToUse = AppManager.s_instance.currentAssignments[assignIndex];
     useImages = assignToUse.hasImages;
     if(useImages){
       direct = assignToUse.imgDir;
