@@ -21,6 +21,7 @@ public class MultipleChoiceGame : MonoBehaviour {
 	private int currMastery;
 	public Timer1 timer;
 	public GameObject winCard;
+	int thisIndex;
 
 	bool hasReceivedServerData = false, readyToConfigure;
 
@@ -50,13 +51,14 @@ public class MultipleChoiceGame : MonoBehaviour {
 	[SerializeField]
 	Color end;
 
-	public void configureGame(Assignment assignToUse){
-		useImages = assignToUse.hasImages;
+	public void configureGame(int thisInt){
+		thisIndex = thisInt;
+		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
 		if(useImages){
-			direct = assignToUse.imgDir;
+			direct = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
 		}
-		contentForAssign = assignToUse.content;
-		currMastery = AppManager.s_instance.pullAssignMastery(assignToUse);
+		contentForAssign = AppManager.s_instance.currentAssignments[thisIndex].content;
+		currMastery = AppManager.s_instance.pullAssignMastery(AppManager.s_instance.currentAssignments[thisIndex]);
 		readyToConfigure = true;
 	}
 
@@ -261,6 +263,7 @@ public class MultipleChoiceGame : MonoBehaviour {
 		}
 		totalMastery = totalMastery / listOfSequences.Count;
 		mastery.value = totalMastery;
+		AppManager.s_instance.currentAssignments[thisIndex].mastery = (int)totalMastery*100;
 		timer.Reset(15f);
 		
 	}

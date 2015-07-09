@@ -42,6 +42,9 @@ public class SequencingGame : MonoBehaviour {
 	public Image CircleMaterial;
 	public Slider mastery;
 	bool hasReceivedServerData = false;
+	bool useImages;
+	int thisIndex;
+	string direct;
 	
 	//UI Meters etc...
 	[SerializeField]
@@ -54,6 +57,7 @@ public class SequencingGame : MonoBehaviour {
 	float screenHeight;
 
 	bool userClickedStart = false;
+	bool readyToConfigure = false;
 
 	void OnGUI () {
 		Event e = Event.current;
@@ -66,13 +70,17 @@ public class SequencingGame : MonoBehaviour {
 	void Update () 
 	{
 		switch (gameState) {
+		case GameState.Idle :
+			if (readyToConfigure){
+				gameState = GameState.Config;
+			}
+			break;
 		case GameState.Config :
-//			if (hasReceivedServerData) {
-			configureGame();
+			if (hasReceivedServerData) {
 				ConfigureAssignment();
 				//check JSON to see if it is ReqIMG or not, if is set GameType to GameType.Image
 				gameState = GameState.Intro;
-//			}
+			}
 			break;
 		
 		case GameState.Intro : 
@@ -125,18 +133,19 @@ public class SequencingGame : MonoBehaviour {
 			}
 			break;
 		}
-		ClockShader(); //shows rotating timer
-
-	}
-	//demo build
-	public void configureGame () {
-		matrixOfCSVData = parseContent(shortNoticeCSV.ToString().Split ("\n" [0]));
-	
 	}
 
-//	public void configureGame (Assignment configAssignment) {
-//		matrixOfCSVData = parseContent(configAssignment.content);
-//	}
+
+	public void configureGame (int thisInt) {
+		thisIndex = thisInt;
+
+		matrixOfCSVData = parseContent(AppManager.s_instance.currentAssignments[thisIndex].content);
+		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
+		if(useImages){
+			direct = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
+		}
+		readyToConfigure = true;
+	}
 
 	void CheckSequence(){
 		//checks to see how many items are currently snapped into place, keeps track of the number.
@@ -154,13 +163,6 @@ public class SequencingGame : MonoBehaviour {
 			}
 
 		}
-	}
-
-	void ClockShader(){
-		//COUNTDOWN CLOCK SHADER
-//		float fractionOfTimer = (timer.startTime - timer.elapsedTime) / timer.startTime; 
-//		CircleMaterial.material.SetFloat ("_Angle", Mathf.Lerp (-3.14f, 3.14f, fractionOfTimer));
-//		CircleMaterial.material.SetColor ("_Color", Color.Lerp (start, end, fractionOfTimer));
 	}
 
 	void ConfigureAssignment() {
@@ -256,6 +258,8 @@ public class SequencingGame : MonoBehaviour {
 			tempDraggable.transform.SetParent(draggableGUIHolder.transform);
 			tempDraggable.transform.localScale *= scaleFactor;
 			tempDraggable.GetComponent<RectTransform>().localPosition = new Vector3(0,0,0);
+			tempDraggable.GetComponent<RectTransform>().localScale = new Vector3(1,1,1);
+
 			tempDraggable.GetComponent<DraggableGUI>().SetValues(currentSequence[i], gameType);
 			draggables.Add (tempDraggable);
 		}
@@ -318,6 +322,7 @@ public class SequencingGame : MonoBehaviour {
 		}
 		totalMastery = totalMastery / listOfSequences.Count;
 		mastery.value = totalMastery;
+		AppManager.s_instance.currentAssignments[thisIndex].mastery = (int)totalMastery*100;
 		timer.Reset(15f);
 
 	}
@@ -352,9 +357,6 @@ public class SequencingGame : MonoBehaviour {
 
 		greenCheck.StartFade (); //TODO set in inspector
 		foreach(GameObject go in draggables) {
-//			GameObject gc = Instantiate(GREENCHECKMARK) as GameObject;
-//			gc.transform.SetParent(GameObject.Find ("GameCanvas").transform);
-//			gc.transform.position = go.transform.position;
 			Destroy (go);
 		}
 		foreach (GameObject fo in targets) {

@@ -136,6 +136,7 @@ public class GUIManager : MonoBehaviour {
 
 	
 	public void EnableMenu() {
+		print ("enable menu");
 		ActivateMenuButtons ();
 		SetBlur ();
 	}

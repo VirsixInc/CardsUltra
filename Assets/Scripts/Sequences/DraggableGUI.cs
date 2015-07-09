@@ -13,7 +13,7 @@ public class DraggableGUI : MonoBehaviour {
 	public GameObject myCanvas;
 	public Vector2 pos;
 	Event e;
-	float speed = 1;
+	float speed = .2f;
 
 	void Start () {
 		image = GetComponentInChildren<Button> ();
