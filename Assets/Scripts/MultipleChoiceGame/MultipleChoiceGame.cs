@@ -277,8 +277,8 @@ public class MultipleChoiceGame : MonoBehaviour {
 //				gc.transform.localScale = new Vector3(1f,1f,1f);
 //			}
 //		}
+		timer.timesUp = true;
 		ResetDraggables();
-//		timer.TrackWinLoss(false);
 		DisableSubmitButton ();
 		
 	}
