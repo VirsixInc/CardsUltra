@@ -61,6 +61,7 @@ public class AppManager : MonoBehaviour {
          username,
          password,
          masteryFilePath,
+         loginFilePath,
          filePathToUse;
 
 
@@ -84,6 +85,15 @@ public class AppManager : MonoBehaviour {
       userExists = true;
     }
     masteryFilePath = Application.persistentDataPath + "/mastery.info";
+    loginFilePath = Application.persistentDataPath + "/studentLogin.info";
+    if(File.Exists(loginFilePath)){
+      string[] loginData = File.ReadAllLines(loginFilePath);
+      loginData = loginData[0].Split(',');
+			GUIManager.s_instance.SetErrorText("User Data Found! Logging in...");
+      userExists = true;
+      username = loginData[0];
+      password = loginData[1];
+    }
     DontDestroyOnLoad(transform.gameObject);
     if(s_instance == null){
       s_instance = this;
@@ -93,6 +103,8 @@ public class AppManager : MonoBehaviour {
 	}
 	 
 	void Update () {
+    print(userExists);
+    print(currentAppState);
 		switch (currentAppState) {
       case AppState.Login :
         if(userExists){
@@ -168,6 +180,7 @@ public class AppManager : MonoBehaviour {
       userExists = true;
       username = name;
       password = wrd;
+      File.WriteAllText(loginFilePath, (name+","+wrd));
     }else if(www.text == "false"){
 			GUIManager.s_instance.SetErrorText("User Data Not Found");
       userExists = false;
