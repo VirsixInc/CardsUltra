@@ -70,7 +70,7 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	public void SetErrorText(string x) {
-		errorText.text = x;
+		//errorText.text = x;
 	}
 
 	// Use this for initialization
