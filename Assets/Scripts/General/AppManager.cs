@@ -101,8 +101,6 @@ public class AppManager : MonoBehaviour {
 	}
 	 
 	void Update () {
-    print(userExists);
-    print(currentAppState);
 		switch (currentAppState) {
       case AppState.Login :
         if(userExists){
@@ -205,10 +203,17 @@ public class AppManager : MonoBehaviour {
 		yield return www;
     JSONObject allAssignments = ParseToJSON(www.text);
     totalAssigns = allAssignments.Count;
+    string[] filesToDelete = Directory.GetFiles((Application.persistentDataPath + "/"), "*.data");
+    foreach(string file in filesToDelete){
+      File.Delete(file);
+    }
+    string directoryPath = Application.persistentDataPath + "/images/";
+    if(Directory.Exists(directoryPath)){
+      Directory.Delete(directoryPath, true);
+    }
     for(int i = 0; i<totalAssigns;i++){
       string thisAssign = (string)(allAssignments[i].GetField("assignmentName").ToString());
       string hasImages = (string)(allAssignments[i].GetField("hasImages").ToString());
-      string directoryPath = Application.persistentDataPath + "/images/";
       string imgDirPath = directoryPath + thisAssign.Replace("\"", "") + "-images";
       if(!Directory.Exists(imgDirPath) && imgDirPath.Contains("cards")){
         if(!Directory.Exists(directoryPath)){
@@ -218,11 +223,7 @@ public class AppManager : MonoBehaviour {
         StartCoroutine(pullImgs(thisAssign));
       }
       string filePath = (Application.persistentDataPath + "/" + thisAssign).Replace("\"", "");
-      if(!File.Exists(filePath + ".data")){
-        StartCoroutine(saveAssignment(thisAssign));
-      }else{
-        assignsLoaded++;
-      }
+      StartCoroutine(saveAssignment(thisAssign));
     }
     urlsDownloaded = true;
 	}
