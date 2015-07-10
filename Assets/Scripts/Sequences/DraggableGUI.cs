@@ -14,8 +14,10 @@ public class DraggableGUI : MonoBehaviour {
 	public Vector2 pos;
 	Event e;
 	float speed = .2f;
+	Color startColor;
 
 	void Start () {
+		startColor = GetComponent<Image>().color;
 		image = GetComponentInChildren<Button> ();
 		RandomizeDirection ();
 		myCanvas = GameObject.Find ("Canvas");
@@ -42,6 +44,7 @@ public class DraggableGUI : MonoBehaviour {
 
 	public void OnPointerDown () {
 		isDragging = true;
+		GetComponent<Image>().color = startColor;
 		transform.GetChild (1).gameObject.SetActive (true);
 		if (isSnapped) {
 			currentTarget.GetComponent<TargetGUI> ().isOccupied = false;
@@ -78,6 +81,7 @@ public class DraggableGUI : MonoBehaviour {
 			currentTarget.GetComponent<TargetGUI>().isOccupied = true;
 			currentTarget.GetComponent<TargetGUI>().occupier = gameObject;
 			isDragging = false;
+			GetComponent<Image>().color = new Color (0,0,0,0);
 		}
 	}
 
@@ -88,6 +92,7 @@ public class DraggableGUI : MonoBehaviour {
 		target.GetComponent<TargetGUI>().isOccupied = true;
 		target.GetComponent<TargetGUI>().occupier = gameObject;
 		isDragging = false;
+		GetComponent<Image>().color = new Color(0,0,0,0);
 	
 	}
 
@@ -136,6 +141,10 @@ public class DraggableGUI : MonoBehaviour {
 
 	void ChangeDirectionV(){
 		currentDirection = new Vector3 (-currentDirection.x, currentDirection.y, 0);
+	}
+
+	public void SetToStartColor() {
+		GetComponent<Image>().color = startColor;
 	}
 
 }

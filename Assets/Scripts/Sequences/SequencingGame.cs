@@ -381,6 +381,7 @@ public class SequencingGame : MonoBehaviour {
 			if (draggables[i].GetComponent<DraggableGUI>().isMismatched){
 				draggables[i].GetComponent<DraggableGUI>().isSnapped = false;
 				draggables[i].transform.localPosition = new Vector3 (0, 0, 0);
+				draggables[i].GetComponent<DraggableGUI>().SetToStartColor();
 			}
 		}
 	}
