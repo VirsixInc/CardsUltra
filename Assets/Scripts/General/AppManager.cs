@@ -92,10 +92,8 @@ public class AppManager : MonoBehaviour {
     }
     DontDestroyOnLoad(transform.gameObject);
     if(s_instance == null){
-      print("here");
       s_instance = this;
     }else{
-      print("Here");
       Destroy(gameObject);
     }
 	}

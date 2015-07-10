@@ -69,6 +69,7 @@ public class SequencingGame : MonoBehaviour {
 		
 	void Update () 
 	{
+		print (gameState);
 		switch (gameState) {
 		case GameState.Idle :
 			if (readyToConfigure){
@@ -115,6 +116,8 @@ public class SequencingGame : MonoBehaviour {
 
 		case GameState.CorrectAnswer :
 			if (AnswerCorrect()){
+				WinRound();
+				print ("WINNNING");
 				gameState = GameState.WinScreen;
 			}
 			else {
@@ -225,10 +228,7 @@ public class SequencingGame : MonoBehaviour {
 		Application.LoadLevel ("Login");
 	}
 	void WinRound() {
-		GameObject winCard = Instantiate (winningConditionPopUp) as GameObject;
-		winCard.transform.SetParent(parentCanvas.transform);
-		winCard.transform.localScale *= scaleFactor;
-		winCard.GetComponent<RectTransform>().localPosition = new Vector3(0,0,0);
+		winningConditionPopUp.SetActive(true);
 		gameState = GameState.WinScreen; //i know that this is the wrong way to change gamestate but I have to do it until a major refactor
 		startTime = Time.time;
 	}
@@ -237,7 +237,7 @@ public class SequencingGame : MonoBehaviour {
 		currentSequence = new List<string> (randomizedListSequences[currentRow].sequenceOfStrings);
 		float currentSequenceMastery = randomizedListSequences [currentRow].sequenceMastery;
 	
-		for (int i = 1; i < currentSequence.Count; i++) { //NOTE I HAD TO DO A SECOND LOOP FOR LAYERING ISSUES
+		for (int i = 0; i < currentSequence.Count; i++) { //NOTE I HAD TO DO A SECOND LOOP FOR LAYERING ISSUES
 			//calculate position of target based on i and sS.Count
 
 			float spaceBetweenTargets = screenWidth/7;
@@ -251,7 +251,7 @@ public class SequencingGame : MonoBehaviour {
 			
 		}
 		//instantiate all of the targets and draggables in the correct positions
-		for (int i = 1; i < currentSequence.Count; i++) {
+		for (int i = 0; i < currentSequence.Count; i++) {
 			//calculate position of target based on i and sS.Count
 			//generate currentSequence.Count number dragable GUI objects
 			GameObject tempDraggable = (GameObject)Instantiate(draggableGUIPrefab);
@@ -265,10 +265,10 @@ public class SequencingGame : MonoBehaviour {
 		}
 		//use mastery to determine how many answers will be filled in
 		//GameObject targetHolder = GameObject.Find ("TargetGUIHolder");
-		string tempPrompt = currentSequence [0];
-		string replaceComma = tempPrompt.Replace ('/', ',');
+//		string tempPrompt = currentSequence [0];
+//		string replaceComma = tempPrompt.Replace ('/', ',');
 
-		prompt.GetComponent<Text> ().text = replaceComma;
+//		prompt.GetComponent<Text> ().text = replaceComma;
 		int totalSpotsFilled = 0;
 		for (int i = 0; i < (4 - 4*currentSequenceMastery); i++){ //currentSequenceMastery increments in .25f
 			//make sure it does not fill out all answers
@@ -377,10 +377,10 @@ public class SequencingGame : MonoBehaviour {
 	}
 
 	void ResetDraggables () {
-		for (int i = 1; i < currentSequence.Count; i++) {
-			if (draggables[i-1].GetComponent<DraggableGUI>().isMismatched){
-				draggables[i-1].GetComponent<DraggableGUI>().isSnapped = false;
-				draggables[i-1].transform.localPosition = new Vector3 (0, 0, 0);
+		for (int i = 0; i < currentSequence.Count; i++) {
+			if (draggables[i].GetComponent<DraggableGUI>().isMismatched){
+				draggables[i].GetComponent<DraggableGUI>().isSnapped = false;
+				draggables[i].transform.localPosition = new Vector3 (0, 0, 0);
 			}
 		}
 	}
