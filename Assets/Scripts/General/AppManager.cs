@@ -85,7 +85,7 @@ public class AppManager : MonoBehaviour {
     if(File.Exists(loginFilePath)){
       string[] loginData = File.ReadAllLines(loginFilePath);
       loginData = loginData[0].Split(',');
-			GUIManager.s_instance.SetErrorText("User Data Found! Logging in...");
+			//GUIManager.s_instance.SetErrorText("User Data Found! Logging in...");
       userExists = true;
       username = loginData[0];
       password = loginData[1];
