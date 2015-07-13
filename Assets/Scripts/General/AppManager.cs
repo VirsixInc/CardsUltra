@@ -57,7 +57,7 @@ public class AppManager : MonoBehaviour {
   public string[] supportedTemplates;
 
 	string[] assignmentURLs;
-	string serverURL = "http://96.126.100.208:8000/client", folderName,
+	string serverURL = "http://96.126.100.208:9999/client", folderName,
          username,
          password,
          masteryFilePath,
@@ -209,15 +209,14 @@ public class AppManager : MonoBehaviour {
     if(Directory.Exists(directoryPath)){
       Directory.Delete(directoryPath, true);
     }
+    Directory.CreateDirectory(directoryPath);
     for(int i = 0; i<totalAssigns;i++){
       string thisAssign = (string)(allAssignments[i].GetField("assignmentName").ToString());
       string hasImages = (string)(allAssignments[i].GetField("hasImages").ToString());
       string imgDirPath = directoryPath + thisAssign.Replace("\"", "") + "-images";
       if(!Directory.Exists(imgDirPath) && imgDirPath.Contains("cards")){
-        if(!Directory.Exists(directoryPath)){
-          Directory.CreateDirectory(directoryPath);
-        }
         Directory.CreateDirectory(imgDirPath);
+        print(imgDirPath);
         StartCoroutine(pullImgs(thisAssign));
       }
       string filePath = (Application.persistentDataPath + "/" + thisAssign).Replace("\"", "");
@@ -232,6 +231,7 @@ public class AppManager : MonoBehaviour {
     string url = (serverURL + "/images?assignment=" + fileName);
 		WWW www = new WWW(url);
 		yield return www;
+    print(www);
     string directoryPath = Application.persistentDataPath + "/images/";
     string fileToUnzip = directoryPath + (fileName);
     string pathToWrite = fileToUnzip.Substring(0, fileToUnzip.Length - 4) + "/";
