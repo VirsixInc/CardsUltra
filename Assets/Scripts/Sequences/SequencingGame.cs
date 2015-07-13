@@ -241,7 +241,7 @@ public class SequencingGame : MonoBehaviour {
 			//calculate position of target based on i and sS.Count
 
 			float spaceBetweenTargets = screenWidth/7;
-			float totalNumberOfTargets = currentSequence.Count+1;
+			float totalNumberOfTargets = currentSequence.Count;
 			float xPositionOfTarget =  (-totalNumberOfTargets * spaceBetweenTargets)/2 + i*spaceBetweenTargets + spaceBetweenTargets/2; //makes targets centered
 			GameObject tempTarget = (GameObject)Instantiate(GUITargetPrefab);
 			tempTarget.transform.SetParent(targetHolder.transform, false);
