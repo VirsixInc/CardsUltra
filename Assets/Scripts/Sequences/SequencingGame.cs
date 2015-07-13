@@ -270,7 +270,7 @@ public class SequencingGame : MonoBehaviour {
 
 //		prompt.GetComponent<Text> ().text = replaceComma;
 		int totalSpotsFilled = 0;
-		for (int i = 0; i < (2 - 2*currentSequenceMastery); i++){ //currentSequenceMastery increments in .5f
+		for (int i = 0; i < (2 - 2*currentSequenceMastery); i++){ //currentSequenceMastery increments in .5 f
 			//make sure it does not fill out all answers
 			if (totalSpotsFilled >= currentSequence.Count - 1){
 				break;
