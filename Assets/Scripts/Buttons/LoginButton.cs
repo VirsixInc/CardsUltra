@@ -13,5 +13,10 @@ public class LoginButton : MonoBehaviour {
 		}
 	}
 
+  public void updateFields(string[] data){
+    username.text = data[0];
+    password.text = data[1];
+  }
+
 
 }

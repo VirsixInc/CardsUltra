@@ -96,7 +96,7 @@ public class cardManager : MonoBehaviour {
   private int correctTermIndex;
   private int totalMastery;
   private int currMastery = 0;
-  private int requiredMastery = 4;
+  private int requiredMastery = 1;
   private int currentPhase;
   private int levenThresh = 3;
   private int currentImageIt;

@@ -53,6 +53,7 @@ public class AppManager : MonoBehaviour {
 	public static AppManager s_instance;
   public List<Assignment> currentAssignments = new List<Assignment>();
 	public List<GameObject> userAssignments;
+  public GameObject loginButton;
   public int currIndex;
   public string[] supportedTemplates;
 
@@ -65,7 +66,7 @@ public class AppManager : MonoBehaviour {
          filePathToUse;
 
 
-  int assignsLoaded = 0, assignmentsDownloaded = 0, totalAssigns;
+  int assignsLoaded = 0, assignmentsDownloaded = 0, totalAssigns, imagesRequired, imagesLoaded;
 
 	List<string> assignmentURLsToDownload;
 
@@ -85,10 +86,12 @@ public class AppManager : MonoBehaviour {
     if(File.Exists(loginFilePath)){
       string[] loginData = File.ReadAllLines(loginFilePath);
       loginData = loginData[0].Split(',');
-			//GUIManager.s_instance.SetErrorText("User Data Found! Logging in...");
+			GUIManager.s_instance.SetErrorText("User Data Found! Logging in...");
       userExists = true;
       username = loginData[0];
       password = loginData[1];
+      print(username);
+      loginButton.SendMessage("updateFields", loginData);
     }
     DontDestroyOnLoad(transform.gameObject);
     if(s_instance == null){
@@ -99,6 +102,7 @@ public class AppManager : MonoBehaviour {
 	}
 	 
 	void Update () {
+    print(currentAppState);
 		switch (currentAppState) {
       case AppState.Login :
         if(userExists){
@@ -120,10 +124,14 @@ public class AppManager : MonoBehaviour {
         }
         break;
       case AppState.DownloadAssignments :
-        if(assignsLoaded == totalAssigns){
+        if(assignsLoaded == totalAssigns && imagesLoaded == imagesRequired){
           currentAppState = AppState.LoadContent;
         }
-        
+        if(imagesLoaded != imagesRequired){
+          GUIManager.s_instance.SetErrorText(("Loading Images: " + imagesLoaded.ToString() + "/" + imagesRequired.ToString()));
+        }else{
+          GUIManager.s_instance.SetErrorText(("Loading Assignments: " + assignsLoaded.ToString() + "/" + totalAssigns.ToString()));
+        }
         break;
       case AppState.LoadContent:
         loadInLocalAssignments();
@@ -206,18 +214,26 @@ public class AppManager : MonoBehaviour {
       File.Delete(file);
     }
     string directoryPath = Application.persistentDataPath + "/images/";
-    if(Directory.Exists(directoryPath)){
-      Directory.Delete(directoryPath, true);
+    if(!Directory.Exists(directoryPath)){
+      Directory.CreateDirectory(directoryPath);
     }
-    Directory.CreateDirectory(directoryPath);
+    imagesLoaded = 0;
+    imagesRequired = 0;
     for(int i = 0; i<totalAssigns;i++){
       string thisAssign = (string)(allAssignments[i].GetField("assignmentName").ToString());
       string hasImages = (string)(allAssignments[i].GetField("hasImages").ToString());
       string imgDirPath = directoryPath + thisAssign.Replace("\"", "") + "-images";
-      if(!Directory.Exists(imgDirPath) && imgDirPath.Contains("cards")){
-        Directory.CreateDirectory(imgDirPath);
-        print(imgDirPath);
-        StartCoroutine(pullImgs(thisAssign));
+      if(imgDirPath.Contains("cards")){
+        if(!Directory.Exists(imgDirPath)){
+          Directory.CreateDirectory(imgDirPath);
+          imagesRequired++;
+          StartCoroutine(pullImgs(thisAssign));
+        }else if(Directory.GetFiles(imgDirPath).Length < 1){
+          Directory.Delete(imgDirPath, true);
+          Directory.CreateDirectory(imgDirPath);
+          imagesRequired++;
+          StartCoroutine(pullImgs(thisAssign));
+        }
       }
       string filePath = (Application.persistentDataPath + "/" + thisAssign).Replace("\"", "");
       StartCoroutine(saveAssignment(thisAssign));
@@ -231,7 +247,6 @@ public class AppManager : MonoBehaviour {
     string url = (serverURL + "/images?assignment=" + fileName);
 		WWW www = new WWW(url);
 		yield return www;
-    print(www);
     string directoryPath = Application.persistentDataPath + "/images/";
     string fileToUnzip = directoryPath + (fileName);
     string pathToWrite = fileToUnzip.Substring(0, fileToUnzip.Length - 4) + "/";
@@ -268,6 +283,7 @@ public class AppManager : MonoBehaviour {
         }
       }
     }
+    imagesLoaded++;
   }
 
   IEnumerator saveAssignment(string assignmentName){
