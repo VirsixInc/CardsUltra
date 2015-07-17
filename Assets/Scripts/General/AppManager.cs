@@ -223,7 +223,7 @@ public class AppManager : MonoBehaviour {
       string thisAssign = (string)(allAssignments[i].GetField("assignmentName").ToString());
       string hasImages = (string)(allAssignments[i].GetField("hasImages").ToString());
       string imgDirPath = directoryPath + thisAssign.Replace("\"", "") + "-images";
-      if(imgDirPath.Contains("cards")){
+      if(imgDirPath.Contains("cards") || imgDirPath.Contains("multiples")){
         if(!Directory.Exists(imgDirPath)){
           Directory.CreateDirectory(imgDirPath);
           imagesRequired++;
