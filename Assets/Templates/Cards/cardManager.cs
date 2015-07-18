@@ -307,7 +307,7 @@ public class cardManager : MonoBehaviour {
         }
 
         if(timeAtEnd + 5f < Time.time){
-          Application.LoadLevel("AssignmentMenu");
+          Application.LoadLevel("Login");
           AppManager.s_instance.uploadAssignMastery(
               AppManager.s_instance.currentAssignments[currIndex].assignmentTitle,
               100);

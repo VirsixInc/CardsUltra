@@ -167,7 +167,6 @@ public class AppManager : MonoBehaviour {
         break;
       case AppState.Playing:
         if(Application.loadedLevelName == "Login"){
-
           currentAppState = AppState.MenuConfig;
         }
         break;
