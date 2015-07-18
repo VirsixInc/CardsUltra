@@ -102,7 +102,6 @@ public class AppManager : MonoBehaviour {
 	}
 	 
 	void Update () {
-    print(currentAppState);
 		switch (currentAppState) {
       case AppState.Login :
         if(userExists){

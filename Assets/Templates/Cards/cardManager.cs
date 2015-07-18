@@ -96,7 +96,7 @@ public class cardManager : MonoBehaviour {
   private int correctTermIndex;
   private int totalMastery;
   private int currMastery = 0;
-  private int requiredMastery = 1;
+  private int requiredMastery = 4;
   private int currentPhase;
   private int levenThresh = 3;
   private int currentImageIt;
@@ -170,6 +170,7 @@ public class cardManager : MonoBehaviour {
             }
           }else{
             unmasteredTerms = allTerms.ToList();
+            loadingBar.SetActive(false);
             currentState = GameState.ResetCards;
           }
         }else{
@@ -177,7 +178,6 @@ public class cardManager : MonoBehaviour {
         }
         break;
       case GameState.ResetCards:
-        loadingBar.SetActive(false);
         masteryMeter.value = getMastery();
         Timer1.s_instance.Reset(15f);
         foreach(Card currCard in allCards){
@@ -221,7 +221,9 @@ public class cardManager : MonoBehaviour {
             }
           }else if(allCards[currIndex].answer == unmasteredTerms[correctTermIndex].answer){
             background.SendMessage("correct");
-            unmasteredTerms[correctTermIndex].mastery--;
+            if(unmasteredTerms[correctTermIndex].mastery>0){
+              unmasteredTerms[correctTermIndex].mastery--;
+            }
             currentState = GameState.ResetCards;
           }else{
             allCards[currIndex].objAssoc.SendMessage("incorrectAnswer");
@@ -241,7 +243,9 @@ public class cardManager : MonoBehaviour {
         }
         if(Timer1.s_instance.timesUp && !Timer1.s_instance.pause){
           Timer1.s_instance.Pause();
-          unmasteredTerms[correctTermIndex].mastery -=2;
+          if(unmasteredTerms[correctTermIndex].mastery>0){
+            unmasteredTerms[correctTermIndex].mastery--;
+          }
         }
         break;
       case GameState.ConfigKeyboard:
@@ -260,7 +264,7 @@ public class cardManager : MonoBehaviour {
         questDisplay.text = unmasteredTerms[correctTermIndex].question;
         keyboardDispText.text = "Enter text...";
 
-        
+        masteryMeter.value = getMastery();
         currentState = GameState.PlayingKeyboard;
         break;
       case GameState.PlayingKeyboard:
@@ -270,18 +274,19 @@ public class cardManager : MonoBehaviour {
               unmasteredTerms[correctTermIndex].mastery++;
             }
             currentState = GameState.ResetKeyboard;
-            if(unmasteredTerms[correctTermIndex].mastery == requiredMastery*.25f){
+            if(unmasteredTerms[correctTermIndex].mastery == requiredMastery*.5f){
               unmasteredTerms.RemoveAt(correctTermIndex);
             }
           }else if(firstSubmit){
-            keyboardDispText.text = unmasteredTerms[correctTermIndex].answer;
-            unmasteredTerms[correctTermIndex].mastery -= 2;
+            if(unmasteredTerms[correctTermIndex].mastery>0){
+              unmasteredTerms[correctTermIndex].mastery--;
+            }
           }
           Timer1.s_instance.Pause();
           firstSubmit = false;
           handleKeyboardSubmit = false;
+          keyboardDispText.text = unmasteredTerms[correctTermIndex].answer;
           keyboardText.text = "";
-          masteryMeter.value = getMastery();
           if(getMastery() >= 1f){
             currentState = GameState.End;
             timeAtEnd = Time.time;
@@ -289,7 +294,9 @@ public class cardManager : MonoBehaviour {
         }
         if(Timer1.s_instance.timesUp && !Timer1.s_instance.pause){
           Timer1.s_instance.Pause();
-          unmasteredTerms[correctTermIndex].mastery -=2;
+          if(unmasteredTerms[correctTermIndex].mastery>0){
+            unmasteredTerms[correctTermIndex].mastery--;
+          }
         }
         break;
       case GameState.End:
