@@ -75,7 +75,7 @@ public class MultipleChoiceGame : MonoBehaviour {
 			#if UNITY_EDITOR
 			readyToConfigure = true;
 			#endif
-			if(readyToConfigure){
+			if(readyToConfigure){ //readyToConfigure set from AppManager by calling configGame located on each GameManager go in each template
 				gameState = GameState.Config;
 			}
 			break;
