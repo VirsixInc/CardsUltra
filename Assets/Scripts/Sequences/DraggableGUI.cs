@@ -13,14 +13,14 @@ public class DraggableGUI : MonoBehaviour {
 	public GameObject myCanvas;
 	public Vector2 pos;
 	Event e;
-	float speed = 1;
+	float speed = .2f;
+	Color startColor;
 
 	void Start () {
+		startColor = GetComponent<Image>().color;
 		image = GetComponentInChildren<Button> ();
 		RandomizeDirection ();
-		myCanvas = GameObject.Find ("GameCanvas");
-
-
+		myCanvas = GameObject.Find ("Canvas");
 	}
 
 	void RandomizeDirection(){
@@ -44,6 +44,8 @@ public class DraggableGUI : MonoBehaviour {
 
 	public void OnPointerDown () {
 		isDragging = true;
+		GetComponent<Image>().color = startColor;
+		transform.GetChild (1).gameObject.SetActive (true);
 		if (isSnapped) {
 			currentTarget.GetComponent<TargetGUI> ().isOccupied = false;
 			isSnapped = false;
@@ -65,6 +67,8 @@ public class DraggableGUI : MonoBehaviour {
 
 	public void OnPointerUp () {
 		isDragging = false;
+		transform.GetChild (1).gameObject.SetActive (false);
+
 		RandomizeDirection ();
 
 	}
@@ -77,6 +81,7 @@ public class DraggableGUI : MonoBehaviour {
 			currentTarget.GetComponent<TargetGUI>().isOccupied = true;
 			currentTarget.GetComponent<TargetGUI>().occupier = gameObject;
 			isDragging = false;
+			GetComponent<Image>().color = new Color (0,0,0,0);
 		}
 	}
 
@@ -87,6 +92,7 @@ public class DraggableGUI : MonoBehaviour {
 		target.GetComponent<TargetGUI>().isOccupied = true;
 		target.GetComponent<TargetGUI>().occupier = gameObject;
 		isDragging = false;
+		GetComponent<Image>().color = new Color(0,0,0,0);
 	
 	}
 
@@ -94,6 +100,8 @@ public class DraggableGUI : MonoBehaviour {
 		if (other.gameObject.tag == "Target" && other.gameObject.GetComponent<TargetGUI>().isOccupied == false) {
 			currentTarget= other.gameObject;
 			isDragging = false;
+			transform.GetChild (1).gameObject.SetActive (false);
+
 			SnapToTarget ();
 		}
 		else if (other.gameObject.tag == "Resetter") {
@@ -133,6 +141,10 @@ public class DraggableGUI : MonoBehaviour {
 
 	void ChangeDirectionV(){
 		currentDirection = new Vector3 (-currentDirection.x, currentDirection.y, 0);
+	}
+
+	public void SetToStartColor() {
+		GetComponent<Image>().color = startColor;
 	}
 
 }

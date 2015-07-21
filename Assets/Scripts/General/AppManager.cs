@@ -48,50 +48,64 @@ public class Assignment {
 
 public class AppManager : MonoBehaviour {
 
-  public bool localDebug, pabloDebug;
-	private AppState currentAppState;
+  public bool development, userDebug;
+	public AppState currentAppState;
 	public static AppManager s_instance;
   public List<Assignment> currentAssignments = new List<Assignment>();
 	public List<GameObject> userAssignments;
+  public GameObject loginButton;
   public int currIndex;
+  public string[] supportedTemplates;
 
 	string[] assignmentURLs;
-	string serverURL = "http://96.126.100.208:8000/client", folderName,
+	string serverURL = "http://96.126.100.208:9999/client", folderName,
          username,
          password,
          masteryFilePath,
+         loginFilePath,
          filePathToUse;
 
 
-  int assignsLoaded = 0, assignmentsDownloaded = 0, totalAssigns;
+  int assignsLoaded = 0, assignmentsDownloaded = 0, totalAssigns, imagesRequired, imagesLoaded;
 
 	List<string> assignmentURLsToDownload;
 
   bool urlsDownloaded, clicked, userExists;
 
 	void Awake() {
-    if(localDebug){
-			if(pabloDebug){
-				serverURL = "http://192.168.1.16:8080/client";
-
-			}else{
-        serverURL = "http://localhost:8080/client";
-			}
+    if(development){
+      serverURL = "http://96.126.100.208:9999/client";
+    }
+    if(userDebug){
       username = "AGutierrez";
       password = "Password1357";
       userExists = true;
     }
-    s_instance = this;
     masteryFilePath = Application.persistentDataPath + "/mastery.info";
+    loginFilePath = Application.persistentDataPath + "/studentLogin.info";
+    if(File.Exists(loginFilePath)){
+      string[] loginData = File.ReadAllLines(loginFilePath);
+      loginData = loginData[0].Split(',');
+			GUIManager.s_instance.SetErrorText("User Data Found! Logging in...");
+      userExists = true;
+      username = loginData[0];
+      password = loginData[1];
+      print(username);
+      loginButton.SendMessage("updateFields", loginData);
+    }
     DontDestroyOnLoad(transform.gameObject);
+    if(s_instance == null){
+      s_instance = this;
+    }else{
+      Destroy(gameObject);
+    }
 	}
-
+	 
 	void Update () {
 		switch (currentAppState) {
       case AppState.Login :
         if(userExists){
           currentAppState = AppState.Initialize;
-          Application.LoadLevel("AssignmentMenu");
         }
         break;
       case AppState.Initialize :
@@ -109,17 +123,31 @@ public class AppManager : MonoBehaviour {
         }
         break;
       case AppState.DownloadAssignments :
-        if(assignsLoaded == totalAssigns){
+        if(assignsLoaded == totalAssigns && imagesLoaded == imagesRequired){
           currentAppState = AppState.LoadContent;
         }
-        
+        if(imagesLoaded != imagesRequired){
+          GUIManager.s_instance.SetErrorText(("Loading Images: " + imagesLoaded.ToString() + "/" + imagesRequired.ToString()));
+        }else{
+          GUIManager.s_instance.SetErrorText(("Loading Assignments: " + assignsLoaded.ToString() + "/" + totalAssigns.ToString()));
+        }
         break;
       case AppState.LoadContent:
         loadInLocalAssignments();
         currentAppState = AppState.MenuConfig;
         break;
       case AppState.MenuConfig:
+        List<int> indexesToRemove = new List<int>();
+        for(int i = 0; i<currentAssignments.Count; i++){
+          if(!(supportedTemplates.Contains(currentAssignments[i].type))){
+            indexesToRemove.Add(i);
+          }
+        }
+        for(int i = indexesToRemove.Count-1;i>-1;i--){
+          currentAssignments.RemoveAt(indexesToRemove[i]);
+        }
         GUIManager.s_instance.LoadAllAssignments(currentAssignments);
+        GUIManager.s_instance.SlideFromLoginToMain();
         currentAppState = AppState.AssignmentMenu;
         break;
       case AppState.AssignmentMenu :
@@ -133,12 +161,12 @@ public class AppManager : MonoBehaviour {
       case AppState.PlayConfig:
         GameObject newMgr = GameObject.Find("GameManager");
         if(currentAssignments[currIndex].type != "hotspots"){
-          newMgr.SendMessage("configureGame", currentAssignments[currIndex]);
+          newMgr.SendMessage("configureGame", currIndex);//currentAssignments[currIndex]);
         }
         currentAppState = AppState.Playing;
         break;
       case AppState.Playing:
-        if(Application.loadedLevelName == "AssignmentMenu"){
+        if(Application.loadedLevelName == "Login"){
           currentAppState = AppState.MenuConfig;
         }
         break;
@@ -152,9 +180,13 @@ public class AppManager : MonoBehaviour {
       userExists = true;
       username = name;
       password = wrd;
+      File.WriteAllText(loginFilePath, (name+","+wrd));
     }else if(www.text == "false"){
+			GUIManager.s_instance.SetErrorText("User Data Not Found");
       userExists = false;
     }else{
+			GUIManager.s_instance.SetErrorText("Check Internet Connection");
+
     }
   }
 
@@ -175,25 +207,40 @@ public class AppManager : MonoBehaviour {
 		yield return www;
     JSONObject allAssignments = ParseToJSON(www.text);
     totalAssigns = allAssignments.Count;
+    string[] filesToDelete = Directory.GetFiles((Application.persistentDataPath + "/"), "*.data");
+    foreach(string file in filesToDelete){
+      File.Delete(file);
+    }
+    string directoryPath = Application.persistentDataPath + "/images/";
+    if(!Directory.Exists(directoryPath)){
+      Directory.CreateDirectory(directoryPath);
+    }
+    imagesLoaded = 0;
+    imagesRequired = 0;
     for(int i = 0; i<totalAssigns;i++){
       string thisAssign = (string)(allAssignments[i].GetField("assignmentName").ToString());
       string hasImages = (string)(allAssignments[i].GetField("hasImages").ToString());
-      string directoryPath = Application.persistentDataPath + "/images/";
       string imgDirPath = directoryPath + thisAssign.Replace("\"", "") + "-images";
+<<<<<<< HEAD
       if(!Directory.Exists(imgDirPath)){
         if(!Directory.Exists(directoryPath)){
           Directory.CreateDirectory(directoryPath);
+=======
+      if(imgDirPath.Contains("cards") || imgDirPath.Contains("multiples")){
+        if(!Directory.Exists(imgDirPath)){
+          Directory.CreateDirectory(imgDirPath);
+          imagesRequired++;
+          StartCoroutine(pullImgs(thisAssign));
+        }else if(Directory.GetFiles(imgDirPath).Length < 1){
+          Directory.Delete(imgDirPath, true);
+          Directory.CreateDirectory(imgDirPath);
+          imagesRequired++;
+          StartCoroutine(pullImgs(thisAssign));
+>>>>>>> c746b7129e67bd5687681c7e6703df126df167fc
         }
-        Directory.CreateDirectory(imgDirPath);
-        StartCoroutine(pullImgs(thisAssign));
-        //Directory.CreateDirectory(pathToWrite + directoryName);
       }
       string filePath = (Application.persistentDataPath + "/" + thisAssign).Replace("\"", "");
-      if(!File.Exists(filePath + ".data")){
-        StartCoroutine(saveAssignment(thisAssign));
-      }else{
-        assignsLoaded++;
-      }
+      StartCoroutine(saveAssignment(thisAssign));
     }
     urlsDownloaded = true;
 	}
@@ -201,7 +248,6 @@ public class AppManager : MonoBehaviour {
   IEnumerator pullImgs(string assignmentName){
     string fileName = assignmentName + "-images.zip";
     fileName = fileName.Replace("\"", "");
-    print(fileName);
     string url = (serverURL + "/images?assignment=" + fileName);
 		WWW www = new WWW(url);
 		yield return www;
@@ -241,6 +287,7 @@ public class AppManager : MonoBehaviour {
         }
       }
     }
+    imagesLoaded++;
   }
 
   IEnumerator saveAssignment(string assignmentName){
@@ -341,6 +388,9 @@ public class AppManager : MonoBehaviour {
         break;
       }
     }
+    if(CheckForInternetConnection()){
+      StartCoroutine(uploadAssignMastery(assignToSave.fullAssignTitle, mastery));
+    }
     File.WriteAllText(masteryFilePath, String.Empty);
     File.WriteAllLines(masteryFilePath, masteryFile);
   }
@@ -348,6 +398,7 @@ public class AppManager : MonoBehaviour {
   public IEnumerator uploadAssignMastery(string assignmentName, int mastery){
     assignmentName = assignmentName.Replace("\"", "").ToLower();
 		WWW www = new WWW(serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString());
+    print(www.url);
     yield return www;
   }
 

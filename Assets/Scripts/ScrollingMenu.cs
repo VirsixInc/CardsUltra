@@ -8,8 +8,8 @@ public class ScrollingMenu : MonoBehaviour {
 	float velocity = 0, deceleration = -.5f;
 	float accelerationRatio = .8f;
 	public float lowerBound;
-	float startTime, lerpTime = 3f, fracJourney;
-	bool isLerpingBackInBounds = false;
+	float startTime, lerpTime = 2f, fracJourney;
+	bool isLerpingBackInBounds = false, isLerp = false;
 	public Vector3 lowerBoundPosition; //assigned from other class no good
 	public bool isDragging = false, isSwiping = false;
 	GameObject myCanvas;
@@ -17,6 +17,7 @@ public class ScrollingMenu : MonoBehaviour {
 	float currentY, initY;
 	public int currentLevelToBePlayed;
 	public bool isInMenu = false;
+	Vector3 lerpStart;
 
 	public static ScrollingMenu s_instance;
 
@@ -26,6 +27,10 @@ public class ScrollingMenu : MonoBehaviour {
 
 	void Start () {
 		myCanvas = GameObject.Find ("Canvas");
+	}
+
+	public void Initialize() {
+		Rebound ();
 	}
 
 	void OnGUI () {
@@ -38,6 +43,9 @@ public class ScrollingMenu : MonoBehaviour {
 		}
 		if (e.type == EventType.mouseUp) {
 			isDragging = false;
+			if (transform.localPosition.y <= 0 || transform.localPosition.y >= lowerBound) {
+				Rebound();
+			}
 		} 
 
 		if (e.type == EventType.mouseDrag) {
@@ -47,47 +55,29 @@ public class ScrollingMenu : MonoBehaviour {
 	}
 	void Rebound() {
 		isLerpingBackInBounds = true;
+		isLerp = true;
 		startTime = Time.time;
+		lerpStart = transform.localPosition;
 	}
 
 	void Update () {
 		if (isInMenu == false) {
-			//this block of code handles of the velocity of scrolling
-//			if (isLerpingBackInBounds == false && velocity != 0) {
-//				transform.Translate (new Vector3 (0, velocity, 0));
-//				if (Mathf.Abs (velocity) > 1) {
-//					velocity += deceleration * (Mathf.Abs (velocity) / velocity);
-//				} else if (Mathf.Abs (velocity) > .3f) {
-//					velocity += deceleration / 10 * (Mathf.Abs (velocity) / velocity);
-//				} else {
-//					velocity = 0;
-//				}		
-//			}
-//Reset
-//USING LERP
-			if (transform.localPosition.y <= 0 || transform.localPosition.y >= lowerBound) {
-				velocity = 0;
 
+//USING LERP
+			if (isLerp) {
 				fracJourney = (Time.time - startTime) / lerpTime;
 				if (fracJourney > .9f) {
-				fracJourney = 1;
+					fracJourney = 1;
 					isLerpingBackInBounds = false;
-					velocity = 0;
+					isLerp = false;
 				}
 
 
-				if (transform.localPosition.y <= 0) {
-					transform.localPosition = Vector3.Lerp (transform.localPosition, lowerBoundPosition, fracJourney);
-				} else if (transform.localPosition.y >= lowerBound) {
-					transform.localPosition = Vector3.Lerp (transform.localPosition, Vector3.zero, fracJourney);
+				if (transform.localPosition.y <= 0) { //when below the bottom of the list
+					transform.localPosition = Vector3.Lerp (lerpStart, lowerBoundPosition, fracJourney);
+				} else if (transform.localPosition.y >= lowerBound) { //when above the top of the list
+					transform.localPosition = Vector3.Lerp (lerpStart, Vector3.zero, fracJourney);
 				}
-				if (isLerpingBackInBounds == false) {
-					Rebound (); //this is a switch to only call the lerp once
-				}
-			}
-
-			if (transform.localPosition.y >= 0 && transform.localPosition.y <= lowerBound) {
-				isLerpingBackInBounds = false;
 			}
 
 			//moves the menu one for one with finger drag

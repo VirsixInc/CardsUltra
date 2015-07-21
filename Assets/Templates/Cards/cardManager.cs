@@ -37,27 +37,22 @@ public class Term{
   public int mastery = 0;
   public bool mastered = false;
   public string imgPath;
-  public Term(string newQuestion, string newAnswer, Texture2D imgToUse = null){
-    if(imgToUse != null){
-      imgAssoc = Sprite.Create(imgToUse,new Rect(0,0,imgToUse.width, imgToUse.height),new Vector2(0.5f, 0.5f));//Resources.Load<Sprite>(filePathForImg);
+  public bool imageLoaded;
+  public Term(string newQuestion, string newAnswer, string imgPathToUse = null){
+    if(imgPathToUse != null){
+      imgPath = imgPathToUse;
     }
     question = newQuestion;
     answer = newAnswer;
+
   }
-  /*
-  public IEnumerator loadImg(){
-    WWW imgToPull = new WWW(imgPath);
-    yield return imgToPull;
-    if(imgToPull.error == null){
-      Debug.Log("IMAGE IS DONE");
-      Texture2D tex = new Texture2D(256, 256, TextureFormat.RGB24, false);
-      imgToPull.LoadImageIntoTexture(tex);
-      //Texture2D tex = imgToPull.texture;
-    }else{
-      Debug.Log(imgToPull.error);
-    }
+  public void loadImage(string path){
+    byte[] currImg = File.ReadAllBytes(path);
+    Texture2D newImg = new Texture2D(256,256);
+    newImg.LoadImage(currImg);
+    imgAssoc = Sprite.Create(newImg,new Rect(0,0,newImg.width, newImg.height),new Vector2(0.5f, 0.5f));
+    imageLoaded = true;
   }
-  */
 }
 
 public class cardManager : MonoBehaviour {
@@ -66,6 +61,7 @@ public class cardManager : MonoBehaviour {
     Idle,
     ConfigGame,
     ConfigCards,
+    ImageLoad,
     PlayingCards,
     ResetCards,
     ConfigKeyboard,
@@ -95,19 +91,24 @@ public class cardManager : MonoBehaviour {
   private float timeBetweenCorrAnswers;
   private float timeAtEnd;
 
-  private int currIndex;
+  private int currIndex, assignIndex;
   private int amtOfCards;
   private int correctTermIndex;
   private int totalMastery;
+  private int currMastery = 0;
   private int requiredMastery = 4;
   private int currentPhase;
   private int levenThresh = 3;
+  private int currentImageIt;
 
   private string[] contentForAssign;
   public string baseImagePath;
 	public GameObject winningSlide;
 	
   public Slider masteryMeter;
+  public Slider loadSlider;
+  public float loadDelay = 0.5f;
+  public float timeSinceLoad;
 
 	bool soundHasPlayed = false;
   bool readyToConfigure;
@@ -115,15 +116,20 @@ public class cardManager : MonoBehaviour {
   private Vector3 questDispStart, questDispEnd;
 
   public AppManager manager;
-	
-  public void configureGame(Assignment assignToUse){
+  public GameObject loadingBar;
+
+  public void configureGame(int index){
+    assignIndex = index;
+    Assignment assignToUse = AppManager.s_instance.currentAssignments[assignIndex];
     useImages = assignToUse.hasImages;
     if(useImages){
       direct = assignToUse.imgDir;
     }
     contentForAssign = assignToUse.content;
+    currMastery = AppManager.s_instance.pullAssignMastery(assignToUse);
     readyToConfigure = true;
   }
+
 	void Update () {
     switch(currentState){
       case GameState.Idle:
@@ -149,20 +155,37 @@ public class cardManager : MonoBehaviour {
           allCards.Add(newCard);
         }
         allTerms = convertCSV(parseContent(contentForAssign));
-        unmasteredTerms = allTerms.ToList();
 
-        totalMastery = unmasteredTerms.Count*requiredMastery;
-//        baseImagePath = baseImagePath + manager.currentAssignments[manager.currIndex];
-        currentState = GameState.ResetCards;
+        totalMastery = allTerms.Count*requiredMastery;
+        currentState = GameState.ImageLoad;
+        break;
+      case GameState.ImageLoad:
+        if(loadDelay + timeSinceLoad < Time.time){
+          if(currentImageIt < allTerms.Count){
+            if(!allTerms[currentImageIt].imageLoaded){
+              allTerms[currentImageIt].loadImage(allTerms[currentImageIt].imgPath);
+              timeSinceLoad = Time.time;
+            }else{
+              currentImageIt++;
+            }
+          }else{
+            unmasteredTerms = allTerms.ToList();
+            loadingBar.SetActive(false);
+            currentState = GameState.ResetCards;
+          }
+        }else{
+          loadSlider.value = ((float)(Mathf.InverseLerp(timeSinceLoad,timeSinceLoad+loadDelay,Time.time)*1+(currentImageIt))/(float)(allTerms.Count));
+        }
         break;
       case GameState.ResetCards:
+        masteryMeter.value = getMastery();
         Timer1.s_instance.Reset(15f);
         foreach(Card currCard in allCards){
           currCard.objAssoc.SetActive(false);
         }
         correctTermIndex = Random.Range(0,unmasteredTerms.Count);
         currentDifficulty = Mathf.Clamp(currentDifficulty, unmasteredTerms[correctTermIndex].mastery,  3); 
-        amtOfCards = (int)(3*currentDifficulty);
+        amtOfCards = (int)(4.5*currentDifficulty);
         List<int> uniqueIndexes = generateUniqueRandomNum(amtOfCards, unmasteredTerms.Count, correctTermIndex);
         for(int i = 0; i<uniqueIndexes.Count;i++){
           if(!useImages){
@@ -198,7 +221,9 @@ public class cardManager : MonoBehaviour {
             }
           }else if(allCards[currIndex].answer == unmasteredTerms[correctTermIndex].answer){
             background.SendMessage("correct");
-            unmasteredTerms[correctTermIndex].mastery--;
+            if(unmasteredTerms[correctTermIndex].mastery>0){
+              unmasteredTerms[correctTermIndex].mastery--;
+            }
             currentState = GameState.ResetCards;
           }else{
             allCards[currIndex].objAssoc.SendMessage("incorrectAnswer");
@@ -209,7 +234,7 @@ public class cardManager : MonoBehaviour {
           Timer1.s_instance.Pause();
           firstPress = false;
           handleCardPress = false;
-          masteryMeter.value = getMastery();
+          //masteryMeter.value = getMastery();
           if(getMastery() >= 1f){
             currentState = GameState.ConfigKeyboard;
           }
@@ -218,7 +243,9 @@ public class cardManager : MonoBehaviour {
         }
         if(Timer1.s_instance.timesUp && !Timer1.s_instance.pause){
           Timer1.s_instance.Pause();
-          unmasteredTerms[correctTermIndex].mastery -=2;
+          if(unmasteredTerms[correctTermIndex].mastery>0){
+            unmasteredTerms[correctTermIndex].mastery--;
+          }
         }
         break;
       case GameState.ConfigKeyboard:
@@ -237,7 +264,7 @@ public class cardManager : MonoBehaviour {
         questDisplay.text = unmasteredTerms[correctTermIndex].question;
         keyboardDispText.text = "Enter text...";
 
-        
+        masteryMeter.value = getMastery();
         currentState = GameState.PlayingKeyboard;
         break;
       case GameState.PlayingKeyboard:
@@ -247,18 +274,19 @@ public class cardManager : MonoBehaviour {
               unmasteredTerms[correctTermIndex].mastery++;
             }
             currentState = GameState.ResetKeyboard;
-            if(unmasteredTerms[correctTermIndex].mastery == requiredMastery*.25f){
+            if(unmasteredTerms[correctTermIndex].mastery == requiredMastery*.5f){
               unmasteredTerms.RemoveAt(correctTermIndex);
             }
           }else if(firstSubmit){
-            keyboardDispText.text = unmasteredTerms[correctTermIndex].answer;
-            unmasteredTerms[correctTermIndex].mastery -= 2;
+            if(unmasteredTerms[correctTermIndex].mastery>0){
+              unmasteredTerms[correctTermIndex].mastery--;
+            }
           }
           Timer1.s_instance.Pause();
           firstSubmit = false;
           handleKeyboardSubmit = false;
+          keyboardDispText.text = unmasteredTerms[correctTermIndex].answer;
           keyboardText.text = "";
-          masteryMeter.value = getMastery();
           if(getMastery() >= 1f){
             currentState = GameState.End;
             timeAtEnd = Time.time;
@@ -266,7 +294,9 @@ public class cardManager : MonoBehaviour {
         }
         if(Timer1.s_instance.timesUp && !Timer1.s_instance.pause){
           Timer1.s_instance.Pause();
-          unmasteredTerms[correctTermIndex].mastery -=2;
+          if(unmasteredTerms[correctTermIndex].mastery>0){
+            unmasteredTerms[correctTermIndex].mastery--;
+          }
         }
         break;
       case GameState.End:
@@ -277,7 +307,7 @@ public class cardManager : MonoBehaviour {
         }
 
         if(timeAtEnd + 5f < Time.time){
-          Application.LoadLevel("AssignmentMenu");
+          Application.LoadLevel("Login");
           AppManager.s_instance.uploadAssignMastery(
               AppManager.s_instance.currentAssignments[currIndex].assignmentTitle,
               100);
@@ -402,26 +432,11 @@ public class cardManager : MonoBehaviour {
           }
           string imgPathToUse =  direct + "/" + thisLine[1].ToLower() + ".png";
           imgPathToUse = imgPathToUse.Replace("\"", "");
-          /*
-          DirectoryInfo persistent = new DirectoryInfo(direct);
-          FileInfo[] fileInfo = persistent.GetFiles("*",SearchOption.AllDirectories);
-          foreach(FileInfo file in fileInfo){
-            print(file);
-            print(imgPathToUse);
-          }
-          */
-          //string imgPathToUse = Path.Combine(direct.FullName, thisLine[1] + ".png");
-          if(File.Exists(imgPathToUse)){
-            byte[] currImg = File.ReadAllBytes(imgPathToUse);
-            Texture2D newImg = new Texture2D(2,2);
-            newImg.LoadImage(currImg);
-            termToAdd = new Term(thisLine[0], thisLine[1], newImg);
-          }else{
-            termToAdd = new Term(thisLine[0], thisLine[1]);//, newImg);
-          }
+          termToAdd = new Term(thisLine[0], thisLine[1], imgPathToUse);//, newImg);
         }else{
           termToAdd = new Term(thisLine[0], thisLine[1]);
         }
+        termToAdd.mastery = ((int)Mathf.Ceil(((float)(currMastery/100f))*requiredMastery));
         listToReturn.Add(termToAdd);
       }
     }

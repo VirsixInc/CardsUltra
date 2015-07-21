@@ -132,9 +132,8 @@ public class HotSpotsGame : MonoBehaviour
 	}
 	
 	IEnumerator LoadMain() {
-		print ("LOAD MAIN GETS CALLED");
 		yield return new WaitForSeconds (5f);
-		Application.LoadLevel ("AssignmentMenu");
+		Application.LoadLevel ("Login");
 	}
 	
 	void SetPhase ()

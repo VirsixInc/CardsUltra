@@ -2,9 +2,10 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public enum GameType {Text, Image};
-public enum GameState {Config, SetRound, Playing, CheckAnswer, WrongAnswer, CorrectAnswer, WinScreen};
+public enum GameState {Idle, Config, Intro, SetRound, Playing, CheckAnswer, WrongAnswer, CorrectAnswer, WinScreen};
 
 public class SequencingGame : MonoBehaviour {
 
@@ -17,16 +18,16 @@ public class SequencingGame : MonoBehaviour {
 
 	public GameObject draggableGUIPrefab, GUITargetPrefab, REDX, GREENCHECKMARK, submitButton, targetHolder;
 	public GameObject draggableHolder;
-	public GameObject winningConditionPopUp;
+	public GameObject winningConditionPopUp, IntroScreen;
 	public GameObject prompt;
 	GameObject parentCanvas, draggableGUIHolder;
 	List<GameObject> draggables = new List<GameObject>();
 	List<GameObject> targets = new List<GameObject>();
 	bool isSequenceComplete = false, isButtonPressed = false;
-	List<List<string>> matrixOfCSVData;
+	List<string[]> matrixOfCSVData;
+	public TextAsset shortNoticeCSV;
 	List<Sequence> listOfSequences, randomizedListSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
 
-	public TextAsset csvText, csvPics;
 	GameType gameType = GameType.Text;
 	GameState gameState = GameState.Config;
 	bool areDistractorTerms;
@@ -36,34 +37,65 @@ public class SequencingGame : MonoBehaviour {
 	List<float> masteryValues; //all start at 0 on first playthrough.
 	float scaleFactor, numberOfDraggablesSnapped=0;
 	float startTime, exitTime = 5f;
-	CSVParser thisCSVParser;
 	PopUpGraphic greenCheck, redX, greenCheckmark;//todo
-//	Timer1 timer; //TODO refactor to a generic timer
+	public Timer1 timer; //TODO refactor to a generic timer
 	public Image CircleMaterial;
 	public Slider mastery;
+	bool hasReceivedServerData = false;
+	bool useImages;
+	int thisIndex;
+	string direct;
 	
 	//UI Meters etc...
 	[SerializeField]
 	Color start;
 	[SerializeField]
 	Color end;
-	
 
+	Canvas myCanvas;
+	float screenWidth;
+	float screenHeight;
+
+	bool userClickedStart = false;
+	bool readyToConfigure = false;
+
+	void OnGUI () {
+		Event e = Event.current;
+		if (e.type == EventType.mouseDown && gameState == GameState.Intro) {
+			userClickedStart = true;
+			IntroScreen.SetActive(false);
+		}
+	}
+		
 	void Update () 
 	{
+		print (gameState);
 		switch (gameState) {
+		case GameState.Idle :
+			if (readyToConfigure){
+				gameState = GameState.Config;
+			}
+			break;
 		case GameState.Config :
-			ConfigureAssignment();
-			//check JSON to see if it is ReqIMG or not, if is set GameType to GameType.Image
-			gameState = GameState.SetRound;
+			if (hasReceivedServerData) {
+				ConfigureAssignment();
+				//check JSON to see if it is ReqIMG or not, if is set GameType to GameType.Image
+				gameState = GameState.Intro;
+			}
 			break;
 		
+		case GameState.Intro : 
+			if (userClickedStart) {
+				gameState = GameState.SetRound;
+
+			}
+			break;
+
 		case GameState.SetRound :
 			CheckForSequenceMastery(); //eliminate mastered sequences
 			InitiateSequence();
 			gameState = GameState.Playing;
 			break;
-		
 		case GameState.Playing :
 			CheckSequence(); //checks to see how many items have been placed
 			if (numberOfDraggablesSnapped == draggables.Count){ //when all items have been placed
@@ -84,6 +116,8 @@ public class SequencingGame : MonoBehaviour {
 
 		case GameState.CorrectAnswer :
 			if (AnswerCorrect()){
+				WinRound();
+				print ("WINNNING");
 				gameState = GameState.WinScreen;
 			}
 			else {
@@ -102,8 +136,18 @@ public class SequencingGame : MonoBehaviour {
 			}
 			break;
 		}
-		ClockShader(); //shows rotating timer
+	}
 
+
+	public void configureGame (int thisInt) {
+		thisIndex = thisInt;
+
+		matrixOfCSVData = parseContent(AppManager.s_instance.currentAssignments[thisIndex].content);
+		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
+		if(useImages){
+			direct = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
+		}
+		readyToConfigure = true;
 	}
 
 	void CheckSequence(){
@@ -114,45 +158,39 @@ public class SequencingGame : MonoBehaviour {
 				if (x.GetComponent<DraggableGUI> ().isSnapped) {
 					numberOfDraggablesSnapped++; //how many items are currently snapped +1
 				}
-				
+
 			}
-			if (numberOfDraggablesSnapped == draggables.Count)
+			if (numberOfDraggablesSnapped == draggables.Count){
 				submitButton.GetComponent<Image> ().color = new Color (1, 1, 1, 1); //show button 
+				submitButton.transform.GetChild(0).GetComponent<Text>().color = new Color (0, 0, 0, 1f);
+			}
+
 		}
 	}
 
-	void ClockShader(){
-		//COUNTDOWN CLOCK SHADER
-//		float fractionOfTimer = (timer.startTime - timer.elapsedTime) / timer.startTime; 
-//		CircleMaterial.material.SetFloat ("_Angle", Mathf.Lerp (-3.14f, 3.14f, fractionOfTimer));
-//		CircleMaterial.material.SetColor ("_Color", Color.Lerp (start, end, fractionOfTimer));
-	}
-
 	void ConfigureAssignment() {
+		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
+		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
+		screenHeight = myCanvas.GetComponent<RectTransform> ().rect.height;
+
 		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
-		scaleFactor = GameObject.Find ("GameCanvas").GetComponent<Canvas> ().scaleFactor;
-//		timer = GameObject.Find("TimerText").GetComponent<Timer1>();
+		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
 		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
-		parentCanvas = GameObject.Find ("GameCanvas");
+		parentCanvas = GameObject.FindGameObjectWithTag("shaker");
 		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
 		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
 		Input.multiTouchEnabled = true;
-
-		//parse CSV
-		thisCSVParser = GetComponent<CSVParser> ();
-		matrixOfCSVData = new List<List<string>> ();
 
 		//list init
 		listOfSequences = new List<Sequence> (); //use this to store per sequence mastery values
 		randomizedListSequences = new List<Sequence> (); //can remove from this list once mastered
 		
 		//parsing
-		matrixOfCSVData = thisCSVParser.Parse (csvText);
-		
+
 		for (int i = 0; i < matrixOfCSVData.Count; i++) { //fill out list of Sequence class instances
 			Sequence tempSequence = new Sequence();
 			tempSequence.initIndex = i;
-			tempSequence.sequenceOfStrings = matrixOfCSVData[i];
+			tempSequence.sequenceOfStrings = matrixOfCSVData[i].ToList();
 			listOfSequences.Add(tempSequence);
 		}
 		
@@ -180,14 +218,17 @@ public class SequencingGame : MonoBehaviour {
 	}
 
 	public void LoadMainMenu() {
-		Application.LoadLevel("AssignmentMenu");
+		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
+		AppManager.s_instance.uploadAssignMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].assignmentTitle, masteryOutput);
+		StartCoroutine ("LoadMain");
 
 	}
+	IEnumerator LoadMain() {
+		yield return new WaitForSeconds (5f);
+		Application.LoadLevel ("Login");
+	}
 	void WinRound() {
-		GameObject winCard = Instantiate (winningConditionPopUp) as GameObject;
-		winCard.transform.SetParent(parentCanvas.transform);
-		winCard.transform.localScale *= scaleFactor;
-		winCard.GetComponent<RectTransform>().localPosition = new Vector3(0,0,0);
+		winningConditionPopUp.SetActive(true);
 		gameState = GameState.WinScreen; //i know that this is the wrong way to change gamestate but I have to do it until a major refactor
 		startTime = Time.time;
 	}
@@ -196,39 +237,40 @@ public class SequencingGame : MonoBehaviour {
 		currentSequence = new List<string> (randomizedListSequences[currentRow].sequenceOfStrings);
 		float currentSequenceMastery = randomizedListSequences [currentRow].sequenceMastery;
 	
-		for (int i = 1; i < currentSequence.Count; i++) { //NOTE I HAD TO DO A SECOND LOOP FOR LAYERING ISSUES
+		for (int i = 0; i < currentSequence.Count; i++) { //NOTE I HAD TO DO A SECOND LOOP FOR LAYERING ISSUES
 			//calculate position of target based on i and sS.Count
-			Rect r = Camera.main.pixelRect;
-			float spaceBetweenTargets = r.width/7;
-			float totalNumberOfTargets = currentSequence.Count+1;
-			float xPositionOfTarget =  r.width/2+(-totalNumberOfTargets * spaceBetweenTargets)/2 + i*spaceBetweenTargets + spaceBetweenTargets/2; //makes targets centered
+
+			float spaceBetweenTargets = screenWidth/7;
+			float totalNumberOfTargets = currentSequence.Count;
+			float xPositionOfTarget =  (-totalNumberOfTargets * spaceBetweenTargets)/2 + i*spaceBetweenTargets + spaceBetweenTargets/2; //makes targets centered
 			GameObject tempTarget = (GameObject)Instantiate(GUITargetPrefab);
 			tempTarget.transform.SetParent(targetHolder.transform, false);
-//			tempTarget.transform.localScale = new Vector3(1f,1f,1f);
-			tempTarget.transform.position = new Vector3(xPositionOfTarget,tempTarget.transform.position.y,0);
+			tempTarget.transform.localPosition = new Vector3(xPositionOfTarget,tempTarget.transform.localPosition.y,0);
 			tempTarget.GetComponent<TargetGUI>().correctAnswer = randomizedListSequences[currentRow].sequenceOfStrings[i];
 			targets.Add (tempTarget);
 			
 		}
 		//instantiate all of the targets and draggables in the correct positions
-		for (int i = 1; i < currentSequence.Count; i++) {
+		for (int i = 0; i < currentSequence.Count; i++) {
 			//calculate position of target based on i and sS.Count
 			//generate currentSequence.Count number dragable GUI objects
 			GameObject tempDraggable = (GameObject)Instantiate(draggableGUIPrefab);
 			tempDraggable.transform.SetParent(draggableGUIHolder.transform);
 			tempDraggable.transform.localScale *= scaleFactor;
 			tempDraggable.GetComponent<RectTransform>().localPosition = new Vector3(0,0,0);
+			tempDraggable.GetComponent<RectTransform>().localScale = new Vector3(1,1,1);
+
 			tempDraggable.GetComponent<DraggableGUI>().SetValues(currentSequence[i], gameType);
 			draggables.Add (tempDraggable);
 		}
 		//use mastery to determine how many answers will be filled in
 		//GameObject targetHolder = GameObject.Find ("TargetGUIHolder");
-		string tempPrompt = currentSequence [0];
-		string replaceComma = tempPrompt.Replace ('/', ',');
+//		string tempPrompt = currentSequence [0];
+//		string replaceComma = tempPrompt.Replace ('/', ',');
 
-		prompt.GetComponent<Text> ().text = replaceComma;
+//		prompt.GetComponent<Text> ().text = replaceComma;
 		int totalSpotsFilled = 0;
-		for (int i = 0; i < (4 - 4*currentSequenceMastery); i++){ //currentSequenceMastery increments in .25f
+		for (int i = 0; i < (2 - 2*currentSequenceMastery); i++){ //currentSequenceMastery increments in .5 f
 			//make sure it does not fill out all answers
 			if (totalSpotsFilled >= currentSequence.Count - 1){
 				break;
@@ -240,6 +282,7 @@ public class SequencingGame : MonoBehaviour {
 				totalSpotsFilled++;
 			}
 		}
+		timer.Reset (15f);
 
 	}
 
@@ -262,33 +305,33 @@ public class SequencingGame : MonoBehaviour {
 		}
 	}
 
-//	void AdjustMasteryMeter(bool didAnswerCorrect) {
-////		if (didAnswerCorrect && timer.timer > 1) {
-//			listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery += .25f;
-//		}
-//
-//		else {
-//			if (listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery > 0) {
-//				listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery -= .25f;
-//			}
-//		}
-//
-//		float totalMastery = 0f;
-//		foreach (Sequence x in listOfSequences) {
-//			totalMastery+=x.sequenceMastery;
-//		}
-//		totalMastery = totalMastery / listOfSequences.Count;
-//		mastery.value = totalMastery;
-////		timer.TrackWinLoss(didAnswerCorrect);
-////		timer.Reset();
-//
-//	}
+	void AdjustMasteryMeter(bool didAnswerCorrect) {
+		if (didAnswerCorrect && !timer.timesUp) {
+			listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery += .5f;
+		}
+
+		else {
+			if (listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery > 0) {
+				listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery -= .5f;
+			}
+		}
+
+		float totalMastery = 0f;
+		foreach (Sequence x in listOfSequences) {
+			totalMastery+=x.sequenceMastery;
+		}
+		totalMastery = totalMastery / listOfSequences.Count;
+		mastery.value = totalMastery;
+		AppManager.s_instance.currentAssignments[thisIndex].mastery = (int)totalMastery*100;
+		timer.Reset(15f);
+
+	}
 
 	void AnswerWrong(){
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_wrong);
-
+		GameObject.FindGameObjectWithTag ("shaker").GetComponent<Shake>().StartShake();
 		redX.StartFade (); //TODO change to drag this into inspector
-//		AdjustMasteryMeter (false);
+		AdjustMasteryMeter (false);
 		foreach(GameObject go in draggables){
 			if (go.GetComponent<DraggableGUI>().isMismatched == true) { //showing what you got right and wrong with red and green GUIs
 				GameObject gr = Instantiate(REDX) as GameObject;
@@ -304,7 +347,7 @@ public class SequencingGame : MonoBehaviour {
 			}
 		}
 		ResetDraggables();
-//		timer.TrackWinLoss(false);
+		timer.timesUp = true;
 		DisableSubmitButton ();
 
 	}
@@ -314,9 +357,6 @@ public class SequencingGame : MonoBehaviour {
 
 		greenCheck.StartFade (); //TODO set in inspector
 		foreach(GameObject go in draggables) {
-//			GameObject gc = Instantiate(GREENCHECKMARK) as GameObject;
-//			gc.transform.SetParent(GameObject.Find ("GameCanvas").transform);
-//			gc.transform.position = go.transform.position;
 			Destroy (go);
 		}
 		foreach (GameObject fo in targets) {
@@ -326,7 +366,7 @@ public class SequencingGame : MonoBehaviour {
 		draggables.Clear();
 		currentRow++;
 		CheckForSequenceMastery ();
-//		AdjustMasteryMeter (true);
+		AdjustMasteryMeter (true);
 		DisableSubmitButton ();
 
 		if (mastery.value > .97f) {
@@ -337,20 +377,45 @@ public class SequencingGame : MonoBehaviour {
 	}
 
 	void ResetDraggables () {
-		for (int i = 1; i < currentSequence.Count; i++) {
-			if (draggables[i-1].GetComponent<DraggableGUI>().isMismatched){
-				draggables[i-1].GetComponent<DraggableGUI>().isSnapped = false;
-				draggables[i-1].transform.position = new Vector3 (Screen.width/2, Screen.height/2, 0);
+		for (int i = 0; i < currentSequence.Count; i++) {
+			if (draggables[i].GetComponent<DraggableGUI>().isMismatched){
+				draggables[i].GetComponent<DraggableGUI>().isSnapped = false;
+				draggables[i].transform.localPosition = new Vector3 (0, 0, 0);
+				draggables[i].GetComponent<DraggableGUI>().SetToStartColor();
 			}
 		}
 	}
 	void DisableSubmitButton(){
 		submitButton.GetComponent<Image> ().color = new Color (1, 1, 1, .3f); //allow
+		submitButton.transform.GetChild(0).GetComponent<Text>().color = new Color (0, 0, 0, .3f);
 		isButtonPressed = false;
 	}
 	public void PressSubmitButton () {
 		if (submitButton.GetComponent<Image> ().color.a == 1f) {
 			isButtonPressed = true;
 		}
+	}
+
+	private List<string[]> parseContent(string[] contentToParse){
+		List<string[]> listToReturn = new List<string[]>();
+		string[] lines = contentToParse;
+		for(int i = 0;i<lines.Length;i++){
+			string[] currLine = lines[i].Split(',');
+			if(currLine.Length > 0){
+				for(int j = 0;j<currLine.Length;j++){
+					currLine[j] = currLine[j].Replace('\\',',');
+					currLine[j] = currLine[j].ToLower();
+				}
+				listToReturn.Add(currLine);
+			}
+		}
+		for(int i = 0; i < listToReturn.Count; i++){
+			for(int j = 0; j < listToReturn[i].Length; j++){
+				string temp = listToReturn[i][j].Replace('|',',');
+				listToReturn[i][j] = temp;
+			}
+		}
+		hasReceivedServerData = true;
+		return listToReturn;
 	}
 }

@@ -15,7 +15,7 @@ public class AssignmentStartButton : MonoBehaviour {
 	
 	void OnFingerDown () {
 		selectTimer = Time.time;
-		positionAtFingerDown = transform.position;
+		positionAtFingerDown = transform.localPosition;
 	}
 
 	
@@ -35,12 +35,11 @@ public class AssignmentStartButton : MonoBehaviour {
 	}
 
 	void CallManager() {
-		if (Time.time - selectTimer < .2f && Vector3.Distance(positionAtFingerDown, transform.position) < 1f) {
+		if (Time.time - selectTimer < .15f && Vector3.Distance(positionAtFingerDown, transform.localPosition) < 1f && !ScrollingMenu.s_instance.isInMenu) {
 			//		SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_start);
 			GameObject.FindGameObjectWithTag ("scrollingMenu").GetComponent<ScrollingMenu>().currentLevelToBePlayed =
 				gameObject.GetComponent<AssignmentGUI>().assignmentIndex;
-			mainMenuCanvas.GetComponent<MenuButtonManager>().EnableMenu();
-			GameObject.FindGameObjectWithTag("MainCamera").GetComponent<BlurLerp>().Blur();
+			GUIManager.s_instance.EnableMenu();
 
 			//AppManager.s_instance.currentAssignment = transform.parent.GetComponent<Assignment> ();
 			//		AppManager.s_instance.currentAppState = AppState.Playing;
