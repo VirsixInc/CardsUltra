@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Linq;
 
 public class MultipleChoiceGame : MonoBehaviour {
 
@@ -22,6 +23,10 @@ public class MultipleChoiceGame : MonoBehaviour {
 	public Timer1 timer;
 	public GameObject winCard;
 	int thisIndex;
+	private int requiredMastery = 4;
+	public float loadDelay = 0.5f;
+	public float timeSinceLoad;
+	int currentImageIt;
 
 	bool hasReceivedServerData = false, readyToConfigure;
 
@@ -32,18 +37,22 @@ public class MultipleChoiceGame : MonoBehaviour {
 	bool isSequenceComplete = false, isButtonPressed = false;
 	List<List<string>> matrixOfCSVData;
 	List<Sequence> listOfSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
-	
+
+	public List<Sequence> allTerms = new List<Sequence>();
+	public List<Sequence> unmasteredTerms = new List<Sequence>();
+
 	GameType gameType = GameType.Text;
 	GameState gameState = GameState.Intro;
 	bool areDistractorTerms;
 	int currentRow = 0; //currentRow is the iterator that goes through the remaining sequences
 	int xRandomRange, yRandomRange;
-	List<string> currentSequence;
+	string[] currentSequence;
 	List<float> masteryValues; //all start at 0 on first playthrough.
 	float scaleFactor, numberOfDraggablesSnapped=0;
 	float startTime, exitTime = 5f;
 	CSVParser thisCSVParser;
 	PopUpGraphic greenCheck, redX, greenCheckmark;//todo
+	public Slider loadSlider;
 
 	//UI Meters etc...
 	[SerializeField]
@@ -51,28 +60,10 @@ public class MultipleChoiceGame : MonoBehaviour {
 	[SerializeField]
 	Color end;
 
-	public void configureGame(int thisInt){
-		thisIndex = thisInt;
-		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
-		if(useImages){
-			direct = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
-		}
-		contentForAssign = AppManager.s_instance.currentAssignments[thisIndex].content;
-		currMastery = AppManager.s_instance.pullAssignMastery(AppManager.s_instance.currentAssignments[thisIndex]);
-		readyToConfigure = true;
-	}
-
 	bool userClickedStart = false;
-	
-	void OnGUI () {
-		Event e = Event.current;
-		if (e.type == EventType.mouseDown && gameState == GameState.Intro) {
-			userClickedStart = true;
-			introScreen.SetActive(false);
-		}
-	}
 
-	
+
+	//STATE MACHINE
 	void Update () {
 		switch(gameState){
 		case GameState.Intro :
@@ -88,12 +79,33 @@ public class MultipleChoiceGame : MonoBehaviour {
 				gameState = GameState.Config;
 			}
 			break;
+		
 		case GameState.Config :
 			ConfigureAssignment();
 			//check JSON to see if it is ReqIMG or not, if is set GameType to GameType.Image
-			gameState = GameState.SetRound;
+			if (useImages) {
+				gameState = GameState.ImageLoad;
+			}
+			else gameState = GameState.SetRound;
 			break;
-			
+
+		case GameState.ImageLoad:
+			if(loadDelay + timeSinceLoad < Time.time){
+				if(currentImageIt < allTerms.Count){
+					if(!allTerms[currentImageIt].imageLoaded){
+						allTerms[currentImageIt].loadImage(allTerms[currentImageIt].imgPath);
+						timeSinceLoad = Time.time;
+					}else{
+						currentImageIt++;
+					}
+				}else{
+					unmasteredTerms = allTerms.ToList();
+					gameState = GameState.SetRound;
+				}
+			}else{
+				loadSlider.value = ((float)(Mathf.InverseLerp(timeSinceLoad,timeSinceLoad+loadDelay,Time.time)*1+(currentImageIt))/(float)(allTerms.Count));
+			}
+			break;
 		case GameState.SetRound :
 			CheckForSequenceMastery(); //eliminate mastered sequences
 			InitiateSequence();
@@ -141,6 +153,50 @@ public class MultipleChoiceGame : MonoBehaviour {
 		}
 
 	}
+
+	public void configureGame(int thisInt){
+		thisIndex = thisInt;
+		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
+		if(useImages){
+			direct = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
+		}
+		contentForAssign = AppManager.s_instance.currentAssignments[thisIndex].content;
+		currMastery = AppManager.s_instance.pullAssignMastery(AppManager.s_instance.currentAssignments[thisIndex]);
+		readyToConfigure = true;
+	}
+	
+
+	void OnGUI () {
+		Event e = Event.current;
+		if (e.type == EventType.mouseDown && gameState == GameState.Intro) {
+			userClickedStart = true;
+			introScreen.SetActive(false);
+		}
+	}
+
+	void ConfigureAssignment() {
+		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
+		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
+//		timer = GameObject.Find("TimerText").GetComponent<Timer1>();
+		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
+		parentCanvas = GameObject.Find ("Canvas");
+		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
+		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
+		Input.multiTouchEnabled = true;
+		
+		//parse CSV
+		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
+		if(useImages){
+			direct = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
+		}
+		
+		//list init
+		listOfSequences = new List<Sequence> (); //use this to store per sequence mastery values
+		listOfSequences = convertCSV(parseContent(AppManager.s_instance.currentAssignments[thisIndex].content));
+
+		timer.Reset(15f);
+
+	}
 	
 	void CheckSequence(){
 		//checks to see how many items are currently snapped into place, keeps track of the number.
@@ -156,37 +212,6 @@ public class MultipleChoiceGame : MonoBehaviour {
 				submitButton.GetComponent<Image> ().color = new Color (1, 1, 1, 1); //show button 
 		}
 	}
-	
-	void ConfigureAssignment() {
-		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
-		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
-//		timer = GameObject.Find("TimerText").GetComponent<Timer1>();
-		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
-		parentCanvas = GameObject.Find ("Canvas");
-		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
-		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
-		Input.multiTouchEnabled = true;
-		
-		//parse CSV
-		thisCSVParser = GetComponent<CSVParser> ();
-		matrixOfCSVData = new List<List<string>> ();
-		
-		//list init
-		listOfSequences = new List<Sequence> (); //use this to store per sequence mastery values
-
-		//parsing
-		matrixOfCSVData = thisCSVParser.Parse (csvText);
-		
-		for (int i = 0; i < matrixOfCSVData.Count; i++) { //fill out list of Sequence class instances
-			Sequence tempSequence = new Sequence();
-			tempSequence.initIndex = i;
-			tempSequence.sequenceOfStrings = matrixOfCSVData[i];
-			listOfSequences.Add(tempSequence);
-		}
-		timer.Reset(15f);
-
-	}
-	
 	public void CheckForSequenceMastery() {
 		if (currentRow >= listOfSequences.Count)
 			currentRow = 0; //loop around to beginning of list
@@ -212,9 +237,9 @@ public class MultipleChoiceGame : MonoBehaviour {
 	
 	public void InitiateSequence () { //displaces current sequence
 		currentSequence = listOfSequences [currentRow].sequenceOfStrings;
-		picture.sprite = pictures [currentRow].sprite;
+		picture.sprite = listOfSequences [currentRow].imgAssoc;
 		//instantiate all of the targets and draggables in the correct positions
-		for (int i = 1; i < currentSequence.Count; i++) {
+		for (int i = 1; i < currentSequence.Length; i++) {
 			//calculate position of target based on i and sS.Count
 			//generate currentSequence.Count number dragable GUI objects
 			GameObject tempDraggable = (GameObject)Instantiate(draggableGUIPrefab);
@@ -233,15 +258,10 @@ public class MultipleChoiceGame : MonoBehaviour {
 	}
 	
 	public bool Checker (){
-		print ("checK");
 		if (target.GetComponent<TargetGUI>().correctAnswer == target.GetComponent<TargetGUI>().occupier.GetComponent<DraggableGUI>().stringValue) {
-			print ("true");
-
 			return true;
 		}
 		else {
-			print ("false");
-
 			return false;
 		}
 	}
@@ -335,6 +355,29 @@ public class MultipleChoiceGame : MonoBehaviour {
 			}
 		}
 		hasReceivedServerData = true;
+		return listToReturn;
+	}
+
+	//Put content everything into sequence classes 	
+	List<Sequence> convertCSV(List<string[]> inputString){
+		List<Sequence> listToReturn = new List<Sequence>();
+		foreach(string[] thisLine in inputString){
+			if(thisLine.Length > 1){
+				Sequence termToAdd;
+				if(useImages){
+					if(thisLine[1][0] == ' '){
+						thisLine[1] = thisLine[1].Substring(1,thisLine[1].Length-1);
+					}
+					string imgPathToUse =  direct + "/" + thisLine[1].ToLower() + ".png";
+					imgPathToUse = imgPathToUse.Replace("\"", "");
+					termToAdd = new Sequence(thisLine, imgPathToUse);//, newImg);
+				}else{
+					termToAdd = new Sequence(thisLine);
+				}
+				termToAdd.sequenceMastery = ((int)Mathf.Ceil(((float)(currMastery/100f))*requiredMastery));
+				listToReturn.Add(termToAdd);
+			}
+		}
 		return listToReturn;
 	}
 }

@@ -7,11 +7,20 @@ using UnityEngine.UI;
 
 public class Sequence  {
 	
-	public List<string> sequenceOfStrings;
-	public float sequenceMastery = 0; //incremented by .25, used to adjust difficulty
+	public string[] sequenceOfStrings;
+	public float sequenceMastery = 0;
 	public int initIndex; //used to keep track of sequences throughout scene switching etc... similar to an ID
 	public Sprite imgAssoc;
-	bool imageLoaded = false;
+	public bool imageLoaded = false;
+	public string imgPath;
+	public Sequence(){}
+	public Sequence(string[] newSequenceOfStrings, string imgPathToUse = null){
+		if(imgPathToUse != null){
+			imgPath = imgPathToUse;
+		}
+		sequenceOfStrings = newSequenceOfStrings;
+	}
+
 
 	public void loadImage(string path){
 		byte[] currImg = File.ReadAllBytes(path);

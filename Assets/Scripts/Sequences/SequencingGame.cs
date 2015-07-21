@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 public enum GameType {Text, Image};
-public enum GameState {Idle, Config, Intro, SetRound, Playing, CheckAnswer, WrongAnswer, CorrectAnswer, WinScreen};
+public enum GameState {Idle, Config, ImageLoad, Intro, SetRound, Playing, CheckAnswer, WrongAnswer, CorrectAnswer, WinScreen};
 
 public class SequencingGame : MonoBehaviour {
 
@@ -190,7 +190,7 @@ public class SequencingGame : MonoBehaviour {
 		for (int i = 0; i < matrixOfCSVData.Count; i++) { //fill out list of Sequence class instances
 			Sequence tempSequence = new Sequence();
 			tempSequence.initIndex = i;
-			tempSequence.sequenceOfStrings = matrixOfCSVData[i].ToList();
+			tempSequence.sequenceOfStrings = matrixOfCSVData[i];
 			listOfSequences.Add(tempSequence);
 		}
 		
