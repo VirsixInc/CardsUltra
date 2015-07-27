@@ -9,7 +9,7 @@ public class DynamicButton : MonoBehaviour {
 
 	float lerpTime = .2f;
 	float currentLerpTime = .3f;
-	float enlargeScale = 1.1f;
+	float enlargeScale = 1f;
 	float moveDistance = 10f;
 
 	public Color highlighted, idle;

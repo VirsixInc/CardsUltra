@@ -172,7 +172,30 @@ public class SequencingGame : MonoBehaviour {
 		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
 		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
 		screenHeight = myCanvas.GetComponent<RectTransform> ().rect.height;
-
+		//  Hover Force
+		//    RaycastHit hit;
+		//    for (int i = 0; i < m_hoverPoints.Length; i++)
+		//    {
+		//      var hoverPoint = m_hoverPoints [i];
+		//      if (Physics.Raycast(hoverPoint.transform.position, 
+		//                          -Vector3.up, out hit,
+		//                          m_hoverHeight,
+		//                          m_layerMask))
+		//        m_body.AddForceAtPosition(Vector3.up 
+		//          * m_hoverForce
+		//          * (1.0f - (hit.distance / m_hoverHeight)), 
+		//                                  hoverPoint.transform.position);
+		//      else {
+		//        if (transform.position.y > hoverPoint.transform.position.y)
+		//          m_body.AddForceAtPosition(
+		//            hoverPoint.transform.up * m_hoverForce,
+		//            hoverPoint.transform.position);
+		//        else
+		//          m_body.AddForceAtPosition(
+		//            hoverPoint.transform.up * -m_hoverForce,
+		//            hoverPoint.transform.position);
+		//      }
+		//    }
 		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
 		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
 		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
