@@ -383,14 +383,15 @@ public class AppManager : MonoBehaviour {
       }
     }
     if(CheckForInternetConnection()){
-      StartCoroutine(uploadAssignMastery(assignToSave.fullAssignTitle, mastery));
+      StartCoroutine(uploadAssignMastery(assignToSave, mastery));
     }
     File.WriteAllText(masteryFilePath, String.Empty);
     File.WriteAllLines(masteryFilePath, masteryFile);
   }
 
-  public IEnumerator uploadAssignMastery(string assignmentName, int mastery){
-    assignmentName = assignmentName.Replace("\"", "").ToLower();
+  public IEnumerator uploadAssignMastery(Assignment assignToUpload, int mastery){
+    string assignmentName = assignToUpload.assignmentTitle.Replace("\"", "").ToLower();
+		saveAssignmentMastery(assignToUpload, mastery);
 		WWW www = new WWW(serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString());
     print(www.url);
     yield return www;

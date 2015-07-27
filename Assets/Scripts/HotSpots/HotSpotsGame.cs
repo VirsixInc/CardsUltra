@@ -119,7 +119,7 @@ public class HotSpotsGame : MonoBehaviour
 			break;
 		case HotSpotGameState.Win:
 			int masteryOutput = Mathf.CeilToInt(masteryMeter.value*100);
-			AppManager.s_instance.uploadAssignMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].assignmentTitle, masteryOutput);
+			AppManager.s_instance.uploadAssignMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex], masteryOutput);
 			if (isExiting == false){
 				StartCoroutine("LoadMain");
 				if(SoundManager.s_instance!=null)SoundManager.s_instance.PlaySound(SoundManager.s_instance.m_win);

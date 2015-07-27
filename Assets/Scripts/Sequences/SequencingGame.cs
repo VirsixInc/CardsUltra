@@ -141,13 +141,16 @@ public class SequencingGame : MonoBehaviour {
 
 	public void configureGame (int thisInt) {
 		thisIndex = thisInt;
-
+		Assignment assignToUse = AppManager.s_instance.currentAssignments[thisIndex];
 		matrixOfCSVData = parseContent(AppManager.s_instance.currentAssignments[thisIndex].content);
 		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
 		if(useImages){
 			direct = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
 		}
 		readyToConfigure = true;
+		print(AppManager.s_instance.pullAssignMastery(assignToUse));
+		mastery.value = (float)AppManager.s_instance.pullAssignMastery(assignToUse)/100f;
+
 	}
 
 	void CheckSequence(){
@@ -172,30 +175,7 @@ public class SequencingGame : MonoBehaviour {
 		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
 		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
 		screenHeight = myCanvas.GetComponent<RectTransform> ().rect.height;
-		//  Hover Force
-		//    RaycastHit hit;
-		//    for (int i = 0; i < m_hoverPoints.Length; i++)
-		//    {
-		//      var hoverPoint = m_hoverPoints [i];
-		//      if (Physics.Raycast(hoverPoint.transform.position, 
-		//                          -Vector3.up, out hit,
-		//                          m_hoverHeight,
-		//                          m_layerMask))
-		//        m_body.AddForceAtPosition(Vector3.up 
-		//          * m_hoverForce
-		//          * (1.0f - (hit.distance / m_hoverHeight)), 
-		//                                  hoverPoint.transform.position);
-		//      else {
-		//        if (transform.position.y > hoverPoint.transform.position.y)
-		//          m_body.AddForceAtPosition(
-		//            hoverPoint.transform.up * m_hoverForce,
-		//            hoverPoint.transform.position);
-		//        else
-		//          m_body.AddForceAtPosition(
-		//            hoverPoint.transform.up * -m_hoverForce,
-		//            hoverPoint.transform.position);
-		//      }
-		//    }
+	
 		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
 		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
 		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
@@ -242,12 +222,11 @@ public class SequencingGame : MonoBehaviour {
 
 	public void LoadMainMenu() {
 		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
-		AppManager.s_instance.uploadAssignMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].assignmentTitle, masteryOutput);
 		StartCoroutine ("LoadMain");
 
 	}
 	IEnumerator LoadMain() {
-		yield return new WaitForSeconds (5f);
+		yield return new WaitForSeconds (2f);
 		Application.LoadLevel ("Login");
 	}
 	void WinRound() {
@@ -333,7 +312,7 @@ public class SequencingGame : MonoBehaviour {
 			listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery += .5f;
 		}
 
-		else {
+		else if (!didAnswerCorrect) {
 			if (listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery > 0) {
 				listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery -= .5f;
 			}
@@ -346,7 +325,7 @@ public class SequencingGame : MonoBehaviour {
 		totalMastery = totalMastery / listOfSequences.Count;
 		mastery.value = totalMastery;
 		AppManager.s_instance.currentAssignments[thisIndex].mastery = (int)totalMastery*100;
-		timer.Reset(15f);
+		timer.Reset(25f);
 
 	}
 
@@ -392,7 +371,7 @@ public class SequencingGame : MonoBehaviour {
 		AdjustMasteryMeter (true);
 		DisableSubmitButton ();
 
-		if (mastery.value > .97f) {
+		if (mastery.value > .97f ) {
 			return true;
 		} else { 
 			return false;
