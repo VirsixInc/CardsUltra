@@ -54,7 +54,6 @@ public class SequencingGame : MonoBehaviour {
 
 	Canvas myCanvas;
 	float screenWidth;
-	float screenHeight;
 
 	bool userClickedStart = false;
 	bool readyToConfigure = false;
@@ -174,7 +173,6 @@ public class SequencingGame : MonoBehaviour {
 	void ConfigureAssignment() {
 		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
 		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
-		screenHeight = myCanvas.GetComponent<RectTransform> ().rect.height;
 	
 		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
 		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
