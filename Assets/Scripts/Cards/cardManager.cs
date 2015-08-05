@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 
-public class cardManager : MonoBehaviour
+public class cardManager : BRTemplate
 {
 
 	public enum GameState
@@ -37,36 +37,19 @@ public class cardManager : MonoBehaviour
 	public List<Term> allTerms = new List<Term> ();
 	public List<Term> unmasteredTerms = new List<Term> ();
   
-	private string direct;
 
 	private bool useImages, handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit;
 
 	private int currentDifficulty;
 
-	private float timeBetweenCorrAnswers;
-	private float timeAtEnd;
 
-	private int currIndex, assignIndex;
 	private int amtOfCards;
 	private int correctTermIndex;
-	private int totalMastery;
-	private int currMastery = 0;
-	private int requiredMastery = 4;
 	private int currentPhase;
 	private int levenThresh = 3;
 	private int currentImageIt;
 
-	private string[] contentForAssign;
-	public string baseImagePath;
-	public GameObject winningSlide;
-	
-	public Slider masteryMeter;
-	public Slider loadSlider;
-	public float loadDelay = 0.5f;
-	public float timeSinceLoad;
-
 	bool soundHasPlayed = false;
-	bool readyToConfigure;
 
 	private Vector3 questDispStart, questDispEnd;
 
@@ -79,7 +62,7 @@ public class cardManager : MonoBehaviour
 		Assignment assignToUse = AppManager.s_instance.currentAssignments [assignIndex];
 		useImages = assignToUse.hasImages;
 		if (useImages) {
-			direct = assignToUse.imgDir;
+			directoryForAssignment = assignToUse.imgDir;
 		}
 		contentForAssign = assignToUse.content;
 		currMastery = AppManager.s_instance.pullAssignMastery (assignToUse);
@@ -399,7 +382,7 @@ public class cardManager : MonoBehaviour
 					if (thisLine [1] [0] == ' ') {
 						thisLine [1] = thisLine [1].Substring (1, thisLine [1].Length - 1);
 					}
-					string imgPathToUse = direct + "/" + thisLine [1].ToLower () + ".png";
+					string imgPathToUse = directoryForAssignment + "/" + thisLine [1].ToLower () + ".png";
 					imgPathToUse = imgPathToUse.Replace ("\"", "");
 					termToAdd = new Term (thisLine [0], thisLine [1], imgPathToUse);//, newImg);
 				} else {
