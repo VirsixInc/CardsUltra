@@ -5,9 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 public enum GameType {Text, Image};
-public enum GameState {Idle, Config, ImageLoad, Intro, SetRound, Playing, CheckAnswer, WrongAnswer, CorrectAnswer, WinScreen};
 
-public class SequencingGame : MonoBehaviour {
+public class SequencingGame : BRTemplate {
+
+	public enum GameState {Idle, Config, ImageLoad, Intro, SetRound, Playing, CheckAnswer, WrongAnswer, CorrectAnswer, WinScreen};
 
 	/*
 
@@ -18,7 +19,6 @@ public class SequencingGame : MonoBehaviour {
 
 	public GameObject draggableGUIPrefab, GUITargetPrefab, REDX, GREENCHECKMARK, submitButton, targetHolder;
 	public GameObject draggableHolder;
-	public GameObject winningConditionPopUp, IntroScreen;
 	public GameObject prompt;
 	GameObject parentCanvas, draggableGUIHolder;
 	List<GameObject> draggables = new List<GameObject>();
@@ -42,10 +42,7 @@ public class SequencingGame : MonoBehaviour {
 	public Image CircleMaterial;
 	public Slider mastery;
 	bool hasReceivedServerData = false;
-	bool useImages;
-	int thisIndex;
-	string direct;
-	
+
 	//UI Meters etc...
 	[SerializeField]
 	Color start;
@@ -62,7 +59,7 @@ public class SequencingGame : MonoBehaviour {
 		Event e = Event.current;
 		if (e.type == EventType.mouseDown && gameState == GameState.Intro) {
 			userClickedStart = true;
-			IntroScreen.SetActive(false);
+			introSlide.SetActive(false);
 		}
 	}
 		
@@ -139,12 +136,12 @@ public class SequencingGame : MonoBehaviour {
 
 
 	public void configureGame (int thisInt) {
-		thisIndex = thisInt;
-		Assignment assignToUse = AppManager.s_instance.currentAssignments[thisIndex];
-		matrixOfCSVData = parseContent(AppManager.s_instance.currentAssignments[thisIndex].content);
-		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
+		assignIndex = thisInt;
+		Assignment assignToUse = AppManager.s_instance.currentAssignments[assignIndex];
+		matrixOfCSVData = parseContent(AppManager.s_instance.currentAssignments[assignIndex].content);
+		useImages = AppManager.s_instance.currentAssignments[assignIndex].hasImages;
 		if(useImages){
-			direct = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
+			directoryForAssignment = AppManager.s_instance.currentAssignments[assignIndex].imgDir;
 		}
 		readyToConfigure = true;
 		print(AppManager.s_instance.pullAssignMastery(assignToUse));
@@ -228,7 +225,7 @@ public class SequencingGame : MonoBehaviour {
 		Application.LoadLevel ("Login");
 	}
 	void WinRound() {
-		winningConditionPopUp.SetActive(true);
+		winningSlide.SetActive(true);
 		gameState = GameState.WinScreen; //i know that this is the wrong way to change gamestate but I have to do it until a major refactor
 		startTime = Time.time;
 	}
@@ -322,7 +319,7 @@ public class SequencingGame : MonoBehaviour {
 		}
 		totalMastery = totalMastery / listOfSequences.Count;
 		mastery.value = totalMastery;
-		AppManager.s_instance.currentAssignments[thisIndex].mastery = (int)totalMastery*100;
+		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)totalMastery*100;
 		timer.Reset(25f);
 
 	}

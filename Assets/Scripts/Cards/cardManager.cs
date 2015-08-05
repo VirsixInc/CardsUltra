@@ -36,18 +36,15 @@ public class cardManager : BRTemplate
 	public List<Card> allCards = new List<Card> ();
 	public List<Term> allTerms = new List<Term> ();
 	public List<Term> unmasteredTerms = new List<Term> ();
-  
 
-	private bool useImages, handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit;
+	private bool handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit;
 
 	private int currentDifficulty;
-
 
 	private int amtOfCards;
 	private int correctTermIndex;
 	private int currentPhase;
 	private int levenThresh = 3;
-	private int currentImageIt;
 
 	bool soundHasPlayed = false;
 
@@ -55,19 +52,6 @@ public class cardManager : BRTemplate
 
 	public AppManager manager;
 	public GameObject loadingBar;
-
-	public void configureGame (int index)
-	{
-		assignIndex = index;
-		Assignment assignToUse = AppManager.s_instance.currentAssignments [assignIndex];
-		useImages = assignToUse.hasImages;
-		if (useImages) {
-			directoryForAssignment = assignToUse.imgDir;
-		}
-		contentForAssign = assignToUse.content;
-		currMastery = AppManager.s_instance.pullAssignMastery (assignToUse);
-		readyToConfigure = true;
-	}
 
 	void Update ()
 	{
@@ -101,12 +85,12 @@ public class cardManager : BRTemplate
 			break;
 		case GameState.ImageLoad:
 			if (loadDelay + timeSinceLoad < Time.time) {
-				if (currentImageIt < allTerms.Count) {
-					if (!allTerms [currentImageIt].imageLoaded) {
-						allTerms [currentImageIt].loadImage (allTerms [currentImageIt].imgPath);
+				if (currentImageIterator < allTerms.Count) {
+					if (!allTerms [currentImageIterator].imageLoaded) {
+						allTerms [currentImageIterator].loadImage (allTerms [currentImageIterator].imgPath);
 						timeSinceLoad = Time.time;
 					} else {
-						currentImageIt++;
+						currentImageIterator++;
 					}
 				} else {
 					unmasteredTerms = allTerms.ToList ();
@@ -114,7 +98,7 @@ public class cardManager : BRTemplate
 					currentState = GameState.ResetCards;
 				}
 			} else {
-				loadSlider.value = ((float)(Mathf.InverseLerp (timeSinceLoad, timeSinceLoad + loadDelay, Time.time) * 1 + (currentImageIt)) / (float)(allTerms.Count));
+				loadSlider.value = ((float)(Mathf.InverseLerp (timeSinceLoad, timeSinceLoad + loadDelay, Time.time) * 1 + (currentImageIterator)) / (float)(allTerms.Count));
 			}
 			break;
 		case GameState.ResetCards:
@@ -259,6 +243,19 @@ public class cardManager : BRTemplate
         
 			break;
 		}
+	}
+
+	public void configureGame (int index)
+	{
+		assignIndex = index;
+		Assignment assignToUse = AppManager.s_instance.currentAssignments [assignIndex];
+		useImages = assignToUse.hasImages;
+		if (useImages) {
+			directoryForAssignment = assignToUse.imgDir;
+		}
+		contentForAssign = assignToUse.content;
+		currMastery = AppManager.s_instance.pullAssignMastery (assignToUse);
+		readyToConfigure = true;
 	}
 
 	public void cardHandler (int cardIndex)

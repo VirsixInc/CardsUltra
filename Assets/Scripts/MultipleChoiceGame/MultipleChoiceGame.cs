@@ -4,13 +4,13 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 
-public class MultipleChoiceGame : MonoBehaviour {
+public class MultipleChoiceGame : BRTemplate {
 
+	public enum GameState {Idle, Config, ImageLoad, Intro, SetRound, Playing, CheckAnswer, WrongAnswer, CorrectAnswer, WinScreen};
+	
 	public GameObject draggableGUIPrefab, GUITargetPrefab, REDX, GREENCHECKMARK, submitButton;
 	public GameObject draggableHolder;
-	public GameObject winningConditionPopUp;
 	public GameObject prompt;
-	public TextAsset csvText;
 	public Image CircleMaterial;
 	public Slider mastery;
 	public GameObject target;
@@ -18,12 +18,10 @@ public class MultipleChoiceGame : MonoBehaviour {
 	public Image picture;
 	public string[] contentForAssign;
 	bool useImages;
-	private string direct;
 	private int currMastery;
 	public Timer1 timer;
 	public GameObject winCard;
 	int thisIndex;
-	private int requiredMastery = 4;
 	public float loadDelay = 0.5f;
 	public float timeSinceLoad;
 	int currentImageIt;
@@ -53,6 +51,30 @@ public class MultipleChoiceGame : MonoBehaviour {
 	CSVParser thisCSVParser;
 	PopUpGraphic greenCheck, redX, greenCheckmark;//todo
 	public Slider loadSlider;
+
+	void ConfigureAssignment() {
+		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
+		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
+		//		timer = GameObject.Find("TimerText").GetComponent<Timer1>();
+		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
+		parentCanvas = GameObject.Find ("Canvas");
+		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
+		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
+		Input.multiTouchEnabled = true;
+		
+		//parse CSV
+		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
+		if(useImages){
+			directoryForAssignment = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
+		}
+		
+		//list init
+		listOfSequences = new List<Sequence> (); //use this to store per sequence mastery values
+		listOfSequences = convertCSV(parseContent(AppManager.s_instance.currentAssignments[thisIndex].content));
+		
+		timer.Reset(15f);
+		
+	}
 
 	//UI Meters etc...
 	[SerializeField]
@@ -158,7 +180,7 @@ public class MultipleChoiceGame : MonoBehaviour {
 		thisIndex = thisInt;
 		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
 		if(useImages){
-			direct = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
+			directoryForAssignment = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
 		}
 		contentForAssign = AppManager.s_instance.currentAssignments[thisIndex].content;
 		currMastery = AppManager.s_instance.pullAssignMastery(AppManager.s_instance.currentAssignments[thisIndex]);
@@ -174,29 +196,7 @@ public class MultipleChoiceGame : MonoBehaviour {
 		}
 	}
 
-	void ConfigureAssignment() {
-		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
-		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
-//		timer = GameObject.Find("TimerText").GetComponent<Timer1>();
-		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
-		parentCanvas = GameObject.Find ("Canvas");
-		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
-		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
-		Input.multiTouchEnabled = true;
-		
-		//parse CSV
-		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
-		if(useImages){
-			direct = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
-		}
-		
-		//list init
-		listOfSequences = new List<Sequence> (); //use this to store per sequence mastery values
-		listOfSequences = convertCSV(parseContent(AppManager.s_instance.currentAssignments[thisIndex].content));
 
-		timer.Reset(15f);
-
-	}
 	
 	void CheckSequence(){
 		//checks to see how many items are currently snapped into place, keeps track of the number.
@@ -368,7 +368,7 @@ public class MultipleChoiceGame : MonoBehaviour {
 					if(thisLine[1][0] == ' '){
 						thisLine[1] = thisLine[1].Substring(1,thisLine[1].Length-1);
 					}
-					string imgPathToUse =  direct + "/" + thisLine[1].ToLower() + ".png";
+					string imgPathToUse =  directoryForAssignment + "/" + thisLine[1].ToLower() + ".png";
 					imgPathToUse = imgPathToUse.Replace("\"", "");
 					termToAdd = new Sequence(thisLine, imgPathToUse);//, newImg);
 				}else{
