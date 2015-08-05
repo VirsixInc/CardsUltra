@@ -12,27 +12,14 @@ public class MultipleChoiceGame : BRTemplate {
 	public GameObject draggableHolder;
 	public GameObject prompt;
 	public Image CircleMaterial;
-	public Slider mastery;
 	public GameObject target;
 	public List<Image> pictures;
 	public Image picture;
-	public string[] contentForAssign;
-	bool useImages;
-	private int currMastery;
 	public Timer1 timer;
-	public GameObject winCard;
-	int thisIndex;
-	public float loadDelay = 0.5f;
-	public float timeSinceLoad;
-	int currentImageIt;
-
-	bool hasReceivedServerData = false, readyToConfigure;
-
-
-	GameObject parentCanvas, draggableGUIHolder;
-	public GameObject introScreen;
+	
+	GameObject draggableGUIHolder;
 	List<GameObject> draggables = new List<GameObject>();
-	bool isSequenceComplete = false, isButtonPressed = false;
+	bool isButtonPressed = false;
 	List<List<string>> matrixOfCSVData;
 	List<Sequence> listOfSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
 
@@ -42,45 +29,34 @@ public class MultipleChoiceGame : BRTemplate {
 	GameType gameType = GameType.Text;
 	GameState gameState = GameState.Intro;
 	bool areDistractorTerms;
-	int currentRow = 0; //currentRow is the iterator that goes through the remaining sequences
 	int xRandomRange, yRandomRange;
 	string[] currentSequence;
-	List<float> masteryValues; //all start at 0 on first playthrough.
 	float scaleFactor, numberOfDraggablesSnapped=0;
 	float startTime, exitTime = 5f;
 	CSVParser thisCSVParser;
 	PopUpGraphic greenCheck, redX, greenCheckmark;//todo
-	public Slider loadSlider;
 
 	void ConfigureAssignment() {
 		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
 		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
-		//		timer = GameObject.Find("TimerText").GetComponent<Timer1>();
 		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
-		parentCanvas = GameObject.Find ("Canvas");
 		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
 		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
 		Input.multiTouchEnabled = true;
 		
 		//parse CSV
-		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
+		useImages = AppManager.s_instance.currentAssignments[assignIndex].hasImages;
 		if(useImages){
-			directoryForAssignment = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
+			directoryForAssignment = AppManager.s_instance.currentAssignments[assignIndex].imgDir;
 		}
 		
 		//list init
 		listOfSequences = new List<Sequence> (); //use this to store per sequence mastery values
-		listOfSequences = convertCSV(parseContent(AppManager.s_instance.currentAssignments[thisIndex].content));
+		listOfSequences = convertCSV(parseContent(AppManager.s_instance.currentAssignments[assignIndex].content));
 		
 		timer.Reset(15f);
 		
 	}
-
-	//UI Meters etc...
-	[SerializeField]
-	Color start;
-	[SerializeField]
-	Color end;
 
 	bool userClickedStart = false;
 
@@ -113,19 +89,19 @@ public class MultipleChoiceGame : BRTemplate {
 
 		case GameState.ImageLoad:
 			if(loadDelay + timeSinceLoad < Time.time){
-				if(currentImageIt < allTerms.Count){
-					if(!allTerms[currentImageIt].imageLoaded){
-						allTerms[currentImageIt].loadImage(allTerms[currentImageIt].imgPath);
+				if(currentImageIterator < allTerms.Count){
+					if(!allTerms[currentImageIterator].imageLoaded){
+						allTerms[currentImageIterator].loadImage(allTerms[currentImageIterator].imgPath);
 						timeSinceLoad = Time.time;
 					}else{
-						currentImageIt++;
+						currentImageIterator++;
 					}
 				}else{
 					unmasteredTerms = allTerms.ToList();
 					gameState = GameState.SetRound;
 				}
 			}else{
-				loadSlider.value = ((float)(Mathf.InverseLerp(timeSinceLoad,timeSinceLoad+loadDelay,Time.time)*1+(currentImageIt))/(float)(allTerms.Count));
+				loadSlider.value = ((float)(Mathf.InverseLerp(timeSinceLoad,timeSinceLoad+loadDelay,Time.time)*1+(currentImageIterator))/(float)(allTerms.Count));
 			}
 			break;
 		case GameState.SetRound :
@@ -177,13 +153,13 @@ public class MultipleChoiceGame : BRTemplate {
 	}
 
 	public void configureGame(int thisInt){
-		thisIndex = thisInt;
-		useImages = AppManager.s_instance.currentAssignments[thisIndex].hasImages;
+		assignIndex = thisInt;
+		useImages = AppManager.s_instance.currentAssignments[assignIndex].hasImages;
 		if(useImages){
-			directoryForAssignment = AppManager.s_instance.currentAssignments[thisIndex].imgDir;
+			directoryForAssignment = AppManager.s_instance.currentAssignments[assignIndex].imgDir;
 		}
-		contentForAssign = AppManager.s_instance.currentAssignments[thisIndex].content;
-		currMastery = AppManager.s_instance.pullAssignMastery(AppManager.s_instance.currentAssignments[thisIndex]);
+		contentForAssign = AppManager.s_instance.currentAssignments[assignIndex].content;
+		currMastery = AppManager.s_instance.pullAssignMastery(AppManager.s_instance.currentAssignments[assignIndex]);
 		readyToConfigure = true;
 	}
 	
@@ -192,7 +168,7 @@ public class MultipleChoiceGame : BRTemplate {
 		Event e = Event.current;
 		if (e.type == EventType.mouseDown && gameState == GameState.Intro) {
 			userClickedStart = true;
-			introScreen.SetActive(false);
+			introSlide.SetActive(false);
 		}
 	}
 
@@ -213,15 +189,15 @@ public class MultipleChoiceGame : BRTemplate {
 		}
 	}
 	public void CheckForSequenceMastery() {
-		if (currentRow >= listOfSequences.Count)
-			currentRow = 0; //loop around to beginning of list
-		while (listOfSequences[currentRow].sequenceMastery==1f && listOfSequences.Count != 0) { //skip over completed 
-			listOfSequences.Remove(listOfSequences[currentRow]);
-			if (listOfSequences.Count > currentRow+1) {
-				currentRow++;
+		if (currIndex >= listOfSequences.Count)
+			currIndex = 0; //loop around to beginning of list
+		while (listOfSequences[currIndex].sequenceMastery==1f && listOfSequences.Count != 0) { //skip over completed 
+			listOfSequences.Remove(listOfSequences[currIndex]);
+			if (listOfSequences.Count > currIndex+1) {
+				currIndex++;
 			}
 			else 
-				currentRow = 0;
+				currIndex = 0;
 		}
 	}
 	
@@ -230,14 +206,14 @@ public class MultipleChoiceGame : BRTemplate {
 		
 	}
 	void WinRound() {
-		winCard.SetActive(true);
+		winningSlide.SetActive(true);
 		gameState = GameState.WinScreen; //i know that this is the wrong way to change gamestate but I have to do it until a major refactor
 		startTime = Time.time;
 	}
 	
 	public void InitiateSequence () { //displaces current sequence
-		currentSequence = listOfSequences [currentRow].sequenceOfStrings;
-		picture.sprite = listOfSequences [currentRow].imgAssoc;
+		currentSequence = listOfSequences [currIndex].sequenceOfStrings;
+		picture.sprite = listOfSequences [currIndex].imgAssoc;
 		//instantiate all of the targets and draggables in the correct positions
 		for (int i = 1; i < currentSequence.Length; i++) {
 			//calculate position of target based on i and sS.Count
@@ -268,12 +244,12 @@ public class MultipleChoiceGame : BRTemplate {
 	
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
 		if (didAnswerCorrect && !timer.timesUp) {
-			listOfSequences[currentRow].sequenceMastery += .5f;
+			listOfSequences[currIndex].sequenceMastery += .5f;
 		}
 		
 		else {
-			if (listOfSequences[currentRow].sequenceMastery > 0) {
-				listOfSequences[currentRow].sequenceMastery -= .5f;
+			if (listOfSequences[currIndex].sequenceMastery > 0) {
+				listOfSequences[currIndex].sequenceMastery -= .5f;
 			}
 		}
 		
@@ -282,8 +258,8 @@ public class MultipleChoiceGame : BRTemplate {
 			totalMastery+=x.sequenceMastery;
 		}
 		totalMastery = totalMastery / listOfSequences.Count;
-		mastery.value = totalMastery;
-		AppManager.s_instance.currentAssignments[thisIndex].mastery = (int)totalMastery*100;
+		masteryMeter.value = totalMastery;
+		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)totalMastery*100;
 		timer.Reset(15f);
 		
 	}
@@ -308,12 +284,12 @@ public class MultipleChoiceGame : BRTemplate {
 		}
 		target.GetComponent<TargetGUI> ().Reset ();
 		draggables.Clear();
-		currentRow++;
+		currIndex++;
 		CheckForSequenceMastery ();
 		AdjustMasteryMeter (true);
 		DisableSubmitButton ();
 		
-		if (mastery.value > .97f) {
+		if (masteryMeter.value > .97f) {
 			return true;
 		} else { 
 			return false;
@@ -354,7 +330,6 @@ public class MultipleChoiceGame : BRTemplate {
 				listToReturn[i][j] = temp;
 			}
 		}
-		hasReceivedServerData = true;
 		return listToReturn;
 	}
 

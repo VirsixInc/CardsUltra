@@ -11,8 +11,7 @@ public class AssignmentStartButton : MonoBehaviour {
 	PointerEventData eventData;
 	Vector3 positionAtFingerDown;
 	float selectTimer;
-	GameObject mainMenuCanvas;
-	
+
 	void OnFingerDown () {
 		selectTimer = Time.time;
 		positionAtFingerDown = transform.localPosition;
@@ -21,7 +20,6 @@ public class AssignmentStartButton : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
-		mainMenuCanvas = GameObject.FindGameObjectWithTag ("mainMenuCanvas");
 		thisEventTrigger = GetComponent<EventTrigger>();
 		entry.eventID = EventTriggerType.PointerUp;
 		entry2.eventID = EventTriggerType.PointerDown;

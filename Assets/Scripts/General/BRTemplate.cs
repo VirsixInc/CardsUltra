@@ -13,7 +13,8 @@ public abstract class BRTemplate : MonoBehaviour {
 	protected string directoryForAssignment;
 	protected bool useImages;
 	protected bool readyToConfigure;
-	protected int currIndex, assignIndex;
+	protected int currIndex=0; //iterator for the content array of a template
+	protected int assignIndex; //the identification index of the current assignment we are playing
 	protected int currentImageIterator;
 
 	protected string[] contentForAssign;

@@ -20,7 +20,7 @@ public class backgroundGraphics : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
     if(newCol){
-      imgToUse.color = Color.Lerp(imgToUse.color, colors[colIndex], Time.deltaTime*(speed+(5*colIndex)));
+			imgToUse.color = Color.Lerp(startColor, colors[colIndex], Time.deltaTime*(speed+(5*colIndex)));
       if(((Vector4)(imgToUse.color-colors[colIndex])).magnitude <0.1f){
         newCol = false;
       }

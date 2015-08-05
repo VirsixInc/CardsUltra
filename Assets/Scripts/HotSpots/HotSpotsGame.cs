@@ -40,7 +40,7 @@ public class HotSpotsGame : MonoBehaviour
 	string currentCorrectAnswer;
 	List<Image> currentlyActivatedImages;
 	List<GameObject> currentlyActivatedGameObjects;
-	bool hasAnsweredCorrect = false, masteryChecked = false;
+	bool hasAnsweredCorrect = false;
 	float totalTerms, completedTerms;
 	//Keyboard members
 	private bool handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit, isLoadingMainMenu;

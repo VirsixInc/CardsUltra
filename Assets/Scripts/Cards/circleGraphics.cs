@@ -25,7 +25,7 @@ public class circleGraphics : MonoBehaviour {
         newCol = false;
       }
     }else{
-      imgToUse.color = Color.Lerp(imgToUse.color, Color.white, Time.deltaTime*speed);
+			imgToUse.color = Color.Lerp(startColor, Color.white, Time.deltaTime*speed);
 
     }
 	}

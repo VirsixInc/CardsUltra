@@ -23,7 +23,7 @@ public class SequencingGame : BRTemplate {
 	GameObject parentCanvas, draggableGUIHolder;
 	List<GameObject> draggables = new List<GameObject>();
 	List<GameObject> targets = new List<GameObject>();
-	bool isSequenceComplete = false, isButtonPressed = false;
+	bool isButtonPressed = false;
 	List<string[]> matrixOfCSVData;
 	public TextAsset shortNoticeCSV;
 	List<Sequence> listOfSequences, randomizedListSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
@@ -53,7 +53,6 @@ public class SequencingGame : BRTemplate {
 	float screenWidth;
 
 	bool userClickedStart = false;
-	bool readyToConfigure = false;
 
 	void OnGUI () {
 		Event e = Event.current;
@@ -216,7 +215,7 @@ public class SequencingGame : BRTemplate {
 	}
 
 	public void LoadMainMenu() {
-		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
+//		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
 		StartCoroutine ("LoadMain");
 
 	}

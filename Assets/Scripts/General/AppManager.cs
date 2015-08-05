@@ -42,7 +42,7 @@ public class AppManager : MonoBehaviour
 		loginFilePath,
 		filePathToUse;
 
-	int assignsLoaded = 0, assignmentsDownloaded = 0, totalAssigns, imagesRequired, imagesLoaded;
+	int assignsLoaded = 0, totalAssigns, imagesRequired, imagesLoaded;
 
 	List<string> assignmentURLsToDownload;
 
@@ -320,10 +320,10 @@ public class AppManager : MonoBehaviour
 	void loadInLocalAssignments ()
 	{
 		DirectoryInfo localFolder = new DirectoryInfo (Application.persistentDataPath + "/");
-		string[] masteryFile;
+//		string[] masteryFile;
 		//load in mastery data regarding each assignment
 		if (File.Exists (masteryFilePath)) {
-			masteryFile = File.ReadAllLines (masteryFilePath);
+//			masteryFile = File.ReadAllLines (masteryFilePath);
 		} else {
 			//creates file, opens files, writes "", closes file
 			File.WriteAllText (masteryFilePath, "");
@@ -375,11 +375,9 @@ public class AppManager : MonoBehaviour
 	public void saveAssignmentMastery (Assignment assignToSave, int mastery)
 	{
 		string[] masteryFile = File.ReadAllLines (masteryFilePath);
-		bool foundFile = false;
 
 		for (int i = 0; i<masteryFile.Length; i++) {
 			if (masteryFile [i].Contains (assignToSave.fullAssignTitle)) {
-				foundFile = true;
 				masteryFile [i] = assignToSave.fullAssignTitle + "," + mastery.ToString ();
 				break;
 			}

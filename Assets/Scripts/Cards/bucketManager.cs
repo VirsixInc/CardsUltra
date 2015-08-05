@@ -66,7 +66,7 @@ public class bktTerm{
   }
 }
 
-public class bucketManager : MonoBehaviour {
+public class bucketManager : BRTemplate {
 
   public enum GameState{
     Idle,
@@ -84,33 +84,21 @@ public class bucketManager : MonoBehaviour {
   private List<bktTerm> allTerms = new List<bktTerm>();
   private List<bktTerm> unmasteredTerms = new List<bktTerm>();
 
-  private string direct;
 
-  private bool useImages, handleBucketPress, firstPress, handleKeyboardSubmit, firstSubmit;
+  private bool handleBucketPress, firstPress, handleKeyboardSubmit, firstSubmit;
 
 
   private float timeBetweenCorrAnswers;
-  private float timeAtEnd;
 
-  private int currIndex;
   private int amtOfCards;
   private int correctTermIndex;
-  private int currMastery = 0;
-  private int requiredMastery = 4;
   private int currentPhase;
   private int currentImageIt;
 
-  public string[] contentForAssign;
   public string baseImagePath;
-	public GameObject winningSlide;
 	public GameObject background;
-	
-  public Slider masteryMeter;
-  public Slider loadSlider;
-  public float loadDelay = 0.5f;
-  public float timeSinceLoad;
 
-  bool readyToConfigure;
+
 
   private dispTerm disp;
 
@@ -120,7 +108,7 @@ public class bucketManager : MonoBehaviour {
   public void configureGame(Assignment assignToUse){
     useImages = assignToUse.hasImages;
     if(useImages){
-      direct = assignToUse.imgDir;
+      directoryForAssignment = assignToUse.imgDir;
     }
     contentForAssign = assignToUse.content;
     currMastery = AppManager.s_instance.pullAssignMastery(assignToUse);

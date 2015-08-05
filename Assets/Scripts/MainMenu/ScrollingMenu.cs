@@ -5,7 +5,6 @@ using UnityEngine.EventSystems;
 
 public class ScrollingMenu : MonoBehaviour {
 
-	float accelerationRatio = .8f;
 	public float lowerBound;
 	float startTime, lerpTime = 2f, fracJourney;
 	bool isLerp = false;
