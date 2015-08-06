@@ -6,66 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 
-public class Bucket{
-
-  public GameObject objAssoc;
-  public Text objText;
-  public string category;
-  public indiCard thisIndiCard;
-  public Bucket(GameObject objRef, Text objTxtRef, string categoryToUse){
-    objAssoc = objRef;
-    objText = objTxtRef;
-    category = categoryToUse;
-    objText.text = category;
-
-  }
-};
-
-public class dispTerm{
-  public GameObject disp;
-  public Text txtDisp;
-  public string currArg;
-  public string reqArg;
-
-  public Vector3 start;
-  public Vector3 end;
-  public float current;
-
-  public dispTerm(GameObject dispToSet, Text txtToSet){
-    disp = dispToSet;
-    txtDisp = txtToSet;
-    start = disp.transform.localPosition;
-    end = start;
-    end.x = end.x*-1f;
-    current = 0f;
-  }
-  
-  public void setDisp(bktTerm termToUse){
-    currArg = termToUse.answer;
-    reqArg = termToUse.category;
-    txtDisp.text = currArg;
-  }
-
-}
-
-public class bktTerm{
-  public string answer;
-  public string category;
-  public Sprite imgAssoc;
-  public int mastery = 0;
-  public bool mastered = false;
-  public string imgPath;
-  public bool imageLoaded;
-  public bktTerm(string newAnswer, string newCategory, string imgPathToUse = null){
-    if(imgPathToUse != null){
-      imgPath = imgPathToUse;
-    }
-    answer = newAnswer;
-    category = newCategory;
-
-  }
-}
-
 public class bucketManager : BRTemplate {
 
   public enum GameState{

@@ -1,26 +1,18 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
-public class bucket : MonoBehaviour {
-
-  public int index;
-  public GameObject manager;
-	// Use this for initialization
-	void Start () {
-    manager = GameObject.Find("GameManager");
-	}
+public class Bucket{
 	
-	// Update is called once per frame
-	void Update () {
-	
+	public GameObject objAssoc;
+	public Text objText;
+	public string category;
+	public indiCard thisIndiCard;
+	public Bucket(GameObject objRef, Text objTxtRef, string categoryToUse){
+		objAssoc = objRef;
+		objText = objTxtRef;
+		category = categoryToUse;
+		objText.text = category;
+		
 	}
-
-  public void configBucket(int currDex){
-    index = currDex;
-  }
-  
-  void OnMouseDown(){
-    manager.SendMessage("bucketHandler", index);
-  }
-
-}
+};

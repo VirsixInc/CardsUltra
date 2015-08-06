@@ -10,14 +10,7 @@ public class Term{
 	public bool mastered = false;
 	public string imgPath;
 	public bool imageLoaded;
-	public Term(string newQuestion, string newAnswer, string imgPathToUse = null){
-		if(imgPathToUse != null){
-			imgPath = imgPathToUse;
-		}
-		question = newQuestion;
-		answer = newAnswer;
-		
-	}
+
 	public void loadImage(string path){
 		byte[] currImg = File.ReadAllBytes(path);
 		Texture2D newImg = new Texture2D(256,256);

@@ -21,16 +21,16 @@ public class MultipleChoiceGame : BRTemplate {
 	List<GameObject> draggables = new List<GameObject>();
 	bool isButtonPressed = false;
 	List<List<string>> matrixOfCSVData;
-	List<Sequence> listOfSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
+	List<SequenceTerm> listOfSequenceTerms; //listOfSequenceTerms exists during an instance of Sequencing game. Current row index accesses the current SequenceTerm
 
-	public List<Sequence> allTerms = new List<Sequence>();
-	public List<Sequence> unmasteredTerms = new List<Sequence>();
+	public List<SequenceTerm> allTerms = new List<SequenceTerm>();
+	public List<SequenceTerm> unmasteredTerms = new List<SequenceTerm>();
 
 	GameType gameType = GameType.Text;
 	GameState gameState = GameState.Intro;
 	bool areDistractorTerms;
 	int xRandomRange, yRandomRange;
-	string[] currentSequence;
+	string[] currentSequenceTerm;
 	float scaleFactor, numberOfDraggablesSnapped=0;
 	float startTime, exitTime = 5f;
 	CSVParser thisCSVParser;
@@ -51,8 +51,8 @@ public class MultipleChoiceGame : BRTemplate {
 		}
 		
 		//list init
-		listOfSequences = new List<Sequence> (); //use this to store per sequence mastery values
-		listOfSequences = convertCSV(parseContent(AppManager.s_instance.currentAssignments[assignIndex].content));
+		listOfSequenceTerms = new List<SequenceTerm> (); //use this to store per SequenceTerm mastery values
+		listOfSequenceTerms = convertCSV(parseContent(AppManager.s_instance.currentAssignments[assignIndex].content));
 		
 		timer.Reset(15f);
 		
@@ -105,13 +105,13 @@ public class MultipleChoiceGame : BRTemplate {
 			}
 			break;
 		case GameState.SetRound :
-			CheckForSequenceMastery(); //eliminate mastered sequences
-			InitiateSequence();
+			CheckForSequenceTermMastery(); //eliminate mastered SequenceTerms
+			InitiateSequenceTerm();
 			gameState = GameState.Playing;
 			break;
 			
 		case GameState.Playing :
-			CheckSequence(); //checks to see how many items have been placed
+			CheckSequenceTerm(); //checks to see how many items have been placed
 			if (numberOfDraggablesSnapped == 1){ //when all items have been placed
 				gameState = GameState.CheckAnswer;
 			}
@@ -174,7 +174,7 @@ public class MultipleChoiceGame : BRTemplate {
 
 
 	
-	void CheckSequence(){
+	void CheckSequenceTerm(){
 		//checks to see how many items are currently snapped into place, keeps track of the number.
 		if (draggables != null) {
 			numberOfDraggablesSnapped = 0;
@@ -188,12 +188,12 @@ public class MultipleChoiceGame : BRTemplate {
 				submitButton.GetComponent<Image> ().color = new Color (1, 1, 1, 1); //show button 
 		}
 	}
-	public void CheckForSequenceMastery() {
-		if (currIndex >= listOfSequences.Count)
+	public void CheckForSequenceTermMastery() {
+		if (currIndex >= listOfSequenceTerms.Count)
 			currIndex = 0; //loop around to beginning of list
-		while (listOfSequences[currIndex].sequenceMastery==1f && listOfSequences.Count != 0) { //skip over completed 
-			listOfSequences.Remove(listOfSequences[currIndex]);
-			if (listOfSequences.Count > currIndex+1) {
+		while (listOfSequenceTerms[currIndex].mastery==1f && listOfSequenceTerms.Count != 0) { //skip over completed 
+			listOfSequenceTerms.Remove(listOfSequenceTerms[currIndex]);
+			if (listOfSequenceTerms.Count > currIndex+1) {
 				currIndex++;
 			}
 			else 
@@ -211,26 +211,26 @@ public class MultipleChoiceGame : BRTemplate {
 		startTime = Time.time;
 	}
 	
-	public void InitiateSequence () { //displaces current sequence
-		currentSequence = listOfSequences [currIndex].sequenceOfStrings;
-		picture.sprite = listOfSequences [currIndex].imgAssoc;
+	public void InitiateSequenceTerm () { //displaces current SequenceTerm
+		currentSequenceTerm = listOfSequenceTerms [currIndex].arrayOfStrings;
+		picture.sprite = listOfSequenceTerms [currIndex].imgAssoc;
 		//instantiate all of the targets and draggables in the correct positions
-		for (int i = 1; i < currentSequence.Length; i++) {
+		for (int i = 1; i < currentSequenceTerm.Length; i++) {
 			//calculate position of target based on i and sS.Count
-			//generate currentSequence.Count number dragable GUI objects
+			//generate currentSequenceTerm.Count number dragable GUI objects
 			GameObject tempDraggable = (GameObject)Instantiate(draggableGUIPrefab);
 			tempDraggable.transform.SetParent(draggableGUIHolder.transform);
 			tempDraggable.transform.localScale *= scaleFactor;
 			tempDraggable.GetComponent<RectTransform>().localPosition = new Vector3(0,0,0);
-			tempDraggable.GetComponent<DraggableGUI>().SetValues(currentSequence[i], gameType);
+			tempDraggable.GetComponent<DraggableGUI>().SetValues(currentSequenceTerm[i], gameType);
 			draggables.Add (tempDraggable);
 		}
 		//use mastery to determine how many answers will be filled in
 		//GameObject targetHolder = GameObject.Find ("TargetGUIHolder");
-		string tempPrompt = currentSequence [0];
+		string tempPrompt = currentSequenceTerm [0];
 		string replaceComma = tempPrompt.Replace ('/', ',');
 		prompt.GetComponent<Text> ().text = replaceComma;
-		target.GetComponent<TargetGUI> ().correctAnswer = currentSequence [1];
+		target.GetComponent<TargetGUI> ().correctAnswer = currentSequenceTerm [1];
 	}
 	
 	public bool Checker (){
@@ -244,20 +244,20 @@ public class MultipleChoiceGame : BRTemplate {
 	
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
 		if (didAnswerCorrect && !timer.timesUp) {
-			listOfSequences[currIndex].sequenceMastery += .5f;
+//			listOfSequenceTerms[currIndex].mastery += .5f;
 		}
 		
 		else {
-			if (listOfSequences[currIndex].sequenceMastery > 0) {
-				listOfSequences[currIndex].sequenceMastery -= .5f;
+			if (listOfSequenceTerms[currIndex].mastery > 0) {
+//				listOfSequenceTerms[currIndex].mastery -= .5f;
 			}
 		}
 		
 		float totalMastery = 0f;
-		foreach (Sequence x in listOfSequences) {
-			totalMastery+=x.sequenceMastery;
+		foreach (SequenceTerm x in listOfSequenceTerms) {
+			totalMastery+=x.mastery;
 		}
-		totalMastery = totalMastery / listOfSequences.Count;
+		totalMastery = totalMastery / listOfSequenceTerms.Count;
 		masteryMeter.value = totalMastery;
 		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)totalMastery*100;
 		timer.Reset(15f);
@@ -285,7 +285,7 @@ public class MultipleChoiceGame : BRTemplate {
 		target.GetComponent<TargetGUI> ().Reset ();
 		draggables.Clear();
 		currIndex++;
-		CheckForSequenceMastery ();
+		CheckForSequenceTermMastery ();
 		AdjustMasteryMeter (true);
 		DisableSubmitButton ();
 		
@@ -333,23 +333,23 @@ public class MultipleChoiceGame : BRTemplate {
 		return listToReturn;
 	}
 
-	//Put content everything into sequence classes 	
-	List<Sequence> convertCSV(List<string[]> inputString){
-		List<Sequence> listToReturn = new List<Sequence>();
+	//Put content everything into SequenceTerm classes 	
+	List<SequenceTerm> convertCSV(List<string[]> inputString){
+		List<SequenceTerm> listToReturn = new List<SequenceTerm>();
 		foreach(string[] thisLine in inputString){
 			if(thisLine.Length > 1){
-				Sequence termToAdd;
+				SequenceTerm termToAdd;
 				if(useImages){
 					if(thisLine[1][0] == ' '){
 						thisLine[1] = thisLine[1].Substring(1,thisLine[1].Length-1);
 					}
 					string imgPathToUse =  directoryForAssignment + "/" + thisLine[1].ToLower() + ".png";
 					imgPathToUse = imgPathToUse.Replace("\"", "");
-					termToAdd = new Sequence(thisLine, imgPathToUse);//, newImg);
+					termToAdd = new SequenceTerm(thisLine, imgPathToUse);//, newImg);
 				}else{
-					termToAdd = new Sequence(thisLine);
+					termToAdd = new SequenceTerm(thisLine);
 				}
-				termToAdd.sequenceMastery = ((int)Mathf.Ceil(((float)(currMastery/100f))*requiredMastery));
+				termToAdd.mastery = ((int)Mathf.Ceil(((float)(currMastery/100f))*requiredMastery));
 				listToReturn.Add(termToAdd);
 			}
 		}

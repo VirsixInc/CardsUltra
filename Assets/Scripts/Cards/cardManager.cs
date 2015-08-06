@@ -34,15 +34,15 @@ public class cardManager : BRTemplate
 	public GameObject keyboardView;
 
 	public List<Card> allCards = new List<Card> ();
-	public List<Term> allTerms = new List<Term> ();
-	public List<Term> unmasteredTerms = new List<Term> ();
+	public List<CardsTerm> allCardsTerms = new List<CardsTerm> ();
+	public List<CardsTerm> unmasteredCardsTerms = new List<CardsTerm> ();
 
 	private bool handleCardPress, firstPress, handleKeyboardSubmit, firstSubmit;
 
 	private int currentDifficulty;
 
 	private int amtOfCards;
-	private int correctTermIndex;
+	private int correctCardsTermIndex;
 	private int currentPhase;
 	private int levenThresh = 3;
 
@@ -78,27 +78,26 @@ public class cardManager : BRTemplate
 				newCard.thisIndiCard = card.GetComponent<indiCard> ();
 				allCards.Add (newCard);
 			}
-			allTerms = convertCSV (parseContent (contentForAssign));
-
-			totalMastery = allTerms.Count * requiredMastery;
+			allCardsTerms = convertCSV (parseContent (contentForAssign));
+			totalMastery = allCardsTerms.Count * requiredMastery;
 			currentState = GameState.ImageLoad;
 			break;
 		case GameState.ImageLoad:
 			if (loadDelay + timeSinceLoad < Time.time) {
-				if (currentImageIterator < allTerms.Count) {
-					if (!allTerms [currentImageIterator].imageLoaded) {
-						allTerms [currentImageIterator].loadImage (allTerms [currentImageIterator].imgPath);
+				if (currentImageIterator < allCardsTerms.Count) {
+					if (!allCardsTerms [currentImageIterator].imageLoaded) {
+						allCardsTerms [currentImageIterator].loadImage (allCardsTerms [currentImageIterator].imgPath);
 						timeSinceLoad = Time.time;
 					} else {
 						currentImageIterator++;
 					}
 				} else {
-					unmasteredTerms = allTerms.ToList ();
+					unmasteredCardsTerms = allCardsTerms.ToList ();
 					loadingBar.SetActive (false);
 					currentState = GameState.ResetCards;
 				}
 			} else {
-				loadSlider.value = ((float)(Mathf.InverseLerp (timeSinceLoad, timeSinceLoad + loadDelay, Time.time) * 1 + (currentImageIterator)) / (float)(allTerms.Count));
+				loadSlider.value = ((float)(Mathf.InverseLerp (timeSinceLoad, timeSinceLoad + loadDelay, Time.time) * 1 + (currentImageIterator)) / (float)(allCardsTerms.Count));
 			}
 			break;
 		case GameState.ResetCards:
@@ -107,18 +106,18 @@ public class cardManager : BRTemplate
 			foreach (Card currCard in allCards) {
 				currCard.objAssoc.SetActive (false);
 			}
-			correctTermIndex = Random.Range (0, unmasteredTerms.Count);
-			currentDifficulty = Mathf.Clamp (currentDifficulty, unmasteredTerms [correctTermIndex].mastery, 3); 
+			correctCardsTermIndex = Random.Range (0, unmasteredCardsTerms.Count);
+			currentDifficulty = Mathf.Clamp (currentDifficulty, unmasteredCardsTerms [correctCardsTermIndex].mastery, 3); 
 			amtOfCards = (int)(4.5 * currentDifficulty);
-			List<int> uniqueIndexes = generateUniqueRandomNum (amtOfCards, unmasteredTerms.Count, correctTermIndex);
+			List<int> uniqueIndexes = generateUniqueRandomNum (amtOfCards, unmasteredCardsTerms.Count, correctCardsTermIndex);
 			for (int i = 0; i<uniqueIndexes.Count; i++) {
 				if (!useImages) {
-					allCards [i].setCard (unmasteredTerms [uniqueIndexes [i]], false);
+					allCards [i].setCard (unmasteredCardsTerms [uniqueIndexes [i]], false);
 				} else {
-					allCards [i].setCard (unmasteredTerms [uniqueIndexes [i]], true);
+					allCards [i].setCard (unmasteredCardsTerms [uniqueIndexes [i]], true);
 				}
 			}
-			questDisplay.text = unmasteredTerms [correctTermIndex].question;
+			questDisplay.text = unmasteredCardsTerms [correctCardsTermIndex].question;
 			firstPress = true;
 			currentState = GameState.PlayingCards;
 			break;
@@ -135,19 +134,19 @@ public class cardManager : BRTemplate
 				);
 			}
 			if (handleCardPress) {
-				if (firstPress && allCards [currIndex].answer == unmasteredTerms [correctTermIndex].answer) {
+				if (firstPress && allCards [currIndex].answer == unmasteredCardsTerms [correctCardsTermIndex].answer) {
 					background.SendMessage ("correct");
 					if (SoundManager.s_instance != null)
 						SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_correct);
-					unmasteredTerms [correctTermIndex].mastery++;
+					unmasteredCardsTerms [correctCardsTermIndex].mastery++;
 					currentState = GameState.ResetCards;
-					if (unmasteredTerms [correctTermIndex].mastery == requiredMastery * .75f) {
-						unmasteredTerms.RemoveAt (correctTermIndex);
+					if (unmasteredCardsTerms [correctCardsTermIndex].mastery == requiredMastery * .75f) {
+						unmasteredCardsTerms.RemoveAt (correctCardsTermIndex);
 					}
-				} else if (allCards [currIndex].answer == unmasteredTerms [correctTermIndex].answer) {
+				} else if (allCards [currIndex].answer == unmasteredCardsTerms [correctCardsTermIndex].answer) {
 					background.SendMessage ("correct");
-					if (unmasteredTerms [correctTermIndex].mastery > 0) {
-						unmasteredTerms [correctTermIndex].mastery--;
+					if (unmasteredCardsTerms [correctCardsTermIndex].mastery > 0) {
+						unmasteredCardsTerms [correctCardsTermIndex].mastery--;
 					}
 					currentState = GameState.ResetCards;
 				} else {
@@ -169,8 +168,8 @@ public class cardManager : BRTemplate
 			}
 			if (Timer1.s_instance.timesUp && !Timer1.s_instance.pause) {
 				Timer1.s_instance.Pause ();
-				if (unmasteredTerms [correctTermIndex].mastery > 0) {
-					unmasteredTerms [correctTermIndex].mastery--;
+				if (unmasteredCardsTerms [correctCardsTermIndex].mastery > 0) {
+					unmasteredCardsTerms [correctCardsTermIndex].mastery--;
 				}
 			}
 			break;
@@ -179,15 +178,15 @@ public class cardManager : BRTemplate
 			cardsView.SetActive (false);
 			circGraphic.transform.localPosition = questDispStart;
 
-			unmasteredTerms = allTerms.ToList ();
+			unmasteredCardsTerms = allCardsTerms.ToList ();
 			currentState = GameState.ResetKeyboard;
 			masteryMeter.value = 0f;
 			break;
 		case GameState.ResetKeyboard:
 			Timer1.s_instance.Reset (15f);
 			firstSubmit = true;
-			correctTermIndex = Random.Range (0, unmasteredTerms.Count);
-			questDisplay.text = unmasteredTerms [correctTermIndex].question;
+			correctCardsTermIndex = Random.Range (0, unmasteredCardsTerms.Count);
+			questDisplay.text = unmasteredCardsTerms [correctCardsTermIndex].question;
 			keyboardDispText.text = "Enter text...";
 
 			masteryMeter.value = getMastery ();
@@ -195,23 +194,23 @@ public class cardManager : BRTemplate
 			break;
 		case GameState.PlayingKeyboard:
 			if (handleKeyboardSubmit) {
-				if (levenThresh > levenDist (keyboardText.text.ToLower (), unmasteredTerms [correctTermIndex].answer)) {
+				if (levenThresh > levenDist (keyboardText.text.ToLower (), unmasteredCardsTerms [correctCardsTermIndex].answer)) {
 					if (firstSubmit) {
-						unmasteredTerms [correctTermIndex].mastery++;
+						unmasteredCardsTerms [correctCardsTermIndex].mastery++;
 					}
 					currentState = GameState.ResetKeyboard;
-					if (unmasteredTerms [correctTermIndex].mastery == requiredMastery * .5f) {
-						unmasteredTerms.RemoveAt (correctTermIndex);
+					if (unmasteredCardsTerms [correctCardsTermIndex].mastery == requiredMastery * .5f) {
+						unmasteredCardsTerms.RemoveAt (correctCardsTermIndex);
 					}
 				} else if (firstSubmit) {
-					if (unmasteredTerms [correctTermIndex].mastery > 0) {
-						unmasteredTerms [correctTermIndex].mastery--;
+					if (unmasteredCardsTerms [correctCardsTermIndex].mastery > 0) {
+						unmasteredCardsTerms [correctCardsTermIndex].mastery--;
 					}
 				}
 				Timer1.s_instance.Pause ();
 				firstSubmit = false;
 				handleKeyboardSubmit = false;
-				keyboardDispText.text = unmasteredTerms [correctTermIndex].answer;
+				keyboardDispText.text = unmasteredCardsTerms [correctCardsTermIndex].answer;
 				keyboardText.text = "";
 				if (getMastery () >= 1f) {
 					currentState = GameState.End;
@@ -220,8 +219,8 @@ public class cardManager : BRTemplate
 			}
 			if (Timer1.s_instance.timesUp && !Timer1.s_instance.pause) {
 				Timer1.s_instance.Pause ();
-				if (unmasteredTerms [correctTermIndex].mastery > 0) {
-					unmasteredTerms [correctTermIndex].mastery--;
+				if (unmasteredCardsTerms [correctCardsTermIndex].mastery > 0) {
+					unmasteredCardsTerms [correctCardsTermIndex].mastery--;
 				}
 			}
 			break;
@@ -304,10 +303,10 @@ public class cardManager : BRTemplate
 	bool checkForNewPhase ()
 	{
 		bool newPhase = false;
-		int amtOfMasteredTerms = allTerms.Count - unmasteredTerms.Count;
-		int currentMastery = amtOfMasteredTerms * requiredMastery; 
-		foreach (Term currTerm in unmasteredTerms) {
-			currentMastery += currTerm.mastery;
+		int amtOfMasteredCardsTerms = allCardsTerms.Count - unmasteredCardsTerms.Count;
+		int currentMastery = amtOfMasteredCardsTerms * requiredMastery; 
+		foreach (CardsTerm currCardsTerm in unmasteredCardsTerms) {
+			currentMastery += currCardsTerm.mastery;
 		}
 	
 		if (currentMastery >= totalMastery / 2) {
@@ -320,12 +319,12 @@ public class cardManager : BRTemplate
 	float getMastery ()
 	{
 		float floatToReturn;
-		float amtOfMasteredTerms = allTerms.Count - unmasteredTerms.Count;
-		float currentMastery = amtOfMasteredTerms * requiredMastery; 
-		foreach (Term currTerm in unmasteredTerms) {
-			currentMastery += currTerm.mastery;
+		float amtOfMasteredCardsTerms = allCardsTerms.Count - unmasteredCardsTerms.Count;
+		float currentMastery = amtOfMasteredCardsTerms * requiredMastery; 
+		foreach (CardsTerm currCardsTerm in unmasteredCardsTerms) {
+			currentMastery += currCardsTerm.mastery;
 		}
-		floatToReturn = currentMastery / (allTerms.Count * requiredMastery);
+		floatToReturn = currentMastery / (allCardsTerms.Count * requiredMastery);
 		return floatToReturn;
 	}
 	List<int> generateUniqueRandomNum (int amt, int randRange, int noThisNum = -1)
@@ -369,21 +368,21 @@ public class cardManager : BRTemplate
 		return listToReturn;
 	}
 
-	List<Term> convertCSV (List<string[]> inputString)
+	List<CardsTerm> convertCSV (List<string[]> inputString)
 	{
-		List<Term> listToReturn = new List<Term> ();
+		List<CardsTerm> listToReturn = new List<CardsTerm> ();
 		foreach (string[] thisLine in inputString) {
 			if (thisLine.Length > 1) {
-				Term termToAdd;
+				CardsTerm termToAdd;
 				if (useImages) {
 					if (thisLine [1] [0] == ' ') {
 						thisLine [1] = thisLine [1].Substring (1, thisLine [1].Length - 1);
 					}
 					string imgPathToUse = directoryForAssignment + "/" + thisLine [1].ToLower () + ".png";
 					imgPathToUse = imgPathToUse.Replace ("\"", "");
-					termToAdd = new Term (thisLine [0], thisLine [1], imgPathToUse);//, newImg);
+					termToAdd = new CardsTerm (thisLine [0], thisLine [1], imgPathToUse);//, newImg);
 				} else {
-					termToAdd = new Term (thisLine [0], thisLine [1]);
+					termToAdd = new CardsTerm (thisLine [0], thisLine [1]);
 				}
 				termToAdd.mastery = ((int)Mathf.Ceil (((float)(currMastery / 100f)) * requiredMastery));
 				listToReturn.Add (termToAdd);

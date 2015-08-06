@@ -70,10 +70,10 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	public void SetErrorText(string x) {
-		if (errorText==null){
-			errorText = GameObject.FindGameObjectWithTag("errorText").GetComponent<Text>();
+		if (errorText!=null){
+			errorText.text = x;
 		}
-		errorText.text = x;
+
 	}
 
 	// Use this for initialization

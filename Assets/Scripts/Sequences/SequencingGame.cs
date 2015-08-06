@@ -26,7 +26,7 @@ public class SequencingGame : BRTemplate {
 	bool isButtonPressed = false;
 	List<string[]> matrixOfCSVData;
 	public TextAsset shortNoticeCSV;
-	List<Sequence> listOfSequences, randomizedListSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
+	List<SequenceTerm> listOfSequences, randomizedListSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
 
 	GameType gameType = GameType.Text;
 	GameState gameState = GameState.Config;
@@ -82,7 +82,6 @@ public class SequencingGame : BRTemplate {
 		case GameState.Intro : 
 			if (userClickedStart) {
 				gameState = GameState.SetRound;
-
 			}
 			break;
 
@@ -179,19 +178,21 @@ public class SequencingGame : BRTemplate {
 		Input.multiTouchEnabled = true;
 
 		//list init
-		listOfSequences = new List<Sequence> (); //use this to store per sequence mastery values
-		randomizedListSequences = new List<Sequence> (); //can remove from this list once mastered
+		listOfSequences = new List<SequenceTerm> (); //use this to store per sequence mastery values
+		randomizedListSequences = new List<SequenceTerm> (); //can remove from this list once mastered
 		
 		//parsing
 
 		for (int i = 0; i < matrixOfCSVData.Count; i++) { //fill out list of Sequence class instances
-			Sequence tempSequence = new Sequence();
+			SequenceTerm tempSequence = new SequenceTerm();
 			tempSequence.initIndex = i;
-			tempSequence.sequenceOfStrings = matrixOfCSVData[i];
+			tempSequence.arrayOfStrings = matrixOfCSVData[i];
 			listOfSequences.Add(tempSequence);
 		}
-		
-		List<Sequence> tempListSequences = new List<Sequence>(listOfSequences); //copy list
+		foreach (SequenceTerm st in listOfSequences) {
+			totalMastery+=requiredMastery;
+		}
+		List<SequenceTerm> tempListSequences = new List<SequenceTerm>(listOfSequences); //copy list
 		
 		while (tempListSequences.Count > 0) //shuffle list
 		{
@@ -204,7 +205,7 @@ public class SequencingGame : BRTemplate {
 	public void CheckForSequenceMastery() {
 		if (currentRow >= randomizedListSequences.Count)
 			currentRow = 0; //loop around to beginning of list
-		while (listOfSequences[currentRow].sequenceMastery==1f && randomizedListSequences.Count != 0) { //skip over completed 
+		while (listOfSequences[currentRow].mastery==requiredMastery && randomizedListSequences.Count != 0) { //skip over completed 
 			randomizedListSequences.Remove(randomizedListSequences[currentRow]);
 			if (randomizedListSequences.Count > currentRow+1) {
 				currentRow++;
@@ -215,11 +216,12 @@ public class SequencingGame : BRTemplate {
 	}
 
 	public void LoadMainMenu() {
-//		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
 		StartCoroutine ("LoadMain");
+		//update Mastery Values
 
 	}
 	IEnumerator LoadMain() {
+		//int masteryOutput = Mathf.CeilToInt(mastery.value*100);
 		yield return new WaitForSeconds (2f);
 		Application.LoadLevel ("Login");
 	}
@@ -230,8 +232,8 @@ public class SequencingGame : BRTemplate {
 	}
 
 	public void InitiateSequence () { //displaces current sequence
-		currentSequence = new List<string> (randomizedListSequences[currentRow].sequenceOfStrings);
-		float currentSequenceMastery = randomizedListSequences [currentRow].sequenceMastery;
+		currentSequence = new List<string> (randomizedListSequences[currentRow].arrayOfStrings);
+		int currentSequenceMastery = randomizedListSequences [currentRow].mastery;
 	
 		for (int i = 0; i < currentSequence.Count; i++) { //NOTE I HAD TO DO A SECOND LOOP FOR LAYERING ISSUES
 			//calculate position of target based on i and sS.Count
@@ -242,7 +244,7 @@ public class SequencingGame : BRTemplate {
 			GameObject tempTarget = (GameObject)Instantiate(GUITargetPrefab);
 			tempTarget.transform.SetParent(targetHolder.transform, false);
 			tempTarget.transform.localPosition = new Vector3(xPositionOfTarget,tempTarget.transform.localPosition.y,0);
-			tempTarget.GetComponent<TargetGUI>().correctAnswer = randomizedListSequences[currentRow].sequenceOfStrings[i];
+			tempTarget.GetComponent<TargetGUI>().correctAnswer = randomizedListSequences[currentRow].arrayOfStrings[i];
 			targets.Add (tempTarget);
 			
 		}
@@ -261,8 +263,6 @@ public class SequencingGame : BRTemplate {
 		}
 		//use mastery to determine how many answers will be filled in
 		//GameObject targetHolder = GameObject.Find ("TargetGUIHolder");
-//		string tempPrompt = currentSequence [0];
-//		string replaceComma = tempPrompt.Replace ('/', ',');
 
 //		prompt.GetComponent<Text> ().text = replaceComma;
 		int totalSpotsFilled = 0;
@@ -303,22 +303,20 @@ public class SequencingGame : BRTemplate {
 
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
 		if (didAnswerCorrect && !timer.timesUp) {
-			listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery += .5f;
+			listOfSequences[randomizedListSequences[currentRow].initIndex].mastery += 1;
 		}
 
 		else if (!didAnswerCorrect) {
-			if (listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery > 0) {
-				listOfSequences[randomizedListSequences[currentRow].initIndex].sequenceMastery -= .5f;
+			if (listOfSequences[randomizedListSequences[currentRow].initIndex].mastery > 0) {
+				listOfSequences[randomizedListSequences[currentRow].initIndex].mastery -= 1;
 			}
 		}
-
-		float totalMastery = 0f;
-		foreach (Sequence x in listOfSequences) {
-			totalMastery+=x.sequenceMastery;
+		currMastery = 0;
+		foreach (SequenceTerm x in listOfSequences) {
+			currMastery+=x.mastery;
 		}
-		totalMastery = totalMastery / listOfSequences.Count;
-		mastery.value = totalMastery;
-		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)totalMastery*100;
+		mastery.value = (float)(currMastery + priorMastery)/totalMastery;
+		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)(mastery.value)*100;
 		timer.Reset(25f);
 
 	}

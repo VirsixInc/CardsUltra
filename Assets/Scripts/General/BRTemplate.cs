@@ -9,6 +9,9 @@ public abstract class BRTemplate : MonoBehaviour {
 	public float loadDelay = 0.5f;
 	public float timeSinceLoad;
 	public int requiredMastery = 4;
+	protected int totalMastery;
+	protected int currMastery = 0;
+	protected int priorMastery;
 
 	protected string directoryForAssignment;
 	protected bool useImages;
@@ -18,14 +21,10 @@ public abstract class BRTemplate : MonoBehaviour {
 	protected int currentImageIterator;
 
 	protected string[] contentForAssign;
-	protected int totalMastery;
-	protected int currMastery = 0;
+
 	protected float timeAtStart;
 	protected float timeAtEnd;
-
-
-
-
+	
 	//UI
 	public GameObject winningSlide;
 	public GameObject introSlide;
