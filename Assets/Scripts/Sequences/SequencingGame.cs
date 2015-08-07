@@ -111,7 +111,6 @@ public class SequencingGame : BRTemplate {
 		case GameState.CorrectAnswer :
 			if (AnswerCorrect()){
 				WinRound();
-				print ("WINNNING");
 				gameState = GameState.WinScreen;
 			}
 			else {
@@ -142,7 +141,7 @@ public class SequencingGame : BRTemplate {
 			directoryForAssignment = AppManager.s_instance.currentAssignments[assignIndex].imgDir;
 		}
 		readyToConfigure = true;
-		print(AppManager.s_instance.pullAssignMastery(assignToUse));
+		print(AppManager.s_instance.pullAssignMastery(assignToUse) + " PRIOR MASTERY");
 		mastery.value = (float)AppManager.s_instance.pullAssignMastery(assignToUse)/100f;
 
 	}
@@ -168,7 +167,6 @@ public class SequencingGame : BRTemplate {
 	void ConfigureAssignment() {
 		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
 		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
-	
 		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
 		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
 		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
@@ -189,7 +187,7 @@ public class SequencingGame : BRTemplate {
 			tempSequence.arrayOfStrings = matrixOfCSVData[i];
 			listOfSequences.Add(tempSequence);
 		}
-		foreach (SequenceTerm st in listOfSequences) {
+		for (int i = 0; i < listOfSequences.Count; i++) {
 			totalMastery+=requiredMastery;
 		}
 		List<SequenceTerm> tempListSequences = new List<SequenceTerm>(listOfSequences); //copy list
@@ -216,12 +214,15 @@ public class SequencingGame : BRTemplate {
 	}
 
 	public void LoadMainMenu() {
+		//gets called on quit and on menu click
 		StartCoroutine ("LoadMain");
 		//update Mastery Values
 
 	}
 	IEnumerator LoadMain() {
-		//int masteryOutput = Mathf.CeilToInt(mastery.value*100);
+		print ("LOAD MAIN");
+		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
+		AppManager.s_instance.saveAssignmentMastery(AppManager.s_instance.currentAssignments[assignIndex], masteryOutput);
 		yield return new WaitForSeconds (2f);
 		Application.LoadLevel ("Login");
 	}
@@ -316,7 +317,6 @@ public class SequencingGame : BRTemplate {
 			currMastery+=x.mastery;
 		}
 		mastery.value = (float)(currMastery + priorMastery)/totalMastery;
-		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)(mastery.value)*100;
 		timer.Reset(25f);
 
 	}

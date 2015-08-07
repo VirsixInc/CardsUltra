@@ -275,7 +275,7 @@ public class GUIManager : MonoBehaviour {
 	public void SaveAndQuit () {
 		Slider mastery = GameObject.FindGameObjectWithTag ("mastery").GetComponent<Slider>();
 		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
-		AppManager.s_instance.uploadAssignMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex], masteryOutput);
+		AppManager.s_instance.saveAssignmentMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex], masteryOutput);
 		StartCoroutine(AppManager.s_instance.uploadAssignTime(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].fullAssignTitle, (int)(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].timeAtLoad)));
 		StartCoroutine ("DelayedCallClickHandler");
 	}

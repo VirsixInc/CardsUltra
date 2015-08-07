@@ -353,6 +353,7 @@ public class AppManager : MonoBehaviour
 
 	public int pullAssignMastery (Assignment currAssign)
 	{
+		//grab locally saved mastery for an individual template that is currently being played
 		int mastery = 0;
 		string[] masteryFile = File.ReadAllLines (masteryFilePath);
 		bool foundFile = false;
@@ -374,8 +375,9 @@ public class AppManager : MonoBehaviour
 
 	public void saveAssignmentMastery (Assignment assignToSave, int mastery)
 	{
+		print ("SAVING ASSIGN");
+		//the mastery file contains an array of assignments by fullAssignTitle
 		string[] masteryFile = File.ReadAllLines (masteryFilePath);
-
 		for (int i = 0; i<masteryFile.Length; i++) {
 			if (masteryFile [i].Contains (assignToSave.fullAssignTitle)) {
 				masteryFile [i] = assignToSave.fullAssignTitle + "," + mastery.ToString ();
