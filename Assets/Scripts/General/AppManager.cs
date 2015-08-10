@@ -18,6 +18,7 @@ public enum AppState
 	DownloadAssignments,
 	MenuConfig,
 	AssignmentMenu,
+	LoadFromAssign,
 	PlayConfig,
 	Playing,
 	LoadContent}
@@ -117,6 +118,10 @@ public class AppManager : MonoBehaviour
 			loadInLocalAssignments ();
 			currentAppState = AppState.MenuConfig;
 			break;
+    case AppState.LoadFromAssign:
+      saveAssignmentMastery(currentAssignments[currIndex]);
+			currentAppState = AppState.MenuConfig;
+      break;
 		case AppState.MenuConfig:
 			List<int> indexesToRemove = new List<int> ();
 			for (int i = 0; i<currentAssignments.Count; i++) {
@@ -148,7 +153,7 @@ public class AppManager : MonoBehaviour
 			break;
 		case AppState.Playing:
 			if (Application.loadedLevelName == "Login") {
-				currentAppState = AppState.MenuConfig;
+				currentAppState = AppState.LoadFromAssign;
 			}
 			break;
 		}
@@ -373,10 +378,9 @@ public class AppManager : MonoBehaviour
 		return mastery;
 	}
 
-	public void saveAssignmentMastery (Assignment assignToSave, int mastery)
-	{
-		print ("SAVING ASSIGN");
+	public void saveAssignmentMastery (Assignment assignToSave){
 		//the mastery file contains an array of assignments by fullAssignTitle
+    int mastery = assignToSave.mastery;
 		string[] masteryFile = File.ReadAllLines (masteryFilePath);
 		for (int i = 0; i<masteryFile.Length; i++) {
 			if (masteryFile [i].Contains (assignToSave.fullAssignTitle)) {
@@ -384,17 +388,16 @@ public class AppManager : MonoBehaviour
 				break;
 			}
 		}
+		File.WriteAllText (masteryFilePath, String.Empty);
+		File.WriteAllLines (masteryFilePath, masteryFile);
 		if (CheckForInternetConnection ()) {
 			StartCoroutine (uploadAssignMastery (assignToSave, mastery));
 		}
-		File.WriteAllText (masteryFilePath, String.Empty);
-		File.WriteAllLines (masteryFilePath, masteryFile);
 	}
 
 	public IEnumerator uploadAssignMastery (Assignment assignToUpload, int mastery)
 	{
 		string assignmentName = assignToUpload.assignmentTitle.Replace ("\"", "").ToLower ();
-		saveAssignmentMastery (assignToUpload, mastery);
 		WWW www = new WWW (serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString ());
 		print (www.url);
 		yield return www;

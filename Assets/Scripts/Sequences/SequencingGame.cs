@@ -222,7 +222,7 @@ public class SequencingGame : BRTemplate {
 	IEnumerator LoadMain() {
 		print ("LOAD MAIN");
 		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
-		AppManager.s_instance.saveAssignmentMastery(AppManager.s_instance.currentAssignments[assignIndex], masteryOutput);
+		AppManager.s_instance.currentAssignments[assignIndex].mastery = masteryOutput;
 		yield return new WaitForSeconds (2f);
 		Application.LoadLevel ("Login");
 	}
