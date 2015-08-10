@@ -68,7 +68,6 @@ public class AppManager : MonoBehaviour
 			userExists = true;
 			username = loginData [0];
 			password = loginData [1];
-			print (username);
 			loginButton.SendMessage ("updateFields", loginData); //sets text info on input fields
 		}
 		DontDestroyOnLoad (transform.gameObject);
@@ -305,7 +304,9 @@ public class AppManager : MonoBehaviour
 				}
 			}
 		}
-		File.AppendAllText (masteryFilePath, assignmentName + ",0\n");
+    if(!File.Exists(masteryFilePath) || !(File.ReadAllText(masteryFilePath).Contains(assignmentName))){
+      File.AppendAllText (masteryFilePath, assignmentName + ",0\n");
+    }
 		File.WriteAllLines (filePath, assignmentContent.ToArray ());
 		assignsLoaded++;
 	}

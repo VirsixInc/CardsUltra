@@ -371,6 +371,7 @@ public class cardManager : BRTemplate
 	List<CardsTerm> convertCSV (List<string[]> inputString)
 	{
 		List<CardsTerm> listToReturn = new List<CardsTerm> ();
+    int masteryIterator = 0;
 		foreach (string[] thisLine in inputString) {
 			if (thisLine.Length > 1) {
 				CardsTerm termToAdd;
@@ -384,7 +385,11 @@ public class cardManager : BRTemplate
 				} else {
 					termToAdd = new CardsTerm (thisLine [0], thisLine [1]);
 				}
-				termToAdd.mastery = ((int)Mathf.Ceil (((float)(currMastery / 100f)) * requiredMastery));
+        print((float)((inputString.Count*requiredMastery/currMastery)));
+        if(currMastery > 0 && masteryIterator < currMastery/(inputString.Count*requiredMastery)){
+          termToAdd.mastery++;
+          masteryIterator++;
+        }
 				listToReturn.Add (termToAdd);
 			}
 		}
