@@ -22,6 +22,7 @@ public class GUIManager : MonoBehaviour {
 	public Text topMenuButtonText, bottomMenuButtonText;
 	public GameObject loginPanel, MainMenuPanel;
 	public Image fadeToBlackImage;
+	public Text surveyLinkText;
 
 	float fadeoutTimer;
 
@@ -277,6 +278,10 @@ public class GUIManager : MonoBehaviour {
 		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
     AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].mastery = masteryOutput;
     StartCoroutine ("DelayedCallClickHandler");
+	}
+
+	public void CallSurveyLink () {
+
 	}
 
 }
