@@ -22,6 +22,7 @@ public class GUIManager : MonoBehaviour {
 	public Text topMenuButtonText, bottomMenuButtonText;
 	public GameObject loginPanel, MainMenuPanel;
 	public Image fadeToBlackImage;
+	public Text surveyLinkText;
 
 	float fadeoutTimer;
 
@@ -278,6 +279,10 @@ public class GUIManager : MonoBehaviour {
 		AppManager.s_instance.saveAssignmentMastery(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex], masteryOutput);
 		StartCoroutine(AppManager.s_instance.uploadAssignTime(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].fullAssignTitle, (int)(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].timeAtLoad)));
 		StartCoroutine ("DelayedCallClickHandler");
+	}
+
+	public void CallSurveyLink () {
+
 	}
 
 }
