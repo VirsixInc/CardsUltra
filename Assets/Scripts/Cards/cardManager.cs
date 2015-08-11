@@ -385,8 +385,7 @@ public class cardManager : BRTemplate
 				} else {
 					termToAdd = new CardsTerm (thisLine [0], thisLine [1]);
 				}
-        print((float)((inputString.Count*requiredMastery/currMastery)));
-        if(currMastery > 0 && masteryIterator < currMastery/(inputString.Count*requiredMastery)){
+        if(currMastery > 0 && masteryIterator < 2*((currMastery*inputString.Count)/(inputString.Count*requiredMastery))){
           termToAdd.mastery++;
           masteryIterator++;
         }
