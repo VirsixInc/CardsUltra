@@ -351,7 +351,8 @@ public class AppManager : MonoBehaviour
 		Assignment assignToReturn;
 		string[] assign = assignName.Split ('_');
 		bool assignImages = Directory.Exists (Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images");
-		assignToReturn = new Assignment (assign [1], assign [0], assignImages);
+		assignToReturn = new Assignment (assign [1], assign [0], (Application.persistentDataPath + "/" + assignName), assignImages);
+    print((Application.persistentDataPath + assignName));
 		assignToReturn.imgDir = Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images";
 		assignToReturn.content = File.ReadAllLines ((Application.persistentDataPath + "/" + assignName).Replace ("\"", ""));
 		return assignToReturn;
@@ -396,10 +397,46 @@ public class AppManager : MonoBehaviour
 		}
 	}
 
-  public IEnumerator uploadTermMastery(Assignment assignToUpload, string term, int mastery){
+  public void saveTermMastery(Assignment assignToSave, string term, bool correct){
+    string dataFilePath = assignToSave.fileName;
+    string[] dataFile = File.ReadAllLines(dataFilePath);
+		for (int i = 0; i<dataFile.Length; i++) {
+			if (dataFile [i].Contains (term)) {
+        string newMastLine = dataFile[i];
+        if(dataFile[i].Contains("/masteryBreak")){
+          string[] masteryString = dataFile[i].Split(new string[]{ "/masteryBreak" }, StringSplitOptions.None);
+          string[] corrAndIncorr = masteryString[1].Replace(" ", "").Split(',');
+          print(corrAndIncorr[0] + "   " + corrAndIncorr[1]);
+          int corrVal = int.Parse(corrAndIncorr[0]);
+          int inCorrVal = int.Parse(corrAndIncorr[1]);
+          if(correct){
+            corrVal++;
+          }else{
+            inCorrVal++;
+          }
+          newMastLine = masteryString[0] + ",/masteryBreak"+corrVal.ToString() + "," + inCorrVal.ToString() + '\n';
+        }else{
+          string corrAndIncorr = "";
+          if(correct){
+            corrAndIncorr = ",/masteryBreak,1,0\n";
+          }else{
+            corrAndIncorr = ",/masteryBreak,0,1\n";
+          }
+          newMastLine = newMastLine.Replace("\n", "");
+          newMastLine = newMastLine + corrAndIncorr;
+        }
+        dataFile[i] = newMastLine;
+        print(dataFile[i]);
+				break;
+			}
+		}
+		File.WriteAllText (dataFilePath, String.Empty);
+		File.WriteAllLines (dataFilePath, dataFile);
+  }
+
+  public IEnumerator uploadTermMastery(Assignment assignToUpload, string term, int incorr, int corr){
 		string assignmentName = assignToUpload.assignmentTitle.Replace ("\"", "").ToLower ();
-		WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString () + "&term=" + term);
-		print (www.url);
+		WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&correct=" + corr.ToString () + "&incorrect=" + incorr.ToString() + "&term=" + term);
 		yield return www;
   }
 

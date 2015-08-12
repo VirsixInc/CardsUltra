@@ -9,6 +9,7 @@ public class Assignment {
 	public string assignmentTitle = "";
 	public string fullAssignTitle = "";
 	public string displayTitle = "";
+  public string fileName = "";
 	public string type = "";
 	
 	public float timeAtLoad;
@@ -20,8 +21,9 @@ public class Assignment {
 	public string[] content;
 	public string imgDir;
 	
-	public Assignment(string assignTitle, string templateType, bool usesImg = false){
+	public Assignment(string assignTitle, string templateType, string newFileName = "NA",bool usesImg = false){
 		hasImages = usesImg; 
+    fileName = newFileName;
 		type = templateType;
 		assignmentTitle = assignTitle;
 		displayTitle = UppercaseFirst(assignmentTitle.Split('.')[0]).Replace("_", " ");

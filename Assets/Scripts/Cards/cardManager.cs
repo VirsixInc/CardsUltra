@@ -139,6 +139,11 @@ public class cardManager : BRTemplate
 					if (SoundManager.s_instance != null)
 						SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_correct);
 					unmasteredCardsTerms [correctCardsTermIndex].mastery++;
+          AppManager.s_instance.saveTermMastery(
+              AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
+              unmasteredCardsTerms[correctCardsTermIndex].answer,
+              true
+              );
 					currentState = GameState.ResetCards;
 					if (unmasteredCardsTerms [correctCardsTermIndex].mastery == requiredMastery * .75f) {
 						unmasteredCardsTerms.RemoveAt (correctCardsTermIndex);
@@ -148,6 +153,11 @@ public class cardManager : BRTemplate
 					if (unmasteredCardsTerms [correctCardsTermIndex].mastery > 0) {
 						unmasteredCardsTerms [correctCardsTermIndex].mastery--;
 					}
+          AppManager.s_instance.saveTermMastery(
+              AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
+              unmasteredCardsTerms[correctCardsTermIndex].answer,
+              false
+              );
 					currentState = GameState.ResetCards;
 				} else {
 					allCards [currIndex].objAssoc.SendMessage ("incorrectAnswer");
