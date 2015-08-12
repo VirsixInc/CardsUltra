@@ -396,6 +396,13 @@ public class AppManager : MonoBehaviour
 		}
 	}
 
+  public IEnumerator uploadTermMastery(Assignment assignToUpload, string term, int mastery){
+		string assignmentName = assignToUpload.assignmentTitle.Replace ("\"", "").ToLower ();
+		WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString () + "&term=" + term);
+		print (www.url);
+		yield return www;
+  }
+
 	public IEnumerator uploadAssignMastery (Assignment assignToUpload, int mastery)
 	{
 		string assignmentName = assignToUpload.assignmentTitle.Replace ("\"", "").ToLower ();
