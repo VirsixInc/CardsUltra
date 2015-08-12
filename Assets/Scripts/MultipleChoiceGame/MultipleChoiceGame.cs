@@ -21,7 +21,6 @@ public class MultipleChoiceGame : BRTemplate {
 	List<GameObject> draggables = new List<GameObject>();
 	bool isButtonPressed = false;
 	List<List<string>> matrixOfCSVData;
-	List<SequenceTerm> listOfSequenceTerms; //listOfSequenceTerms exists during an instance of Sequencing game. Current row index accesses the current SequenceTerm
 
 	public List<SequenceTerm> allTerms = new List<SequenceTerm>();
 	public List<SequenceTerm> unmasteredTerms = new List<SequenceTerm>();
@@ -51,8 +50,8 @@ public class MultipleChoiceGame : BRTemplate {
 		}
 		
 		//list init
-		listOfSequenceTerms = new List<SequenceTerm> (); //use this to store per SequenceTerm mastery values
-		listOfSequenceTerms = convertCSV(parseContent(AppManager.s_instance.currentAssignments[assignIndex].content));
+		allTerms = new List<SequenceTerm> (); //use this to store per SequenceTerm mastery values
+		allTerms = convertCSV(parseContent(AppManager.s_instance.currentAssignments[assignIndex].content));
 		
 		timer.Reset(15f);
 		
@@ -189,11 +188,11 @@ public class MultipleChoiceGame : BRTemplate {
 		}
 	}
 	public void CheckForSequenceTermMastery() {
-		if (currIndex >= listOfSequenceTerms.Count)
+		if (currIndex >= allTerms.Count)
 			currIndex = 0; //loop around to beginning of list
-		while (listOfSequenceTerms[currIndex].mastery==1f && listOfSequenceTerms.Count != 0) { //skip over completed 
-			listOfSequenceTerms.Remove(listOfSequenceTerms[currIndex]);
-			if (listOfSequenceTerms.Count > currIndex+1) {
+		while (allTerms[currIndex].mastery==1f && allTerms.Count != 0) { //skip over completed 
+			allTerms.Remove(allTerms[currIndex]);
+			if (allTerms.Count > currIndex+1) {
 				currIndex++;
 			}
 			else 
@@ -212,8 +211,8 @@ public class MultipleChoiceGame : BRTemplate {
 	}
 	
 	public void InitiateSequenceTerm () { //displaces current SequenceTerm
-		currentSequenceTerm = listOfSequenceTerms [currIndex].arrayOfStrings;
-		picture.sprite = listOfSequenceTerms [currIndex].imgAssoc;
+		currentSequenceTerm = allTerms [currIndex].arrayOfStrings;
+		picture.sprite = allTerms [currIndex].imgAssoc;
 		//instantiate all of the targets and draggables in the correct positions
 		for (int i = 1; i < currentSequenceTerm.Length; i++) {
 			//calculate position of target based on i and sS.Count
@@ -244,20 +243,20 @@ public class MultipleChoiceGame : BRTemplate {
 	
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
 		if (didAnswerCorrect && !timer.timesUp) {
-//			listOfSequenceTerms[currIndex].mastery += .5f;
+//			allTerms[currIndex].mastery += .5f;
 		}
 		
 		else {
-			if (listOfSequenceTerms[currIndex].mastery > 0) {
-//				listOfSequenceTerms[currIndex].mastery -= .5f;
+			if (allTerms[currIndex].mastery > 0) {
+//				allTerms[currIndex].mastery -= .5f;
 			}
 		}
 		
 		float totalMastery = 0f;
-		foreach (SequenceTerm x in listOfSequenceTerms) {
+		foreach (SequenceTerm x in allTerms) {
 			totalMastery+=x.mastery;
 		}
-		totalMastery = totalMastery / listOfSequenceTerms.Count;
+		totalMastery = totalMastery / allTerms.Count;
 		masteryMeter.value = totalMastery;
 		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)totalMastery*100;
 		timer.Reset(15f);

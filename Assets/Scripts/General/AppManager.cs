@@ -36,7 +36,7 @@ public class AppManager : MonoBehaviour
 	public int currIndex;
 	public string[] supportedTemplates;
 	string[] assignmentURLs;
-	string serverURL = "http://96.126.100.208:9999/client", folderName,
+	string serverURL = "http://96.126.100.208:8000/client", folderName,
 		username,
 		password,
 		masteryFilePath,
@@ -52,7 +52,7 @@ public class AppManager : MonoBehaviour
 	void Awake ()
 	{
 		if (development) {
-			serverURL = "http://96.126.100.208:9999/client";
+			serverURL = "http://96.126.100.208:8000/client";
 		}
 		if (userDebug) {
 			username = "AGutierrez";
