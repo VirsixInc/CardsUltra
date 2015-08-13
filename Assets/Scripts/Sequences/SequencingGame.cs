@@ -165,6 +165,7 @@ public class SequencingGame : BRTemplate {
 		}
 
 		PropagateMastery(assignToUse);
+		CheckForSequenceMastery();
 	
 		List<SequenceTerm> tempListSequences = new List<SequenceTerm>(allTerms); //copy list
 		
@@ -203,8 +204,9 @@ public class SequencingGame : BRTemplate {
 			if (randomizedListSequences.Count > currIndex+1) {
 				currIndex++;
 			}
-			else 
+			else {
 				currIndex = 0;
+			}
 		}
 	}
 
@@ -305,6 +307,7 @@ public class SequencingGame : BRTemplate {
 			if (masteryAvailableForPropagation>0){
 				allTerms[i].mastery+=1;
 				masteryAvailableForPropagation-=1;
+				continue;
 			}
 			else {
 				break;
