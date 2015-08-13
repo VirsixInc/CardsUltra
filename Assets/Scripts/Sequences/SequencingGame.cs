@@ -26,12 +26,11 @@ public class SequencingGame : BRTemplate {
 	bool isButtonPressed = false;
 	List<string[]> matrixOfCSVData;
 	public TextAsset shortNoticeCSV;
-	List<SequenceTerm> listOfSequences, randomizedListSequences; //listOfSequences exists during an instance of Sequencing game. Current row index accesses the current sequence
+	List<SequenceTerm> allTerms, randomizedListSequences; //allTerms exists during an instance of Sequencing game. Current row index accesses the current sequence
 
 	GameType gameType = GameType.Text;
 	GameState gameState = GameState.Config;
 	bool areDistractorTerms;
-	int currentRow = 0; //currentRow is the iterator that goes through the remaining sequences
 	int xRandomRange, yRandomRange;
 	List<string> currentSequence;
 	List<float> masteryValues; //all start at 0 on first playthrough.
@@ -73,7 +72,6 @@ public class SequencingGame : BRTemplate {
 			break;
 		case GameState.Config :
 			if (hasReceivedServerData) {
-				ConfigureAssignment();
 				//check JSON to see if it is ReqIMG or not, if is set GameType to GameType.Image
 				gameState = GameState.Intro;
 			}
@@ -140,9 +138,43 @@ public class SequencingGame : BRTemplate {
 		if(useImages){
 			directoryForAssignment = AppManager.s_instance.currentAssignments[assignIndex].imgDir;
 		}
+		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
+		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
+		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
+		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
+		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
+		parentCanvas = GameObject.FindGameObjectWithTag("shaker");
+		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
+		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
+		Input.multiTouchEnabled = true;
+		
+		//list init
+		allTerms = new List<SequenceTerm> (); //use this to store per sequence mastery values
+		randomizedListSequences = new List<SequenceTerm> (); //can remove from this list once mastered
+		
+		//parsing
+		
+		for (int i = 0; i < matrixOfCSVData.Count; i++) { //fill out list of Sequence class instances
+			SequenceTerm tempSequence = new SequenceTerm();
+			tempSequence.initIndex = i;
+			tempSequence.arrayOfStrings = matrixOfCSVData[i];
+			allTerms.Add(tempSequence);
+		}
+		for (int i = 0; i < allTerms.Count; i++) {
+			totalMastery+=requiredMastery;
+		}
+
+		PropagateMastery(assignToUse);
+	
+		List<SequenceTerm> tempListSequences = new List<SequenceTerm>(allTerms); //copy list
+		
+		while (tempListSequences.Count > 0) //shuffle list
+		{
+			int randomIndex = Mathf.FloorToInt(Random.Range(0, tempListSequences.Count));//r.Next(0, inputList.Count); //Choose a random object in the list
+			randomizedListSequences.Add(tempListSequences[randomIndex]); //add it to the new, random list
+			tempListSequences.RemoveAt(randomIndex); //remove to avoid duplicates
+		}
 		readyToConfigure = true;
-		print(AppManager.s_instance.pullAssignMastery(assignToUse) + " PRIOR MASTERY");
-		mastery.value = (float)AppManager.s_instance.pullAssignMastery(assignToUse)/100f;
 
 	}
 
@@ -154,7 +186,6 @@ public class SequencingGame : BRTemplate {
 				if (x.GetComponent<DraggableGUI> ().isSnapped) {
 					numberOfDraggablesSnapped++; //how many items are currently snapped +1
 				}
-
 			}
 			if (numberOfDraggablesSnapped == draggables.Count){
 				submitButton.GetComponent<Image> ().color = new Color (1, 1, 1, 1); //show button 
@@ -163,53 +194,17 @@ public class SequencingGame : BRTemplate {
 
 		}
 	}
-
-	void ConfigureAssignment() {
-		myCanvas = GameObject.Find ("Canvas").GetComponent<Canvas>();
-		screenWidth = myCanvas.GetComponent<RectTransform> ().rect.width;
-		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
-		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
-		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
-		parentCanvas = GameObject.FindGameObjectWithTag("shaker");
-		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
-		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
-		Input.multiTouchEnabled = true;
-
-		//list init
-		listOfSequences = new List<SequenceTerm> (); //use this to store per sequence mastery values
-		randomizedListSequences = new List<SequenceTerm> (); //can remove from this list once mastered
-		
-		//parsing
-
-		for (int i = 0; i < matrixOfCSVData.Count; i++) { //fill out list of Sequence class instances
-			SequenceTerm tempSequence = new SequenceTerm();
-			tempSequence.initIndex = i;
-			tempSequence.arrayOfStrings = matrixOfCSVData[i];
-			listOfSequences.Add(tempSequence);
-		}
-		for (int i = 0; i < listOfSequences.Count; i++) {
-			totalMastery+=requiredMastery;
-		}
-		List<SequenceTerm> tempListSequences = new List<SequenceTerm>(listOfSequences); //copy list
-		
-		while (tempListSequences.Count > 0) //shuffle list
-		{
-			int randomIndex = Mathf.FloorToInt(Random.Range(0, tempListSequences.Count));//r.Next(0, inputList.Count); //Choose a random object in the list
-			randomizedListSequences.Add(tempListSequences[randomIndex]); //add it to the new, random list
-			tempListSequences.RemoveAt(randomIndex); //remove to avoid duplicates
-		}
-	}
-
+	
 	public void CheckForSequenceMastery() {
-		if (currentRow >= randomizedListSequences.Count)
-			currentRow = 0; //loop around to beginning of list
-		while (listOfSequences[currentRow].mastery==requiredMastery && randomizedListSequences.Count != 0) { //skip over completed 
-			randomizedListSequences.Remove(randomizedListSequences[currentRow]);
-			if (randomizedListSequences.Count > currentRow+1) {
-				currentRow++;
+		if (currIndex >= randomizedListSequences.Count)
+			currIndex = 0; //loop around to beginning of list
+		while (allTerms[currIndex].mastery==requiredMastery && randomizedListSequences.Count != 0) { //skip over completed 
+			randomizedListSequences.Remove(randomizedListSequences[currIndex]);
+			if (randomizedListSequences.Count > currIndex+1) {
+				currIndex++;
 			}
 			else 
-				currentRow = 0;
+				currIndex = 0;
 		}
 	}
 
@@ -233,8 +228,8 @@ public class SequencingGame : BRTemplate {
 	}
 
 	public void InitiateSequence () { //displaces current sequence
-		currentSequence = new List<string> (randomizedListSequences[currentRow].arrayOfStrings);
-		int currentSequenceMastery = randomizedListSequences [currentRow].mastery;
+		currentSequence = new List<string> (randomizedListSequences[currIndex].arrayOfStrings);
+		int currentSequenceMastery = randomizedListSequences [currIndex].mastery;
 	
 		for (int i = 0; i < currentSequence.Count; i++) { //NOTE I HAD TO DO A SECOND LOOP FOR LAYERING ISSUES
 			//calculate position of target based on i and sS.Count
@@ -245,7 +240,7 @@ public class SequencingGame : BRTemplate {
 			GameObject tempTarget = (GameObject)Instantiate(GUITargetPrefab);
 			tempTarget.transform.SetParent(targetHolder.transform, false);
 			tempTarget.transform.localPosition = new Vector3(xPositionOfTarget,tempTarget.transform.localPosition.y,0);
-			tempTarget.GetComponent<TargetGUI>().correctAnswer = randomizedListSequences[currentRow].arrayOfStrings[i];
+			tempTarget.GetComponent<TargetGUI>().correctAnswer = randomizedListSequences[currIndex].arrayOfStrings[i];
 			targets.Add (tempTarget);
 			
 		}
@@ -301,27 +296,54 @@ public class SequencingGame : BRTemplate {
 			return true;
 		}
 	}
-
+	void PropagateMastery(Assignment assignToUse) {
+		//Mastery Propagation
+		int priorMasteryPercentage = AppManager.s_instance.pullAssignMastery(assignToUse);
+		int totalMastery = requiredMastery * allTerms.Count;
+		int masteryAvailableForPropagation = Mathf.FloorToInt((float)(priorMasteryPercentage*totalMastery)/ 100f);
+		for (int i = 0; i < allTerms.Count; i++) {
+			if (masteryAvailableForPropagation>0){
+				allTerms[i].mastery+=1;
+				masteryAvailableForPropagation-=1;
+			}
+			else {
+				break;
+			}
+		}
+		SetMastery();
+		
+	}
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
 		if (didAnswerCorrect && !timer.timesUp) {
-			listOfSequences[randomizedListSequences[currentRow].initIndex].mastery += 1;
+			allTerms[randomizedListSequences[currIndex].initIndex].mastery += 1;
 		}
 
 		else if (!didAnswerCorrect) {
-			if (listOfSequences[randomizedListSequences[currentRow].initIndex].mastery > 0) {
-				listOfSequences[randomizedListSequences[currentRow].initIndex].mastery -= 1;
+			if (allTerms[randomizedListSequences[currIndex].initIndex].mastery > 0) {
+				allTerms[randomizedListSequences[currIndex].initIndex].mastery -= 1;
 			}
 		}
-		currMastery = 0;
-		foreach (SequenceTerm x in listOfSequences) {
-			currMastery+=x.mastery;
-		}
-		mastery.value = (float)(currMastery + priorMastery)/totalMastery;
-		timer.Reset(25f);
+		SetMastery();
 
 	}
 
+	void SetMastery() {
+		currMastery = 0;
+		foreach (SequenceTerm x in allTerms) {
+			currMastery+=x.mastery;
+		}
+		mastery.value = (float)(currMastery)/totalMastery;
+		timer.Reset(25f);
+	}
+
 	void AnswerWrong(){
+
+		AppManager.s_instance.saveTermMastery(
+			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
+			allTerms[currIndex].arrayOfStrings[1],
+			false
+			);
+
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_wrong);
 		GameObject.FindGameObjectWithTag ("shaker").GetComponent<Shake>().StartShake();
 		redX.StartFade (); //TODO change to drag this into inspector
@@ -347,6 +369,14 @@ public class SequencingGame : BRTemplate {
 	}
 
 	bool AnswerCorrect() {
+
+		AppManager.s_instance.saveTermMastery(
+			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
+			allTerms[currIndex].arrayOfStrings[0],
+			true
+			);
+	
+
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_correct);
 
 		greenCheck.StartFade (); //TODO set in inspector
@@ -358,7 +388,7 @@ public class SequencingGame : BRTemplate {
 		}
 		targets.Clear();
 		draggables.Clear();
-		currentRow++;
+		currIndex++;
 		CheckForSequenceMastery ();
 		AdjustMasteryMeter (true);
 		DisableSubmitButton ();

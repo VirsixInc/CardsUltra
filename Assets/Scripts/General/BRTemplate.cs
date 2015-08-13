@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 public abstract class BRTemplate : MonoBehaviour {
@@ -12,7 +13,6 @@ public abstract class BRTemplate : MonoBehaviour {
 	protected int totalMastery;
 	protected int currMastery = 0;
 	protected int priorMastery;
-
 	protected string directoryForAssignment;
 	protected bool useImages;
 	protected bool readyToConfigure;
@@ -28,6 +28,8 @@ public abstract class BRTemplate : MonoBehaviour {
 	//UI
 	public GameObject winningSlide;
 	public GameObject introSlide;
+
+
 
 
 }

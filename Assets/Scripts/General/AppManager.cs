@@ -405,22 +405,28 @@ public class AppManager : MonoBehaviour
         string newMastLine = dataFile[i];
         if(dataFile[i].Contains("/masteryBreak")){
           string[] masteryString = dataFile[i].Split(new string[]{ "/masteryBreak" }, StringSplitOptions.None);
-          string[] corrAndIncorr = masteryString[1].Replace(" ", "").Split(',');
-          print(corrAndIncorr[0] + "   " + corrAndIncorr[1]);
-          int corrVal = int.Parse(corrAndIncorr[0]);
-          int inCorrVal = int.Parse(corrAndIncorr[1]);
+          string[] corrAndIncorr = masteryString[1].Split(',');
+					print (term);
+					print (masteryString[1]);
+					int[] newVals = new int[corrAndIncorr.Length];
+					for(int j =0;j<corrAndIncorr.Length;j++){
+						string valToParse = corrAndIncorr[j];
+						print (valToParse);
+						print (corrAndIncorr[j]);
+						newVals[j] = int.Parse (valToParse);
+					}
           if(correct){
-            corrVal++;
+            newVals[0]++;
           }else{
-            inCorrVal++;
+            newVals[1]++;
           }
-          newMastLine = masteryString[0] + ",/masteryBreak"+corrVal.ToString() + "," + inCorrVal.ToString() + '\n';
+          newMastLine = masteryString[0] + ",/masteryBreak"+newVals[0].ToString() + "," + newVals[1].ToString() + '\n';
         }else{
           string corrAndIncorr = "";
           if(correct){
-            corrAndIncorr = ",/masteryBreak,1,0\n";
+            corrAndIncorr = ",/masteryBreak1,0\n";
           }else{
-            corrAndIncorr = ",/masteryBreak,0,1\n";
+            corrAndIncorr = ",/masteryBreak0,1\n";
           }
           newMastLine = newMastLine.Replace("\n", "");
           newMastLine = newMastLine + corrAndIncorr;
