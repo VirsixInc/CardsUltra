@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
+
+using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 
 public class MultipleChoiceGame : BRTemplate {
-
+	
 	public enum GameState {Idle, Config, ImageLoad, Intro, SetRound, Playing, CheckAnswer, WrongAnswer, CorrectAnswer, WinScreen};
 	
 	public GameObject draggableGUIPrefab, GUITargetPrefab, REDX, GREENCHECKMARK, submitButton;
@@ -20,11 +22,11 @@ public class MultipleChoiceGame : BRTemplate {
 	GameObject draggableGUIHolder;
 	List<GameObject> draggables = new List<GameObject>();
 	bool isButtonPressed = false;
-	List<List<string>> matrixOfCSVData;
-
+	List<string[]> matrixOfCSVData;
+	
 	public List<SequenceTerm> allTerms = new List<SequenceTerm>();
 	public List<SequenceTerm> unmasteredTerms = new List<SequenceTerm>();
-
+	
 	GameType gameType = GameType.Text;
 	GameState gameState = GameState.Intro;
 	bool areDistractorTerms;
@@ -34,59 +36,34 @@ public class MultipleChoiceGame : BRTemplate {
 	float startTime, exitTime = 5f;
 	CSVParser thisCSVParser;
 	PopUpGraphic greenCheck, redX, greenCheckmark;//todo
-
-	void ConfigureAssignment() {
-		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
-		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
-		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
-		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
-		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
-		Input.multiTouchEnabled = true;
-		
-		//parse CSV
-		useImages = AppManager.s_instance.currentAssignments[assignIndex].hasImages;
-		if(useImages){
-			directoryForAssignment = AppManager.s_instance.currentAssignments[assignIndex].imgDir;
-		}
-		
-		//list init
-		allTerms = new List<SequenceTerm> (); //use this to store per SequenceTerm mastery values
-		allTerms = convertCSV(parseContent(AppManager.s_instance.currentAssignments[assignIndex].content));
-		
-		timer.Reset(15f);
-		
-	}
-
+	
+	public Text readytoPlay;
+	
 	bool userClickedStart = false;
-
-
+	
+	
 	//STATE MACHINE
 	void Update () {
 		switch(gameState){
 		case GameState.Intro :
-			if (userClickedStart){
-				gameState = GameState.Idle;
-			}
+			gameState = GameState.Idle;
 			break;
 		case GameState.Idle:
-			#if UNITY_EDITOR
-			readyToConfigure = true;
-			#endif
 			if(readyToConfigure){ //readyToConfigure set from AppManager by calling configGame located on each GameManager go in each template
 				gameState = GameState.Config;
 			}
 			break;
-		
+			
 		case GameState.Config :
-			ConfigureAssignment();
 			//check JSON to see if it is ReqIMG or not, if is set GameType to GameType.Image
 			if (useImages) {
 				gameState = GameState.ImageLoad;
 			}
 			else gameState = GameState.SetRound;
 			break;
-
+			
 		case GameState.ImageLoad:
+			print ("IMAGE LOAD");
 			if(loadDelay + timeSinceLoad < Time.time){
 				if(currentImageIterator < allTerms.Count){
 					if(!allTerms[currentImageIterator].imageLoaded){
@@ -104,6 +81,7 @@ public class MultipleChoiceGame : BRTemplate {
 			}
 			break;
 		case GameState.SetRound :
+			readytoPlay.gameObject.SetActive(true);
 			CheckForSequenceTermMastery(); //eliminate mastered SequenceTerms
 			InitiateSequenceTerm();
 			gameState = GameState.Playing;
@@ -148,30 +126,87 @@ public class MultipleChoiceGame : BRTemplate {
 			}
 			break;
 		}
-
+		
 	}
-
+	
 	public void configureGame(int thisInt){
+		submitButton = GameObject.Find ("SubmitButton"); //TODO GET RID OF ALL .FINDS
+		scaleFactor = GameObject.Find ("Canvas").GetComponent<Canvas> ().scaleFactor;
+		greenCheck = GameObject.Find ("greenCheck").GetComponent<PopUpGraphic> ();
+		draggableGUIHolder = GameObject.Find ("DraggableGUIHolder");
+		redX = GameObject.Find ("redX").GetComponent<PopUpGraphic> ();
+		Input.multiTouchEnabled = true;
+		
+		
 		assignIndex = thisInt;
+		Assignment assignToUse = AppManager.s_instance.currentAssignments[assignIndex];
 		useImages = AppManager.s_instance.currentAssignments[assignIndex].hasImages;
 		if(useImages){
 			directoryForAssignment = AppManager.s_instance.currentAssignments[assignIndex].imgDir;
 		}
 		contentForAssign = AppManager.s_instance.currentAssignments[assignIndex].content;
-		currMastery = AppManager.s_instance.pullAssignMastery(AppManager.s_instance.currentAssignments[assignIndex]);
+		
+		//parse CSV
+		useImages = AppManager.s_instance.currentAssignments[assignIndex].hasImages;
+		if(useImages){
+			directoryForAssignment = AppManager.s_instance.currentAssignments[assignIndex].imgDir;
+		}
+		
+		//list init
+		allTerms = new List<SequenceTerm> (); //use this to store per SequenceTerm mastery values
+		allTerms = convertCSV(parseContent(AppManager.s_instance.currentAssignments[assignIndex].content));
+		
+		//parse CSV
+		useImages = AppManager.s_instance.currentAssignments[assignIndex].hasImages;
+		if(useImages){
+			directoryForAssignment = AppManager.s_instance.currentAssignments[assignIndex].imgDir;
+		}
+		for (int i = 0; i < allTerms.Count; i++) {
+			totalMastery+=requiredMastery;
+		}
+		
+		PropagateMastery(assignToUse);
 		readyToConfigure = true;
 	}
 	
-
+	
 	void OnGUI () {
 		Event e = Event.current;
-		if (e.type == EventType.mouseDown && gameState == GameState.Intro) {
+		if (e.type == EventType.mouseDown && gameState == GameState.Playing) {
 			userClickedStart = true;
 			introSlide.SetActive(false);
+			
+			
 		}
 	}
-
-
+	
+	void PropagateMastery(Assignment assignToUse) {
+		//Mastery Propagation
+		int priorMasteryPercentage = AppManager.s_instance.pullAssignMastery(assignToUse);
+		print ("prior mastery "+priorMasteryPercentage);
+		int totalMastery = requiredMastery * allTerms.Count;
+		int masteryAvailableForPropagation = Mathf.FloorToInt((float)(priorMasteryPercentage*totalMastery)/ 100f);
+		for (int i = 0; i < allTerms.Count; i++) {
+			if (masteryAvailableForPropagation>0){
+				allTerms[i].mastery+=1;
+				masteryAvailableForPropagation-=1;
+				continue;
+			}
+			else {
+				break;
+			}
+		}
+		SetMastery();
+	}
+	
+	void SetMastery() {
+		currMastery = 0;
+		foreach (SequenceTerm x in allTerms) {
+			currMastery+=x.mastery;
+		}
+		masteryMeter.value = (float)(currMastery)/totalMastery;
+		timer.Reset(25f);
+	}
 	
 	void CheckSequenceTerm(){
 		//checks to see how many items are currently snapped into place, keeps track of the number.
@@ -243,23 +278,20 @@ public class MultipleChoiceGame : BRTemplate {
 	
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
 		if (didAnswerCorrect && !timer.timesUp) {
-//			allTerms[currIndex].mastery += .5f;
+			allTerms[currIndex].mastery += 1;
 		}
 		
 		else {
 			if (allTerms[currIndex].mastery > 0) {
-//				allTerms[currIndex].mastery -= .5f;
+				allTerms[currIndex].mastery -= 1;
 			}
 		}
 		
-		float totalMastery = 0f;
-		foreach (SequenceTerm x in allTerms) {
-			totalMastery+=x.mastery;
-		}
-		totalMastery = totalMastery / allTerms.Count;
-		masteryMeter.value = totalMastery;
+		SetMastery();
+		
+		//update server
 		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)totalMastery*100;
-		timer.Reset(15f);
+		timer.Reset(25f);
 		
 	}
 	
@@ -298,7 +330,7 @@ public class MultipleChoiceGame : BRTemplate {
 	void ResetDraggables () {
 		target.GetComponent<TargetGUI> ().occupier.GetComponent<DraggableGUI> ().isSnapped = false;
 		target.GetComponent<TargetGUI>().occupier.transform.position = new Vector3 (Screen.width/2, Screen.height/4, 0);
-
+		
 	}
 	void DisableSubmitButton(){
 		submitButton.GetComponent<Image> ().color = new Color (1, 1, 1, .3f); //allow
@@ -309,7 +341,7 @@ public class MultipleChoiceGame : BRTemplate {
 			isButtonPressed = true;
 		}
 	}
-
+	
 	private List<string[]> parseContent(string[] contentToParse){
 		List<string[]> listToReturn = new List<string[]>();
 		string[] lines = contentToParse;
@@ -331,7 +363,7 @@ public class MultipleChoiceGame : BRTemplate {
 		}
 		return listToReturn;
 	}
-
+	
 	//Put content everything into SequenceTerm classes 	
 	List<SequenceTerm> convertCSV(List<string[]> inputString){
 		List<SequenceTerm> listToReturn = new List<SequenceTerm>();
