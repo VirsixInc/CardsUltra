@@ -34,6 +34,7 @@ public class AppManager : MonoBehaviour
 	public List<GameObject> userAssignments;
 	public GameObject loginButton;
 	public int currIndex;
+  private float timeAtAssignLoad;
 	public string[] supportedTemplates;
 	string[] assignmentURLs;
 	string serverURL = "http://96.126.100.208:9999/client", folderName,
@@ -49,8 +50,14 @@ public class AppManager : MonoBehaviour
 
 	bool urlsDownloaded, clicked, userExists;
 
-	void Awake ()
-	{
+	void Awake (){
+		DontDestroyOnLoad (transform.gameObject);
+		if (s_instance == null) {
+			s_instance = this;
+		} else {
+			Destroy (gameObject);
+		}
+    GUIManager.s_instance = transform.GetChild(0).GetComponent<GUIManager>();
 		if (development) {
 			serverURL = "http://96.126.100.208:9999/client";
 		}
@@ -69,12 +76,6 @@ public class AppManager : MonoBehaviour
 			username = loginData [0];
 			password = loginData [1];
 			loginButton.SendMessage ("updateFields", loginData); //sets text info on input fields
-		}
-		DontDestroyOnLoad (transform.gameObject);
-		if (s_instance == null) {
-			s_instance = this;
-		} else {
-			Destroy (gameObject);
 		}
 	}
 	 
@@ -119,6 +120,9 @@ public class AppManager : MonoBehaviour
 			break;
     case AppState.LoadFromAssign:
       saveAssignmentMastery(currentAssignments[currIndex]);
+      uploadAllTerms(currentAssignments[currIndex]);
+      StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)(Time.time-timeAtAssignLoad)));
+      print("LOAD FROM ASSIGN");
 			currentAppState = AppState.MenuConfig;
       break;
 		case AppState.MenuConfig:
@@ -145,9 +149,11 @@ public class AppManager : MonoBehaviour
 			break;
 		case AppState.PlayConfig:
 			GameObject newMgr = GameObject.Find ("GameManager");
+
 			if (currentAssignments [currIndex].type != "hotspots") {
 				newMgr.SendMessage ("configureGame", currIndex);//currentAssignments[currIndex]);
 			}
+      timeAtAssignLoad = Time.time;
 			currentAppState = AppState.Playing;
 			break;
 		case AppState.Playing:
@@ -352,7 +358,6 @@ public class AppManager : MonoBehaviour
 		string[] assign = assignName.Split ('_');
 		bool assignImages = Directory.Exists (Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images");
 		assignToReturn = new Assignment (assign [1], assign [0], (Application.persistentDataPath + "/" + assignName), assignImages);
-    print((Application.persistentDataPath + assignName));
 		assignToReturn.imgDir = Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images";
 		assignToReturn.content = File.ReadAllLines ((Application.persistentDataPath + "/" + assignName).Replace ("\"", ""));
 		return assignToReturn;
@@ -435,23 +440,42 @@ public class AppManager : MonoBehaviour
 		File.WriteAllText (dataFilePath, String.Empty);
 		File.WriteAllLines (dataFilePath, dataFile);
   }
+  public void uploadAllTerms(Assignment assignToUpload){
+    string[] dataFile = File.ReadAllLines(assignToUpload.fileName);
+    for(int i = 0;i<dataFile.Length;i++){
+      if(dataFile[i].Contains("/masteryBreak")){
+        string[] masteryString = dataFile[i].Split(new string[]{ "/masteryBreak" }, StringSplitOptions.None);
+        string[] corrAndIncorr = masteryString[1].Split(',');
+        string[] termToPush = masteryString[0].Split(',');
+        int[] valsToPush = new int[corrAndIncorr.Length];
+        for(int j =0;j<corrAndIncorr.Length;j++){
+          string valToParse = corrAndIncorr[j];
+          valsToPush[j] = int.Parse (valToParse);
+        }
+        StartCoroutine(uploadTermMastery(assignToUpload, termToPush[0], valsToPush[0], valsToPush[1]));
+      }
+    }
+  }
 
   public IEnumerator uploadTermMastery(Assignment assignToUpload, string term, int incorr, int corr){
-		string assignmentName = assignToUpload.assignmentTitle.Replace ("\"", "").ToLower ();
+		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
+    term = term.Replace(" ", "%20");
 		WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&correct=" + corr.ToString () + "&incorrect=" + incorr.ToString() + "&term=" + term);
+    print(www.url);
 		yield return www;
   }
 
 	public IEnumerator uploadAssignMastery (Assignment assignToUpload, int mastery)
 	{
-		string assignmentName = assignToUpload.assignmentTitle.Replace ("\"", "").ToLower ();
+		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
 		WWW www = new WWW (serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString ());
 		print (www.url);
 		yield return www;
 	}
 
-	public IEnumerator uploadAssignTime (string assignmentName, int seconds)
+	public IEnumerator uploadAssignTime (Assignment assignToUpload, int seconds)
 	{
+		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
 		seconds = (int)Time.time - seconds;
 		//forward slash is an escape character so 
 		assignmentName = assignmentName.Replace ("\"", "").ToLower ();
