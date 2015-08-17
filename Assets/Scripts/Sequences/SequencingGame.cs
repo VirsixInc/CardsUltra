@@ -165,7 +165,6 @@ public class SequencingGame : BRTemplate {
 		}
 
 		PropagateMastery(assignToUse);
-		CheckForSequenceMastery();
 	
 		List<SequenceTerm> tempListSequences = new List<SequenceTerm>(allTerms); //copy list
 		
@@ -175,6 +174,9 @@ public class SequencingGame : BRTemplate {
 			randomizedListSequences.Add(tempListSequences[randomIndex]); //add it to the new, random list
 			tempListSequences.RemoveAt(randomIndex); //remove to avoid duplicates
 		}
+		print (randomizedListSequences.Count + " IS THE SIZE OF RANDOLISTSEQ IT SHOULD WORK");
+		CheckForSequenceMastery();
+
 		readyToConfigure = true;
 
 	}
@@ -197,10 +199,18 @@ public class SequencingGame : BRTemplate {
 	}
 	
 	public void CheckForSequenceMastery() {
-		if (currIndex >= randomizedListSequences.Count)
-			currIndex = 0; //loop around to beginning of list
-		while (allTerms[currIndex].mastery==requiredMastery && randomizedListSequences.Count != 0) { //skip over completed 
-			randomizedListSequences.Remove(randomizedListSequences[currIndex]);
+		if (randomizedListSequences.Count == 0) {
+			print ("DELETED EVERYTHING");
+			WinRound();
+			return;
+		}
+		else {
+			for (int i = 0; i < randomizedListSequences.Count; i++) {
+				if (randomizedListSequences[i].mastery == requiredMastery) { //skip over completed 
+					randomizedListSequences.Remove(randomizedListSequences[i]);
+					print ("REMOVED ELEMENT SIZE IS NOW: " + randomizedListSequences.Count);
+				}
+			}
 			if (randomizedListSequences.Count > currIndex+1) {
 				currIndex++;
 			}
@@ -276,7 +286,6 @@ public class SequencingGame : BRTemplate {
 				totalSpotsFilled++;
 			}
 		}
-		timer.Reset (15f);
 
 	}
 
@@ -302,6 +311,7 @@ public class SequencingGame : BRTemplate {
 		//Mastery Propagation
 		int priorMasteryPercentage = AppManager.s_instance.pullAssignMastery(assignToUse);
 		int totalMastery = requiredMastery * allTerms.Count;
+		print ("PROPOGATE ALL TERMS =" + allTerms.Count);
 		int masteryAvailableForPropagation = Mathf.FloorToInt((float)(priorMasteryPercentage*totalMastery)/ 100f);
 		for (int i = 0; i < allTerms.Count; i++) {
 			if (masteryAvailableForPropagation>0){
@@ -317,12 +327,16 @@ public class SequencingGame : BRTemplate {
 		
 	}
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
+//		print ("ALL TERMS COUNT: " + allTerms.Count + "RANDLIST: " + randomizedListSequences.Count
+//		       + "INIT INDEX:  " + randomizedListSequences[currIndex].initIndex + " CURRINDEX " + currIndex);
 		if (didAnswerCorrect && !timer.timesUp) {
+
 			allTerms[randomizedListSequences[currIndex].initIndex].mastery += 1;
 		}
 
 		else if (!didAnswerCorrect) {
 			if (allTerms[randomizedListSequences[currIndex].initIndex].mastery > 0) {
+
 				allTerms[randomizedListSequences[currIndex].initIndex].mastery -= 1;
 			}
 		}
@@ -335,17 +349,14 @@ public class SequencingGame : BRTemplate {
 		foreach (SequenceTerm x in allTerms) {
 			currMastery+=x.mastery;
 		}
+		print ("CURR MASTERY AT SET " + currMastery);
 		mastery.value = (float)(currMastery)/totalMastery;
 		timer.Reset(25f);
 	}
 
 	void AnswerWrong(){
 
-		AppManager.s_instance.saveTermMastery(
-			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
-			allTerms[currIndex].arrayOfStrings[1],
-			false
-			);
+
 
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_wrong);
 		GameObject.FindGameObjectWithTag ("shaker").GetComponent<Shake>().StartShake();
@@ -391,8 +402,6 @@ public class SequencingGame : BRTemplate {
 		}
 		targets.Clear();
 		draggables.Clear();
-		currIndex++;
-		CheckForSequenceMastery ();
 		AdjustMasteryMeter (true);
 		DisableSubmitButton ();
 

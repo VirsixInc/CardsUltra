@@ -36,7 +36,7 @@ public class AppManager : MonoBehaviour
 	public int currIndex;
 	public string[] supportedTemplates;
 	string[] assignmentURLs;
-	string serverURL = "http://96.126.100.208:8000/client", folderName,
+	string serverURL = "http://96.126.100.208:9999/client", folderName,
 		username,
 		password,
 		masteryFilePath,
@@ -52,7 +52,7 @@ public class AppManager : MonoBehaviour
 	void Awake ()
 	{
 		if (development) {
-			serverURL = "http://96.126.100.208:8000/client";
+			serverURL = "http://96.126.100.208:9999/client";
 		}
 		if (userDebug) {
 			username = "AGutierrez";
@@ -406,13 +406,10 @@ public class AppManager : MonoBehaviour
         if(dataFile[i].Contains("/masteryBreak")){
           string[] masteryString = dataFile[i].Split(new string[]{ "/masteryBreak" }, StringSplitOptions.None);
           string[] corrAndIncorr = masteryString[1].Split(',');
-					print (term);
-					print (masteryString[1]);
+
 					int[] newVals = new int[corrAndIncorr.Length];
 					for(int j =0;j<corrAndIncorr.Length;j++){
 						string valToParse = corrAndIncorr[j];
-						print (valToParse);
-						print (corrAndIncorr[j]);
 						newVals[j] = int.Parse (valToParse);
 					}
           if(correct){
@@ -432,7 +429,6 @@ public class AppManager : MonoBehaviour
           newMastLine = newMastLine + corrAndIncorr;
         }
         dataFile[i] = newMastLine;
-        print(dataFile[i]);
 				break;
 			}
 		}
