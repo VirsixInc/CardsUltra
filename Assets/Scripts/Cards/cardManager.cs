@@ -44,7 +44,7 @@ public class cardManager : BRTemplate
 	private int amtOfCards;
 	private int correctCardsTermIndex;
 	private int currentPhase;
-	private int levenThresh = 3;
+	private int levenThresh = 2;
 
 	bool soundHasPlayed = false;
 
@@ -52,7 +52,7 @@ public class cardManager : BRTemplate
 
 	public AppManager manager;
 	public GameObject loadingBar;
-
+  
 	void Update ()
 	{
 		switch (currentState) {
@@ -204,7 +204,7 @@ public class cardManager : BRTemplate
 			break;
 		case GameState.PlayingKeyboard:
 			if (handleKeyboardSubmit) {
-				if (levenThresh > levenDist (keyboardText.text.ToLower (), unmasteredCardsTerms [correctCardsTermIndex].answer)) {
+				if (levenThresh > levenDist (unmasteredCardsTerms [correctCardsTermIndex].answer.ToLower(), keyboardText.text.ToLower ()) || keyboardText.text.ToLower() == unmasteredCardsTerms[correctCardsTermIndex].answer.ToLower()) {
 					if (firstSubmit) {
 						unmasteredCardsTerms [correctCardsTermIndex].mastery++;
 					}
@@ -298,6 +298,14 @@ public class cardManager : BRTemplate
 		if (m == 0) {
 			return n;
 		}
+    	// Step 2
+    for (int i = 0; i <= n; d[i, 0] = i++)
+    {
+    }
+
+    for (int j = 0; j <= m; d[0, j] = j++)
+    {
+    }
 		for (int i = 1; i <= n; i++) {
 			for (int j = 1; j <= m; j++) {
 				int cost = (t [j - 1] == s [i - 1]) ? 0 : 1;

@@ -36,7 +36,7 @@ public class AppManager : MonoBehaviour
 	public int currIndex;
 	public string[] supportedTemplates;
 	string[] assignmentURLs;
-	string serverURL = "http://96.126.100.208:8000/client", folderName,
+	string serverURL = "http://96.126.100.208:9999/client", folderName,
 		username,
 		password,
 		masteryFilePath,
@@ -52,7 +52,7 @@ public class AppManager : MonoBehaviour
 	void Awake ()
 	{
 		if (development) {
-			serverURL = "http://96.126.100.208:8000/client";
+			serverURL = "http://96.126.100.208:9999/client";
 		}
 		if (userDebug) {
 			username = "AGutierrez";
@@ -352,7 +352,6 @@ public class AppManager : MonoBehaviour
 		string[] assign = assignName.Split ('_');
 		bool assignImages = Directory.Exists (Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images");
 		assignToReturn = new Assignment (assign [1], assign [0], (Application.persistentDataPath + "/" + assignName), assignImages);
-    print((Application.persistentDataPath + assignName));
 		assignToReturn.imgDir = Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images";
 		assignToReturn.content = File.ReadAllLines ((Application.persistentDataPath + "/" + assignName).Replace ("\"", ""));
 		return assignToReturn;
