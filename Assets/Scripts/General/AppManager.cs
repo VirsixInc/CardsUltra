@@ -37,7 +37,7 @@ public class AppManager : MonoBehaviour
   private float timeAtAssignLoad;
 	public string[] supportedTemplates;
 	string[] assignmentURLs;
-	string serverURL = "http://96.126.100.208:9999/client", folderName,
+	string serverURL = "http://96.126.100.208:8000/client", folderName,
 		username,
 		password,
 		masteryFilePath,
@@ -59,7 +59,7 @@ public class AppManager : MonoBehaviour
 		}
     GUIManager.s_instance = transform.GetChild(0).GetComponent<GUIManager>();
 		if (development) {
-			serverURL = "http://96.126.100.208:9999/client";
+			serverURL = "http://96.126.100.208:8000/client";
 		}
 		if (userDebug) {
 			username = "AGutierrez";
@@ -122,6 +122,7 @@ public class AppManager : MonoBehaviour
       saveAssignmentMastery(currentAssignments[currIndex]);
       uploadAllTerms(currentAssignments[currIndex]);
       StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)(Time.time-timeAtAssignLoad)));
+      print("LOAD FROM ASSIGN");
 			currentAppState = AppState.MenuConfig;
       break;
 		case AppState.MenuConfig:
@@ -456,14 +457,16 @@ public class AppManager : MonoBehaviour
   }
 
   public IEnumerator uploadTermMastery(Assignment assignToUpload, string term, int incorr, int corr){
-		string assignmentName = assignToUpload.assignmentTitle.Replace ("\"", "").ToLower ();
+		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
+    term = term.Replace(" ", "%20");
 		WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&correct=" + corr.ToString () + "&incorrect=" + incorr.ToString() + "&term=" + term);
+    print(www.url);
 		yield return www;
   }
 
 	public IEnumerator uploadAssignMastery (Assignment assignToUpload, int mastery)
 	{
-		string assignmentName = assignToUpload.assignmentTitle.Replace ("\"", "").ToLower ();
+		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
 		WWW www = new WWW (serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString ());
 		print (www.url);
 		yield return www;
@@ -471,7 +474,7 @@ public class AppManager : MonoBehaviour
 
 	public IEnumerator uploadAssignTime (Assignment assignToUpload, int seconds)
 	{
-		string assignmentName = assignToUpload.assignmentTitle.Replace ("\"", "").ToLower ();
+		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
 		seconds = (int)Time.time - seconds;
 		//forward slash is an escape character so 
 		assignmentName = assignmentName.Replace ("\"", "").ToLower ();
