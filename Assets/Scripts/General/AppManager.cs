@@ -56,6 +56,7 @@ public class AppManager : MonoBehaviour
 			s_instance = this;
 		} else {
 			Destroy (gameObject);
+      return;
 		}
     GUIManager.s_instance = transform.GetChild(0).GetComponent<GUIManager>();
 		if (development) {
@@ -122,7 +123,6 @@ public class AppManager : MonoBehaviour
       saveAssignmentMastery(currentAssignments[currIndex]);
       uploadAllTerms(currentAssignments[currIndex]);
       StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)(Time.time-timeAtAssignLoad)));
-      print("LOAD FROM ASSIGN");
 			currentAppState = AppState.MenuConfig;
       break;
 		case AppState.MenuConfig:
