@@ -31,15 +31,6 @@ public class GUIManager : MonoBehaviour {
 	AnimationSlide[] animationSlides;
 
 	void Awake(){
-		if (s_instance == null) {
-			s_instance = this;
-		} else {
-			if (s_instance!=this) {
-				Destroy(gameObject);
-			}
-		}
-
-		DontDestroyOnLoad(transform.gameObject);
 		faders = GetComponentsInChildren<Fader> ();
 		animationSlides = GetComponentsInChildren<AnimationSlide> ();
 	}

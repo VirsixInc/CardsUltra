@@ -37,7 +37,7 @@ public class AppManager : MonoBehaviour
 	private float timeAtAssignLoad;
 	public string[] supportedTemplates;
 	string[] assignmentURLs;
-	string serverURL = "http://96.126.100.208:8000/client", folderName,
+	string serverURL = "http://96.126.100.208:9999/client", folderName,
 	username,
 	password,
 	masteryFilePath,
@@ -56,10 +56,11 @@ public class AppManager : MonoBehaviour
 			s_instance = this;
 		} else {
 			Destroy (gameObject);
+      return;
 		}
 		GUIManager.s_instance = transform.GetChild(0).GetComponent<GUIManager>();
 		if (development) {
-			serverURL = "http://96.126.100.208:8000/client";
+			serverURL = "http://96.126.100.208:9999/client";
 		}
 		if (userDebug) {
 			username = "AGutierrez";
@@ -403,6 +404,9 @@ public class AppManager : MonoBehaviour
 	}
 	
 	public void saveTermMastery(Assignment assignToSave, string term, bool correct){
+    if(assignToSave.fileName == "NA"){
+      return;
+    }
 		string dataFilePath = assignToSave.fileName;
 		string[] dataFile = File.ReadAllLines(dataFilePath);
 		for (int i = 0; i<dataFile.Length; i++) {
@@ -440,6 +444,9 @@ public class AppManager : MonoBehaviour
 		File.WriteAllLines (dataFilePath, dataFile);
 	}
 	public void uploadAllTerms(Assignment assignToUpload){
+    if(assignToUpload.fileName == "NA"){
+      return;
+    }
 		string[] dataFile = File.ReadAllLines(assignToUpload.fileName);
 		for(int i = 0;i<dataFile.Length;i++){
 			if(dataFile[i].Contains("/masteryBreak")){
