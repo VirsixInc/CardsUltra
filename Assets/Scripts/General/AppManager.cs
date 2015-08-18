@@ -26,7 +26,7 @@ public enum AppState
 
 public class AppManager : MonoBehaviour
 {
-
+	
 	public bool development, userDebug;
 	public AppState currentAppState;
 	public static AppManager s_instance;
@@ -34,22 +34,22 @@ public class AppManager : MonoBehaviour
 	public List<GameObject> userAssignments;
 	public GameObject loginButton;
 	public int currIndex;
-  private float timeAtAssignLoad;
+	private float timeAtAssignLoad;
 	public string[] supportedTemplates;
 	string[] assignmentURLs;
-	string serverURL = "http://96.126.100.208:9999/client", folderName,
-		username,
-		password,
-		masteryFilePath,
-		loginFilePath,
-		filePathToUse;
-
+	string serverURL = "http://96.126.100.208:8000/client", folderName,
+	username,
+	password,
+	masteryFilePath,
+	loginFilePath,
+	filePathToUse;
+	
 	int assignsLoaded = 0, totalAssigns, imagesRequired, imagesLoaded;
-
+	
 	List<string> assignmentURLsToDownload;
-
+	
 	bool urlsDownloaded, clicked, userExists;
-
+	
 	void Awake (){
 		DontDestroyOnLoad (transform.gameObject);
 		if (s_instance == null) {
@@ -57,9 +57,9 @@ public class AppManager : MonoBehaviour
 		} else {
 			Destroy (gameObject);
 		}
-    GUIManager.s_instance = transform.GetChild(0).GetComponent<GUIManager>();
+		GUIManager.s_instance = transform.GetChild(0).GetComponent<GUIManager>();
 		if (development) {
-			serverURL = "http://96.126.100.208:9999/client";
+			serverURL = "http://96.126.100.208:8000/client";
 		}
 		if (userDebug) {
 			username = "AGutierrez";
@@ -78,7 +78,7 @@ public class AppManager : MonoBehaviour
 			loginButton.SendMessage ("updateFields", loginData); //sets text info on input fields
 		}
 	}
-	 
+	
 	void Update ()
 	{
 		switch (currentAppState) {
@@ -106,7 +106,7 @@ public class AppManager : MonoBehaviour
 			if (assignsLoaded == totalAssigns && imagesLoaded == imagesRequired) {
 				currentAppState = AppState.LoadContent;
 			}
-
+			
 			//lets user know how many images and or assignments are still being loaded
 			if (imagesLoaded != imagesRequired) {
 				GUIManager.s_instance.SetErrorText (("Loading Images: " + imagesLoaded.ToString () + "/" + imagesRequired.ToString ()));
@@ -118,13 +118,13 @@ public class AppManager : MonoBehaviour
 			loadInLocalAssignments ();
 			currentAppState = AppState.MenuConfig;
 			break;
-    case AppState.LoadFromAssign:
-      saveAssignmentMastery(currentAssignments[currIndex]);
-      uploadAllTerms(currentAssignments[currIndex]);
-      StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)(Time.time-timeAtAssignLoad)));
-      print("LOAD FROM ASSIGN");
+		case AppState.LoadFromAssign:
+			saveAssignmentMastery(currentAssignments[currIndex]);
+			uploadAllTerms(currentAssignments[currIndex]);
+			StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)(Time.time-timeAtAssignLoad)));
+			print("LOAD FROM ASSIGN");
 			currentAppState = AppState.MenuConfig;
-      break;
+			break;
 		case AppState.MenuConfig:
 			List<int> indexesToRemove = new List<int> ();
 			for (int i = 0; i<currentAssignments.Count; i++) {
@@ -149,11 +149,11 @@ public class AppManager : MonoBehaviour
 			break;
 		case AppState.PlayConfig:
 			GameObject newMgr = GameObject.Find ("GameManager");
-
+			
 			if (currentAssignments [currIndex].type != "hotspots") {
 				newMgr.SendMessage ("configureGame", currIndex);//currentAssignments[currIndex]);
 			}
-      timeAtAssignLoad = Time.time;
+			timeAtAssignLoad = Time.time;
 			currentAppState = AppState.Playing;
 			break;
 		case AppState.Playing:
@@ -163,7 +163,7 @@ public class AppManager : MonoBehaviour
 			break;
 		}
 	}
-
+	
 	public IEnumerator loginAcct (string name, string wrd)
 	{
 		WWW www = new WWW (serverURL + "/logStudentIn?username=" + name + "&password=" + wrd);
@@ -178,11 +178,11 @@ public class AppManager : MonoBehaviour
 			userExists = false;
 		} else {
 			GUIManager.s_instance.SetErrorText ("Check Internet Connection");
-
+			
 		}
 	}
-
-
+	
+	
 	public int countStringOccurrences (string text, string pattern)
 	{
 		int count = 0;
@@ -193,7 +193,7 @@ public class AppManager : MonoBehaviour
 		}
 		return count;
 	}
-
+	
 	IEnumerator DownloadListOfURLs ()
 	{
 		WWW www = new WWW (serverURL + "/pullData?username=" + username + "&password=" + password);
@@ -215,14 +215,14 @@ public class AppManager : MonoBehaviour
 		for (int i = 0; i<totalAssigns; i++) {
 			//getting string values from  JSON obj 
 			string thisAssign = (string)(allAssignments [i].GetField ("assignmentName").ToString ());
-//			string hasImages = (string)(allAssignments [i].GetField ("hasImages").ToString ());
+			//			string hasImages = (string)(allAssignments [i].GetField ("hasImages").ToString ());
 			string imgDirPath = directoryPath + thisAssign.Replace ("\"", "") + "-images";
 			if (imgDirPath.Contains ("cards") || imgDirPath.Contains ("multiples")) {
 				if (!Directory.Exists (imgDirPath)) {
 					Directory.CreateDirectory (imgDirPath);
 					imagesRequired++;
 					StartCoroutine (pullImgs (thisAssign));
-
+					
 					//checksum for if there was a corrupted zip which would result in only one file existing
 				} else if (Directory.GetFiles (imgDirPath).Length < 1) {
 					Directory.Delete (imgDirPath, true);
@@ -232,12 +232,12 @@ public class AppManager : MonoBehaviour
 				}
 			}
 			//currently filePath is not used
-//			string filePath = (Application.persistentDataPath + "/" + thisAssign).Replace ("\"", "");
+			//			string filePath = (Application.persistentDataPath + "/" + thisAssign).Replace ("\"", "");
 			StartCoroutine (saveAssignment (thisAssign));
 		}
 		urlsDownloaded = true;
 	}
-
+	
 	IEnumerator pullImgs (string assignmentName)
 	{
 		string fileName = assignmentName + "-images.zip";
@@ -257,7 +257,7 @@ public class AppManager : MonoBehaviour
 					while ((theEntry = s.GetNextEntry()) != null) {
 						string directoryName = Path.GetDirectoryName (theEntry.Name.ToLower ());
 						string fileNameZip = Path.GetFileName (theEntry.Name.ToLower ());
-
+						
 						if (directoryName.Length > 0) {
 							Directory.CreateDirectory (pathToWrite + directoryName);
 						}
@@ -284,7 +284,7 @@ public class AppManager : MonoBehaviour
 		}
 		imagesLoaded++;
 	}
-
+	
 	IEnumerator saveAssignment (string assignmentName)
 	{
 		//takes the assignment name from list of URLs and downloads the assignment content
@@ -310,13 +310,13 @@ public class AppManager : MonoBehaviour
 				}
 			}
 		}
-    if(!File.Exists(masteryFilePath) || !(File.ReadAllText(masteryFilePath).Contains(assignmentName))){
-      File.AppendAllText (masteryFilePath, assignmentName + ",0\n");
-    }
+		if(!File.Exists(masteryFilePath) || !(File.ReadAllText(masteryFilePath).Contains(assignmentName))){
+			File.AppendAllText (masteryFilePath, assignmentName + ",0\n");
+		}
 		File.WriteAllLines (filePath, assignmentContent.ToArray ());
 		assignsLoaded++;
 	}
-
+	
 	public static bool CheckForInternetConnection ()
 	{
 		try {
@@ -328,14 +328,14 @@ public class AppManager : MonoBehaviour
 			return false;
 		}
 	}
-
+	
 	void loadInLocalAssignments ()
 	{
 		DirectoryInfo localFolder = new DirectoryInfo (Application.persistentDataPath + "/");
-//		string[] masteryFile;
+		//		string[] masteryFile;
 		//load in mastery data regarding each assignment
 		if (File.Exists (masteryFilePath)) {
-//			masteryFile = File.ReadAllLines (masteryFilePath);
+			//			masteryFile = File.ReadAllLines (masteryFilePath);
 		} else {
 			//creates file, opens files, writes "", closes file
 			File.WriteAllText (masteryFilePath, "");
@@ -351,7 +351,7 @@ public class AppManager : MonoBehaviour
 			}
 		}
 	}
-
+	
 	Assignment generateAssignment (string assignName)
 	{
 		Assignment assignToReturn;
@@ -362,7 +362,7 @@ public class AppManager : MonoBehaviour
 		assignToReturn.content = File.ReadAllLines ((Application.persistentDataPath + "/" + assignName).Replace ("\"", ""));
 		return assignToReturn;
 	}
-
+	
 	public int pullAssignMastery (Assignment currAssign)
 	{
 		//grab locally saved mastery for an individual template that is currently being played
@@ -384,10 +384,10 @@ public class AppManager : MonoBehaviour
 		}
 		return mastery;
 	}
-
+	
 	public void saveAssignmentMastery (Assignment assignToSave){
 		//the mastery file contains an array of assignments by fullAssignTitle
-    int mastery = assignToSave.mastery;
+		int mastery = assignToSave.mastery;
 		string[] masteryFile = File.ReadAllLines (masteryFilePath);
 		for (int i = 0; i<masteryFile.Length; i++) {
 			if (masteryFile [i].Contains (assignToSave.fullAssignTitle)) {
@@ -401,70 +401,69 @@ public class AppManager : MonoBehaviour
 			StartCoroutine (uploadAssignMastery (assignToSave, mastery));
 		}
 	}
-
-  public void saveTermMastery(Assignment assignToSave, string term, bool correct){
-    string dataFilePath = assignToSave.fileName;
-    string[] dataFile = File.ReadAllLines(dataFilePath);
+	
+	public void saveTermMastery(Assignment assignToSave, string term, bool correct){
+		string dataFilePath = assignToSave.fileName;
+		string[] dataFile = File.ReadAllLines(dataFilePath);
 		for (int i = 0; i<dataFile.Length; i++) {
 			if (dataFile [i].Contains (term)) {
-        string newMastLine = dataFile[i];
-        if(dataFile[i].Contains("/masteryBreak")){
-          string[] masteryString = dataFile[i].Split(new string[]{ "/masteryBreak" }, StringSplitOptions.None);
-          string[] corrAndIncorr = masteryString[1].Split(',');
-
+				string newMastLine = dataFile[i];
+				if(dataFile[i].Contains("/masteryBreak")){
+					string[] masteryString = dataFile[i].Split(new string[]{ "/masteryBreak" }, StringSplitOptions.None);
+					string[] corrAndIncorr = masteryString[1].Split(',');
 					int[] newVals = new int[corrAndIncorr.Length];
 					for(int j =0;j<corrAndIncorr.Length;j++){
 						string valToParse = corrAndIncorr[j];
 						newVals[j] = int.Parse (valToParse);
 					}
-          if(correct){
-            newVals[0]++;
-          }else{
-            newVals[1]++;
-          }
-          newMastLine = masteryString[0] + ",/masteryBreak"+newVals[0].ToString() + "," + newVals[1].ToString() + '\n';
-        }else{
-          string corrAndIncorr = "";
-          if(correct){
-            corrAndIncorr = ",/masteryBreak1,0\n";
-          }else{
-            corrAndIncorr = ",/masteryBreak0,1\n";
-          }
-          newMastLine = newMastLine.Replace("\n", "");
-          newMastLine = newMastLine + corrAndIncorr;
-        }
-        dataFile[i] = newMastLine;
+					if(correct){
+						newVals[0]++;
+					}else{
+						newVals[1]++;
+					}
+					newMastLine = masteryString[0] + ",/masteryBreak"+newVals[0].ToString() + "," + newVals[1].ToString() + '\n';
+				}else{
+					string corrAndIncorr = "";
+					if(correct){
+						corrAndIncorr = ",/masteryBreak1,0\n";
+					}else{
+						corrAndIncorr = ",/masteryBreak0,1\n";
+					}
+					newMastLine = newMastLine.Replace("\n", "");
+					newMastLine = newMastLine + corrAndIncorr;
+				}
+				dataFile[i] = newMastLine;
 				break;
 			}
 		}
 		File.WriteAllText (dataFilePath, String.Empty);
 		File.WriteAllLines (dataFilePath, dataFile);
-  }
-  public void uploadAllTerms(Assignment assignToUpload){
-    string[] dataFile = File.ReadAllLines(assignToUpload.fileName);
-    for(int i = 0;i<dataFile.Length;i++){
-      if(dataFile[i].Contains("/masteryBreak")){
-        string[] masteryString = dataFile[i].Split(new string[]{ "/masteryBreak" }, StringSplitOptions.None);
-        string[] corrAndIncorr = masteryString[1].Split(',');
-        string[] termToPush = masteryString[0].Split(',');
-        int[] valsToPush = new int[corrAndIncorr.Length];
-        for(int j =0;j<corrAndIncorr.Length;j++){
-          string valToParse = corrAndIncorr[j];
-          valsToPush[j] = int.Parse (valToParse);
-        }
-        StartCoroutine(uploadTermMastery(assignToUpload, termToPush[0], valsToPush[0], valsToPush[1]));
-      }
-    }
-  }
-
-  public IEnumerator uploadTermMastery(Assignment assignToUpload, string term, int incorr, int corr){
+	}
+	public void uploadAllTerms(Assignment assignToUpload){
+		string[] dataFile = File.ReadAllLines(assignToUpload.fileName);
+		for(int i = 0;i<dataFile.Length;i++){
+			if(dataFile[i].Contains("/masteryBreak")){
+				string[] masteryString = dataFile[i].Split(new string[]{ "/masteryBreak" }, StringSplitOptions.None);
+				string[] corrAndIncorr = masteryString[1].Split(',');
+				string[] termToPush = masteryString[0].Split(',');
+				int[] valsToPush = new int[corrAndIncorr.Length];
+				for(int j =0;j<corrAndIncorr.Length;j++){
+					string valToParse = corrAndIncorr[j];
+					valsToPush[j] = int.Parse (valToParse);
+				}
+				StartCoroutine(uploadTermMastery(assignToUpload, termToPush[0], valsToPush[0], valsToPush[1]));
+			}
+		}
+	}
+	
+	public IEnumerator uploadTermMastery(Assignment assignToUpload, string term, int incorr, int corr){
 		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
-    term = term.Replace(" ", "%20");
+		term = term.Replace(" ", "%20");
 		WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&correct=" + corr.ToString () + "&incorrect=" + incorr.ToString() + "&term=" + term);
-    print(www.url);
+		print(www.url);
 		yield return www;
-  }
-
+	}
+	
 	public IEnumerator uploadAssignMastery (Assignment assignToUpload, int mastery)
 	{
 		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
@@ -472,7 +471,7 @@ public class AppManager : MonoBehaviour
 		print (www.url);
 		yield return www;
 	}
-
+	
 	public IEnumerator uploadAssignTime (Assignment assignToUpload, int seconds)
 	{
 		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
@@ -482,17 +481,17 @@ public class AppManager : MonoBehaviour
 		WWW www = new WWW (serverURL + "/setAssignmentTime?assignmentName=" + assignmentName + "&student=" + username + "&time=" + seconds.ToString ());
 		yield return www;
 	}
-
+	
 	JSONObject ParseToJSON (string txt)
 	{
 		JSONObject newJSONObject = JSONObject.Create (txt);
 		return newJSONObject;
 	}
-
+	
 	public void ClickHandler (int index)
 	{
 		clicked = true;
 		currIndex = index;
 	}
-
+	
 }
