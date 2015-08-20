@@ -32,8 +32,9 @@ public class Assignment : IComparable<Assignment> {
 			return this.orderVal.CompareTo(compareAssignment.orderVal);
 	}
 
-	public Assignment(string assignTitle, string templateType, string newFileName = "NA",bool usesImg = false){
+	public Assignment(string assignTitle, string templateType, string newFileName = "NA",bool usesImg = false, int order = -1){
 		hasImages = usesImg; 
+    orderVal = order;
     fileName = newFileName;
 		type = templateType;
 		assignmentTitle = assignTitle;
