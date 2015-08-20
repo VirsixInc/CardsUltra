@@ -27,7 +27,7 @@ public enum AppState
 public class AppManager : MonoBehaviour
 {
 	
-	public bool development, userDebug;
+	public bool userDebug;
 	public AppState currentAppState;
 	public static AppManager s_instance;
 	public List<Assignment> currentAssignments = new List<Assignment> ();
@@ -59,9 +59,6 @@ public class AppManager : MonoBehaviour
       return;
 		}
 		GUIManager.s_instance = transform.GetChild(0).GetComponent<GUIManager>();
-		if (development) {
-			serverURL = "http://96.126.100.208:9999/client";
-		}
 		if (userDebug) {
 			username = "AGutierrez";
 			password = "Password1357";

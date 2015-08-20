@@ -311,7 +311,6 @@ public class SequencingGame : BRTemplate {
 		//Mastery Propagation
 		int priorMasteryPercentage = AppManager.s_instance.pullAssignMastery(assignToUse);
 		int totalMastery = requiredMastery * allTerms.Count;
-		print ("PROPOGATE ALL TERMS =" + allTerms.Count);
 		int masteryAvailableForPropagation = Mathf.FloorToInt((float)(priorMasteryPercentage*totalMastery)/ 100f);
 		for (int i = 0; i < allTerms.Count; i++) {
 			if (masteryAvailableForPropagation>0){
@@ -355,9 +354,6 @@ public class SequencingGame : BRTemplate {
 	}
 
 	void AnswerWrong(){
-
-
-
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_wrong);
 		GameObject.FindGameObjectWithTag ("shaker").GetComponent<Shake>().StartShake();
 		redX.StartFade (); //TODO change to drag this into inspector

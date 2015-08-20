@@ -25,8 +25,9 @@ public class MultipleChoiceGame : BRTemplate {
 	List<string[]> matrixOfCSVData;
 	
 	public List<SequenceTerm> allTerms = new List<SequenceTerm>();
-	public List<SequenceTerm> unmasteredTerms = new List<SequenceTerm>();
-	
+	//accumulatedMastery holds the value that the deleted terms would have since mastery is always counted by iterating through list of existing terms
+	float accumulatedMastery;
+
 	GameType gameType = GameType.Text;
 	GameState gameState = GameState.Intro;
 	bool areDistractorTerms;
@@ -73,7 +74,6 @@ public class MultipleChoiceGame : BRTemplate {
 						currentImageIterator++;
 					}
 				}else{
-					unmasteredTerms = allTerms.ToList();
 					gameState = GameState.SetRound;
 				}
 			}else{
@@ -184,7 +184,6 @@ public class MultipleChoiceGame : BRTemplate {
 	void PropagateMastery(Assignment assignToUse) {
 		//Mastery Propagation
 		int priorMasteryPercentage = AppManager.s_instance.pullAssignMastery(assignToUse);
-		print ("prior mastery "+priorMasteryPercentage);
 		int totalMastery = requiredMastery * allTerms.Count;
 		int masteryAvailableForPropagation = Mathf.FloorToInt((float)(priorMasteryPercentage*totalMastery)/ 100f);
 		for (int i = 0; i < allTerms.Count; i++) {
@@ -205,7 +204,8 @@ public class MultipleChoiceGame : BRTemplate {
 		foreach (SequenceTerm x in allTerms) {
 			currMastery+=x.mastery;
 		}
-		masteryMeter.value = (float)(currMastery)/totalMastery;
+		print("total mast: " + totalMastery + "currmast: " + currMastery + "currindex: " + currIndex);
+		masteryMeter.value = (float)(currMastery+accumulatedMastery)/totalMastery;
 		timer.Reset(25f);
 	}
 	
@@ -224,17 +224,23 @@ public class MultipleChoiceGame : BRTemplate {
 		}
 	}
 	public void CheckForSequenceTermMastery() {
-		if (currIndex >= allTerms.Count)
-			currIndex = 0; //loop around to beginning of list
-		while (allTerms[currIndex].mastery==1f && allTerms.Count != 0) { //skip over completed 
-			allTerms.Remove(allTerms[currIndex]);
+		if (allTerms.Count == 0) {
+			WinRound();
+			return;
+		}
+		else
+			for (int i = 0; i < allTerms.Count; i++) {
+				if (allTerms[i].mastery == requiredMastery) { //skip over completed 
+					allTerms.Remove(allTerms[i]);
+				}
+			}
 			if (allTerms.Count > currIndex+1) {
 				currIndex++;
 			}
-			else 
+			else {
 				currIndex = 0;
+			}
 		}
-	}
 
 	IEnumerator LoadMain() {
 		print ("LOAD MAIN");
@@ -330,7 +336,6 @@ public class MultipleChoiceGame : BRTemplate {
 		}
 		target.GetComponent<TargetGUI> ().Reset ();
 		draggables.Clear();
-		currIndex++;
 		CheckForSequenceTermMastery ();
 		AdjustMasteryMeter (true);
 		DisableSubmitButton ();
@@ -380,7 +385,7 @@ public class MultipleChoiceGame : BRTemplate {
 	}
 	
 	//Put content everything into SequenceTerm classes 	
-	List<SequenceTerm> convertCSV(List<string[]> inputString){
+	List<SequenceTerm> convertCSV (List<string[]> inputString){
 		List<SequenceTerm> listToReturn = new List<SequenceTerm>();
 		foreach(string[] thisLine in inputString){
 			if(thisLine.Length > 1){
