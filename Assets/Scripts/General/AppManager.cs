@@ -349,7 +349,7 @@ public class AppManager : MonoBehaviour
 		foreach (FileInfo currFile in localFolder.GetFiles()) {
 			string[] path = currFile.ToString ().Split ('/');
 			string assignName = path [path.Length - 1];
-      int order = int.Parse(File.ReadAllText(currFile.ToString())[0]);
+      int order = int.Parse(File.ReadAllLines(currFile.FullName)[0]);
 			string check = assignName.Split ('.') [1];
 			if (check == "data") {
 				Assignment currAssign = generateAssignment (assignName, order);
@@ -366,8 +366,9 @@ public class AppManager : MonoBehaviour
 		bool assignImages = Directory.Exists (Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images");
 		assignToReturn = new Assignment (assign [1], assign [0], (Application.persistentDataPath + "/" + assignName), assignImages, order);
 		assignToReturn.imgDir = Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images";
-		assignToReturn.content = File.ReadAllLines ((Application.persistentDataPath + "/" + assignName).Replace ("\"", ""));
-    assignToReturn.content.RemoveAt(0);
+    List<string> cont = (File.ReadAllLines((Application.persistentDataPath + "/" + assignName).Replace ("\"", "")).ToList());
+    cont.RemoveAt(0);
+		assignToReturn.content = cont.ToArray();
 		return assignToReturn;
 	}
 	
