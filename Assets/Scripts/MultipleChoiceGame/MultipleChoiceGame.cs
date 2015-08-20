@@ -120,7 +120,6 @@ public class MultipleChoiceGame : BRTemplate {
 			break;
 			
 		case GameState.WinScreen :
-			WinRound();
 			if ((Time.time - startTime) > exitTime) {
 				GUIManager.s_instance.DeactivateSurveyLink();
 				LoadMainMenu();
@@ -232,6 +231,7 @@ public class MultipleChoiceGame : BRTemplate {
 			for (int i = 0; i < allTerms.Count; i++) {
 				if (allTerms[i].mastery == requiredMastery) { //skip over completed 
 					allTerms.Remove(allTerms[i]);
+					accumulatedMastery+=requiredMastery;
 				}
 			}
 			if (allTerms.Count > currIndex+1) {
@@ -336,7 +336,6 @@ public class MultipleChoiceGame : BRTemplate {
 		}
 		target.GetComponent<TargetGUI> ().Reset ();
 		draggables.Clear();
-		CheckForSequenceTermMastery ();
 		AdjustMasteryMeter (true);
 		DisableSubmitButton ();
 		
