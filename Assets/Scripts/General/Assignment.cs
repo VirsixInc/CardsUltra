@@ -5,7 +5,7 @@ public class Assignment {
 	public bool isCompleted = false;
 	
 	public int mastery = 0;
-	
+	public int orderVal;
 	public string assignmentTitle = "";
 	public string fullAssignTitle = "";
 	public string displayTitle = "";

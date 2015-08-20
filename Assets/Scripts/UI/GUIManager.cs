@@ -61,6 +61,15 @@ public class GUIManager : MonoBehaviour {
 
 	}
 
+	public void ActivateSurveyLink () {
+		surveyLinkText.enabled = true;
+	}
+
+	public void DeactivateSurveyLink () {
+		surveyLinkText.enabled = false;
+
+	}
+
 	public void SetErrorText(string x) {
 		if (errorText!=null){
 			errorText.text = x;

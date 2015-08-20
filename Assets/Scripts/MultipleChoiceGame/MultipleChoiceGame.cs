@@ -122,6 +122,7 @@ public class MultipleChoiceGame : BRTemplate {
 		case GameState.WinScreen :
 			WinRound();
 			if ((Time.time - startTime) > exitTime) {
+				GUIManager.s_instance.DeactivateSurveyLink();
 				LoadMainMenu();
 			}
 			break;
@@ -234,12 +235,21 @@ public class MultipleChoiceGame : BRTemplate {
 				currIndex = 0;
 		}
 	}
-	
+
+	IEnumerator LoadMain() {
+		print ("LOAD MAIN");
+		int masteryOutput = Mathf.CeilToInt(masteryMeter.value*100);
+		AppManager.s_instance.currentAssignments[assignIndex].mastery = masteryOutput;
+		yield return new WaitForSeconds (2f);
+		Application.LoadLevel ("Login");
+	}
+
 	public void LoadMainMenu() {
-		Application.LoadLevel("Login");
+		StartCoroutine("LoadMain");
 		
 	}
 	void WinRound() {
+		GUIManager.s_instance.ActivateMenuButtons();
 		winningSlide.SetActive(true);
 		gameState = GameState.WinScreen; //i know that this is the wrong way to change gamestate but I have to do it until a major refactor
 		startTime = Time.time;
@@ -277,6 +287,11 @@ public class MultipleChoiceGame : BRTemplate {
 	}
 	
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
+		AppManager.s_instance.saveTermMastery(
+			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
+			allTerms[currIndex].arrayOfStrings[0],
+			true
+			);
 		if (didAnswerCorrect && !timer.timesUp) {
 			allTerms[currIndex].mastery += 1;
 		}

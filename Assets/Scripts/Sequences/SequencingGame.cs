@@ -39,7 +39,6 @@ public class SequencingGame : BRTemplate {
 	PopUpGraphic greenCheck, redX, greenCheckmark;//todo
 	public Timer1 timer; //TODO refactor to a generic timer
 	public Image CircleMaterial;
-	public Slider mastery;
 	bool hasReceivedServerData = false;
 
 	//UI Meters etc...
@@ -124,6 +123,7 @@ public class SequencingGame : BRTemplate {
 		case GameState.WinScreen :
 			if ((Time.time - startTime) > exitTime) {
 				LoadMainMenu();
+				GUIManager.s_instance.DeactivateSurveyLink();
 			}
 			break;
 		}
@@ -174,7 +174,6 @@ public class SequencingGame : BRTemplate {
 			randomizedListSequences.Add(tempListSequences[randomIndex]); //add it to the new, random list
 			tempListSequences.RemoveAt(randomIndex); //remove to avoid duplicates
 		}
-		print (randomizedListSequences.Count + " IS THE SIZE OF RANDOLISTSEQ IT SHOULD WORK");
 		CheckForSequenceMastery();
 
 		readyToConfigure = true;
@@ -228,12 +227,13 @@ public class SequencingGame : BRTemplate {
 	}
 	IEnumerator LoadMain() {
 		print ("LOAD MAIN");
-		int masteryOutput = Mathf.CeilToInt(mastery.value*100);
+		int masteryOutput = Mathf.CeilToInt(masteryMeter.value*100);
 		AppManager.s_instance.currentAssignments[assignIndex].mastery = masteryOutput;
 		yield return new WaitForSeconds (2f);
 		Application.LoadLevel ("Login");
 	}
 	void WinRound() {
+		GUIManager.s_instance.ActivateMenuButtons();
 		winningSlide.SetActive(true);
 		gameState = GameState.WinScreen; //i know that this is the wrong way to change gamestate but I have to do it until a major refactor
 		startTime = Time.time;
@@ -350,7 +350,7 @@ public class SequencingGame : BRTemplate {
 			currMastery+=x.mastery;
 		}
 		print ("CURR MASTERY AT SET " + currMastery);
-		mastery.value = (float)(currMastery)/totalMastery;
+		masteryMeter.value = (float)(currMastery)/totalMastery;
 		timer.Reset(25f);
 	}
 
@@ -405,7 +405,7 @@ public class SequencingGame : BRTemplate {
 		AdjustMasteryMeter (true);
 		DisableSubmitButton ();
 
-		if (mastery.value > .97f ) {
+		if (masteryMeter.value > .97f ) {
 			return true;
 		} else { 
 			return false;

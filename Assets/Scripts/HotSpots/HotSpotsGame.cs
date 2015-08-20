@@ -132,8 +132,12 @@ public class HotSpotsGame : MonoBehaviour
 	}
 	
 	IEnumerator LoadMain() {
+		GUIManager.s_instance.DeactivateSurveyLink();
 		yield return new WaitForSeconds (5f);
 		Application.LoadLevel ("Login");
+	}
+	void WinRound() {
+		GUIManager.s_instance.ActivateSurveyLink();
 	}
 	
 	void SetPhase ()
