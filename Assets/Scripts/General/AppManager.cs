@@ -215,7 +215,7 @@ public class AppManager : MonoBehaviour
 			string thisAssign = (string)(allAssignments [i].GetField ("assignmentName").ToString ());
       int thisAssignOrder = -1;
       if(allAssignments[i].GetField("order") != null){
-        thisAssignOrder = int.Parse(allAssignments[i].GetField("order").ToString());
+        thisAssignOrder = int.Parse(allAssignments[i].GetField("order").ToString().Replace("\"", ""));
       }
 			//			string hasImages = (string)(allAssignments [i].GetField ("hasImages").ToString ());
 			string imgDirPath = directoryPath + thisAssign.Replace ("\"", "") + "-images";
@@ -346,9 +346,9 @@ public class AppManager : MonoBehaviour
 		foreach (FileInfo currFile in localFolder.GetFiles()) {
 			string[] path = currFile.ToString ().Split ('/');
 			string assignName = path [path.Length - 1];
-      int order = int.Parse(File.ReadAllLines(currFile.FullName)[0]);
 			string check = assignName.Split ('.') [1];
 			if (check == "data") {
+        int order = int.Parse((File.ReadAllLines(currFile.FullName)[0]));
 				Assignment currAssign = generateAssignment (assignName, order);
 				currAssign.mastery = pullAssignMastery (currAssign);
 				currentAssignments.Add (currAssign);
@@ -362,6 +362,7 @@ public class AppManager : MonoBehaviour
 		string[] assign = assignName.Split ('_');
 		bool assignImages = Directory.Exists (Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images");
 		assignToReturn = new Assignment (assign [1], assign [0], (Application.persistentDataPath + "/" + assignName), assignImages, order);
+    print(assignToReturn.orderVal);
 		assignToReturn.imgDir = Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images";
     List<string> cont = (File.ReadAllLines((Application.persistentDataPath + "/" + assignName).Replace ("\"", "")).ToList());
     cont.RemoveAt(0);
