@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System;
 
-public class Assignment {
+public class Assignment : IComparable<Assignment> {
 	public bool isCompleted = false;
 	
 	public int mastery = 0;
@@ -20,7 +20,18 @@ public class Assignment {
 	public GameObject associatedGUIObject;
 	public string[] content;
 	public string imgDir;
-	
+
+	//uses the CompareTo interface
+	public int CompareTo(Assignment compareAssignment)
+	{
+		// A null value means that this object is greater. 
+		if (compareAssignment == null)
+			return 1;
+		
+		else 
+			return this.orderVal.CompareTo(compareAssignment.orderVal);
+	}
+
 	public Assignment(string assignTitle, string templateType, string newFileName = "NA",bool usesImg = false){
 		hasImages = usesImg; 
     fileName = newFileName;

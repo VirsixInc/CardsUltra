@@ -78,27 +78,29 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	// Use this for initialization
-	public void LoadAllAssignments(List<Assignment> arrayOfAssignments){
+	public void LoadAllAssignments(List<Assignment> assignmentList){
+		assignmentList.Sort();
 		//parse associatedGameObjects into either mastered or unmastered
-		for (int i = 0; i < arrayOfAssignments.Count; i++) {
-			arrayOfAssignments[i].associatedGUIObject = Instantiate(assignmentGUIPrefab) as GameObject;
-			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().assignmentIndex = i;
-			arrayOfAssignments[i].associatedGUIObject.GetComponent<AssignmentGUI>().title.text = arrayOfAssignments[i].displayTitle;
-			arrayOfAssignments[i].associatedGUIObject.GetComponent<Image>().sprite = GUIManager.s_instance.listOfMenuImages[i%listOfMenuImages.Count];
-			if (arrayOfAssignments[i].isCompleted) {
-				completedAssignments.Add(arrayOfAssignments[i].associatedGUIObject);
-				arrayOfAssignments[i].associatedGUIObject.transform.SetParent(parentAssignmentHolder, false);
+		for (int i = 0; i < assignmentList.Count; i++) {
+			assignmentList[i].associatedGUIObject = Instantiate(assignmentGUIPrefab) as GameObject;
+			assignmentList[i].associatedGUIObject.GetComponent<AssignmentGUI>().assignmentIndex = i;
+			assignmentList[i].associatedGUIObject.GetComponent<AssignmentGUI>().title.text = assignmentList[i].displayTitle;
+			assignmentList[i].associatedGUIObject.GetComponent<Image>().sprite = GUIManager.s_instance.listOfMenuImages[i%listOfMenuImages.Count];
+			if (assignmentList[i].isCompleted) {
+				completedAssignments.Add(assignmentList[i].associatedGUIObject);
 			}
 			else {
-				incompleteAssignments.Add(arrayOfAssignments[i].associatedGUIObject);
-				arrayOfAssignments[i].associatedGUIObject.transform.SetParent(parentAssignmentHolder, false);
+				incompleteAssignments.Add(assignmentList[i].associatedGUIObject);
 			}
+			assignmentList[i].associatedGUIObject.transform.SetParent(parentAssignmentHolder, false);
+
 		}
-		float numberOfRowsOfAssignments = Mathf.Ceil((float)arrayOfAssignments.Count / 2);
+		float numberOfRowsOfAssignments = Mathf.Ceil((float)assignmentList.Count / 2);
 		totalHeightOfAssignmentCards = numberOfRowsOfAssignments * assignmentCardHeight;
 		PlaceAssignments ();
 	}
 	
+
 	void PlaceAssignments() {
 		//sets layout of GUI assignment objects
 		Vector3 assignmentPosition;
