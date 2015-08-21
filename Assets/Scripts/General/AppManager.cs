@@ -48,7 +48,7 @@ public class AppManager : MonoBehaviour
 	
 	List<string> assignmentURLsToDownload;
 	
-	bool urlsDownloaded, clicked, userExists, uploadingToServer;
+	bool urlsDownloaded, clicked, userExists;
 	
 	void Awake (){
 		DontDestroyOnLoad (transform.gameObject);
@@ -118,8 +118,6 @@ public class AppManager : MonoBehaviour
 			break;
 		case AppState.LoadFromAssign:
 			saveAssignmentMastery(currentAssignments[currIndex]);
-			uploadAllTerms(currentAssignments[currIndex]);
-			StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)(Time.time-timeAtAssignLoad)));
 			print("LOAD FROM ASSIGN");
 			currentAppState = AppState.MenuConfig;
 			break;
@@ -482,7 +480,6 @@ public class AppManager : MonoBehaviour
 		}
     dataToPush = String.Join("|", swpData.ToArray());
     if(swpData.Count>0){
-      print(dataToPush);
       StartCoroutine(uploadTermMastery(assignToUpload, dataToPush));
     }
 	}
@@ -492,17 +489,16 @@ public class AppManager : MonoBehaviour
 		dataToPush = dataToPush.Replace(" ", "%20");
 		//WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&correct=" + corr.ToString () + "&incorrect=" + incorr.ToString() + "&term=" + term);
 		WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&content=" + dataToPush);
-		print(www.url);
 		yield return www;
+    StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)(Time.time-timeAtAssignLoad)));
 	}
 	
 	public IEnumerator uploadAssignMastery (Assignment assignToUpload, int mastery)
 	{
 		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
 		WWW www = new WWW (serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString ());
-		print (www.url);
-    uploadingToServer = true;
 		yield return www;
+    uploadAllTerms(currentAssignments[currIndex]);
 	}
 	
 	public IEnumerator uploadAssignTime (Assignment assignToUpload, int seconds)
@@ -512,7 +508,6 @@ public class AppManager : MonoBehaviour
 		//forward slash is an escape character so 
 		assignmentName = assignmentName.Replace ("\"", "").ToLower ();
 		WWW www = new WWW (serverURL + "/setAssignmentTime?assignmentName=" + assignmentName + "&student=" + username + "&time=" + seconds.ToString ());
-    uploadingToServer = true;
 		yield return www;
 	}
 	
