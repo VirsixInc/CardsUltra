@@ -37,7 +37,7 @@ public class AppManager : MonoBehaviour
 	private float timeAtAssignLoad;
 	public string[] supportedTemplates;
 	string[] assignmentURLs;
-	string serverURL = "http://96.126.100.208:8000/client", folderName,
+	string serverURL = "http://45.33.37.122:8000/client", folderName,
 	username,
 	password,
 	masteryFilePath,
@@ -48,7 +48,7 @@ public class AppManager : MonoBehaviour
 	
 	List<string> assignmentURLsToDownload;
 	
-	bool urlsDownloaded, clicked, userExists;
+	bool urlsDownloaded, clicked, userExists, uploadingToServer;
 	
 	void Awake (){
 		DontDestroyOnLoad (transform.gameObject);
@@ -82,12 +82,12 @@ public class AppManager : MonoBehaviour
 		switch (currentAppState) {
 		case AppState.Login:
 			if (userExists) {
+				currentAssignments.Add (new Assignment ("hotspots_periodic", "hotspots", "NA", false, 9999, "NA", "Periodic Table"));
 				currentAppState = AppState.Initialize;
 			}
 			break;
 		case AppState.Initialize:
 			if (CheckForInternetConnection ()) {
-				currentAssignments.Add (new Assignment ("hotspots_periodic", "hotspots", "NA", false, 9999, "NA", "Periodic Table"));
 				StartCoroutine (DownloadListOfURLs ());
 				currentAppState = AppState.GetURLs;
 			} else {
@@ -464,6 +464,9 @@ public class AppManager : MonoBehaviour
       return;
     }
 		string[] dataFile = File.ReadAllLines(assignToUpload.fileName);
+    List<string> swpData = new List<string>();
+    string dataToPush;
+
 		for(int i = 0;i<dataFile.Length;i++){
 			if(dataFile[i].Contains("/masteryBreak")){
 				string[] masteryString = dataFile[i].Split(new string[]{ "/masteryBreak" }, StringSplitOptions.None);
@@ -474,15 +477,21 @@ public class AppManager : MonoBehaviour
 					string valToParse = corrAndIncorr[j];
 					valsToPush[j] = int.Parse (valToParse);
 				}
-				StartCoroutine(uploadTermMastery(assignToUpload, termToPush[0], valsToPush[0], valsToPush[1]));
+        swpData.Add((termToPush[0] + "," + valsToPush[0].ToString() + "," + valsToPush[1].ToString()));
 			}
 		}
+    dataToPush = String.Join("|", swpData.ToArray());
+    if(swpData.Count>0){
+      print(dataToPush);
+      StartCoroutine(uploadTermMastery(assignToUpload, dataToPush));
+    }
 	}
 	
-	public IEnumerator uploadTermMastery(Assignment assignToUpload, string term, int incorr, int corr){
+	public IEnumerator uploadTermMastery(Assignment assignToUpload, string dataToPush){
 		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
-		term = term.Replace(" ", "%20");
-		WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&correct=" + corr.ToString () + "&incorrect=" + incorr.ToString() + "&term=" + term);
+		dataToPush = dataToPush.Replace(" ", "%20");
+		//WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&correct=" + corr.ToString () + "&incorrect=" + incorr.ToString() + "&term=" + term);
+		WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&content=" + dataToPush);
 		print(www.url);
 		yield return www;
 	}
@@ -492,6 +501,7 @@ public class AppManager : MonoBehaviour
 		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
 		WWW www = new WWW (serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString ());
 		print (www.url);
+    uploadingToServer = true;
 		yield return www;
 	}
 	
@@ -502,6 +512,7 @@ public class AppManager : MonoBehaviour
 		//forward slash is an escape character so 
 		assignmentName = assignmentName.Replace ("\"", "").ToLower ();
 		WWW www = new WWW (serverURL + "/setAssignmentTime?assignmentName=" + assignmentName + "&student=" + username + "&time=" + seconds.ToString ());
+    uploadingToServer = true;
 		yield return www;
 	}
 	
