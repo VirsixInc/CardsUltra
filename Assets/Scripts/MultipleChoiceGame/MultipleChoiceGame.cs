@@ -120,6 +120,7 @@ public class MultipleChoiceGame : BRTemplate {
 			break;
 			
 		case GameState.WinScreen :
+			GUIManager.s_instance.ActivateSurveyLink();
 			if ((Time.time - startTime) > exitTime) {
 				GUIManager.s_instance.DeactivateSurveyLink();
 				LoadMainMenu();
@@ -183,6 +184,9 @@ public class MultipleChoiceGame : BRTemplate {
 	void PropagateMastery(Assignment assignToUse) {
 		//Mastery Propagation
 		int priorMasteryPercentage = AppManager.s_instance.pullAssignMastery(assignToUse);
+		if (priorMasteryPercentage >97) {
+			priorMasteryPercentage = 0;
+		}
 		int totalMastery = requiredMastery * allTerms.Count;
 		int masteryAvailableForPropagation = Mathf.FloorToInt((float)(priorMasteryPercentage*totalMastery)/ 100f);
 		for (int i = 0; i < allTerms.Count; i++) {
@@ -204,6 +208,8 @@ public class MultipleChoiceGame : BRTemplate {
 			currMastery+=x.mastery;
 		}
 		print("total mast: " + totalMastery + "currmast: " + currMastery + "currindex: " + currIndex);
+		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)((currMastery+accumulatedMastery)/totalMastery*100);
+
 		masteryMeter.value = (float)(currMastery+accumulatedMastery)/totalMastery;
 		timer.Reset(25f);
 	}
@@ -255,9 +261,7 @@ public class MultipleChoiceGame : BRTemplate {
 		
 	}
 	void WinRound() {
-		GUIManager.s_instance.ActivateMenuButtons();
 		winningSlide.SetActive(true);
-		gameState = GameState.WinScreen; //i know that this is the wrong way to change gamestate but I have to do it until a major refactor
 		startTime = Time.time;
 	}
 	
@@ -312,7 +316,6 @@ public class MultipleChoiceGame : BRTemplate {
 		SetMastery();
 		
 		//update server mastery as well as local per assignment mastery
-		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)totalMastery*100;
 		timer.Reset(25f);
 		
 	}
@@ -330,7 +333,7 @@ public class MultipleChoiceGame : BRTemplate {
 	
 	bool AnswerCorrect() {
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_correct);
-		
+
 		greenCheck.StartFade (); //TODO set in inspector
 		foreach(GameObject go in draggables) {
 			Destroy (go);
@@ -341,6 +344,7 @@ public class MultipleChoiceGame : BRTemplate {
 		DisableSubmitButton ();
 		
 		if (masteryMeter.value > .97f) {
+			WinRound();
 			return true;
 		} else { 
 			return false;
