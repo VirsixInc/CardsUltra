@@ -207,8 +207,8 @@ public class GUIManager : MonoBehaviour {
 	//------------------------------ BLUR & IN GAME MENU ------------------------------//
 
 	public void SetBlur () {
-
-		Camera.main.gameObject.GetComponent<Blur>().enabled = true;
+		print ("SET BLIR");
+		GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Blur>().enabled = true;
 		StartCoroutine ("BlurIn");
 		topMenuButton.SetActive (true);
 		bottomMenuButton.SetActive (true);
