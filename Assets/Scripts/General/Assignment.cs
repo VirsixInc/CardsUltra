@@ -6,6 +6,7 @@ public class Assignment : IComparable<Assignment> {
 	
 	public int mastery = 0;
 	public int orderVal;
+  public string surveyLink = "";
 	public string assignmentTitle = "";
 	public string fullAssignTitle = "";
 	public string displayTitle = "";
@@ -32,10 +33,11 @@ public class Assignment : IComparable<Assignment> {
 			return this.orderVal.CompareTo(compareAssignment.orderVal);
 	}
 
-	public Assignment(string assignTitle, string templateType, string newFileName = "NA",bool usesImg = false, int order = -1){
+	public Assignment(string assignTitle, string templateType, string newFileName = "NA",bool usesImg = false, int order = -1, string newSurveyLink = "NA"){
 		hasImages = usesImg; 
     orderVal = order;
     fileName = newFileName;
+    surveyLink = newSurveyLink;
 		type = templateType;
 		assignmentTitle = assignTitle;
 		displayTitle = UppercaseFirst(assignmentTitle.Split('.')[0]).Replace("_", " ");

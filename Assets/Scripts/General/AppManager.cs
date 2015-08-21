@@ -214,8 +214,12 @@ public class AppManager : MonoBehaviour
 			//getting string values from  JSON obj 
 			string thisAssign = (string)(allAssignments [i].GetField ("assignmentName").ToString ());
       int thisAssignOrder = -1;
+      string thisAssignSurvey = "NA";
       if(allAssignments[i].GetField("order") != null){
         thisAssignOrder = int.Parse(allAssignments[i].GetField("order").ToString().Replace("\"", ""));
+      }
+      if(allAssignments[i].GetField("survey") != null){
+        thisAssignSurvey = allAssignments[i].GetField("survey").ToString().Replace("\"", "");
       }
 			//			string hasImages = (string)(allAssignments [i].GetField ("hasImages").ToString ());
 			string imgDirPath = directoryPath + thisAssign.Replace ("\"", "") + "-images";
@@ -235,7 +239,7 @@ public class AppManager : MonoBehaviour
 			}
 			//currently filePath is not used
 			//			string filePath = (Application.persistentDataPath + "/" + thisAssign).Replace ("\"", "");
-			StartCoroutine (saveAssignment (thisAssign, thisAssignOrder));
+			StartCoroutine (saveAssignment (thisAssign, thisAssignOrder, thisAssignSurvey));
 		}
 		urlsDownloaded = true;
 	}
@@ -287,7 +291,7 @@ public class AppManager : MonoBehaviour
 		imagesLoaded++;
 	}
 	
-	IEnumerator saveAssignment (string assignmentName, int order)
+	IEnumerator saveAssignment (string assignmentName, int order, string survey)
 	{
 		//takes the assignment name from list of URLs and downloads the assignment content
 		assignmentName = assignmentName.Replace ("\"", "");
@@ -315,7 +319,7 @@ public class AppManager : MonoBehaviour
 		if(!File.Exists(masteryFilePath) || !(File.ReadAllText(masteryFilePath).Contains(assignmentName))){
 			File.AppendAllText (masteryFilePath, assignmentName + ",0\n");
 		}
-    assignmentContent.Insert(0, order.ToString());
+    assignmentContent.Insert(0, order.ToString() + "," + survey);
 		File.WriteAllLines (filePath, assignmentContent.ToArray ());
 		assignsLoaded++;
 	}
@@ -348,21 +352,22 @@ public class AppManager : MonoBehaviour
 			string assignName = path [path.Length - 1];
 			string check = assignName.Split ('.') [1];
 			if (check == "data") {
-        int order = int.Parse((File.ReadAllLines(currFile.FullName)[0]));
-				Assignment currAssign = generateAssignment (assignName, order);
+        int order = int.Parse((File.ReadAllLines(currFile.FullName)[0]).Split(',')[0]);
+        string surveyLink = (File.ReadAllLines(currFile.FullName)[0]).Split(',')[1];
+				Assignment currAssign = generateAssignment (assignName, order, surveyLink);
 				currAssign.mastery = pullAssignMastery (currAssign);
 				currentAssignments.Add (currAssign);
 			}
 		}
 	}
 	
-	Assignment generateAssignment (string assignName, int order)
+	Assignment generateAssignment (string assignName, int order, string survey)
 	{
 		Assignment assignToReturn;
 		string[] assign = assignName.Split ('_');
 		bool assignImages = Directory.Exists (Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images");
-		assignToReturn = new Assignment (assign [1], assign [0], (Application.persistentDataPath + "/" + assignName), assignImages, order);
-    print(assignToReturn.orderVal);
+		assignToReturn = new Assignment (assign [1], assign [0], (Application.persistentDataPath + "/" + assignName), assignImages, order, survey);
+    print(assignToReturn.surveyLink);
 		assignToReturn.imgDir = Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images";
     List<string> cont = (File.ReadAllLines((Application.persistentDataPath + "/" + assignName).Replace ("\"", "")).ToList());
     cont.RemoveAt(0);
