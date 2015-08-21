@@ -293,6 +293,7 @@ public class MultipleChoiceGame : BRTemplate {
 	}
 	
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
+		//save local mastery per term
 		AppManager.s_instance.saveTermMastery(
 			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
 			allTerms[currIndex].arrayOfStrings[0],
@@ -310,7 +311,7 @@ public class MultipleChoiceGame : BRTemplate {
 		
 		SetMastery();
 		
-		//update server
+		//update server mastery as well as local per assignment mastery
 		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)totalMastery*100;
 		timer.Reset(25f);
 		

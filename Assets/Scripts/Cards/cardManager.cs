@@ -236,6 +236,7 @@ public class cardManager : BRTemplate
 			break;
 		case GameState.End:
 			winningSlide.SetActive (true);
+			GUIManager.s_instance.ActivateSurveyLink();
 			if (soundHasPlayed == false) {
 				if (SoundManager.s_instance != null)
 					SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_correct);
@@ -244,6 +245,8 @@ public class cardManager : BRTemplate
 
 			if (timeAtEnd + 5f < Time.time) {
 				Application.LoadLevel ("Login");
+				GUIManager.s_instance.DeactivateSurveyLink();
+
 				AppManager.s_instance.uploadAssignMastery (
               AppManager.s_instance.currentAssignments [currIndex],
               100);
