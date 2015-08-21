@@ -99,6 +99,10 @@ public class GUIManager : MonoBehaviour {
 		totalHeightOfAssignmentCards = numberOfRowsOfAssignments * assignmentCardHeight;
 		PlaceAssignments ();
 	}
+
+	public void OpenSurveyLink() {
+		Application.OpenURL("http://WWW.google.com/");
+	}
 	
 
 	void PlaceAssignments() {
