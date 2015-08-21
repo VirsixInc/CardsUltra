@@ -207,7 +207,6 @@ public class SequencingGame : BRTemplate {
 			for (int i = 0; i < randomizedListSequences.Count; i++) {
 				if (randomizedListSequences[i].mastery == requiredMastery) { //skip over completed 
 					randomizedListSequences.Remove(randomizedListSequences[i]);
-					print ("REMOVED ELEMENT SIZE IS NOW: " + randomizedListSequences.Count);
 				}
 			}
 			if (randomizedListSequences.Count > currIndex+1) {
@@ -379,6 +378,11 @@ public class SequencingGame : BRTemplate {
 		ResetDraggables();
 		timer.timesUp = true;
 		DisableSubmitButton ();
+		AppManager.s_instance.saveTermMastery(
+			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
+			allTerms[currIndex].arrayOfStrings[0],
+			false
+			);
 
 	}
 

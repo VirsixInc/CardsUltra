@@ -298,11 +298,6 @@ public class MultipleChoiceGame : BRTemplate {
 	
 	void AdjustMasteryMeter(bool didAnswerCorrect) {
 		//save local mastery per term
-		AppManager.s_instance.saveTermMastery(
-			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
-			allTerms[currIndex].arrayOfStrings[0],
-			true
-			);
 		if (didAnswerCorrect && !timer.timesUp) {
 			allTerms[currIndex].mastery += 1;
 		}
@@ -321,6 +316,11 @@ public class MultipleChoiceGame : BRTemplate {
 	}
 	
 	void AnswerWrong(){
+		AppManager.s_instance.saveTermMastery(
+			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
+			allTerms[currIndex].arrayOfStrings[0],
+			false
+			);
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_wrong);
 		
 		redX.StartFade (); //TODO change to drag this into inspector
@@ -332,6 +332,11 @@ public class MultipleChoiceGame : BRTemplate {
 	}
 	
 	bool AnswerCorrect() {
+		AppManager.s_instance.saveTermMastery(
+			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
+			allTerms[currIndex].arrayOfStrings[0],
+			true
+			);
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_correct);
 
 		greenCheck.StartFade (); //TODO set in inspector
