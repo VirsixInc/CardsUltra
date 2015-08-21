@@ -62,11 +62,11 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	public void ActivateSurveyLink () {
-		surveyLinkText.enabled = true;
+		surveyLinkText.gameObject.SetActive(true);
 	}
 
 	public void DeactivateSurveyLink () {
-		surveyLinkText.enabled = false;
+		surveyLinkText.gameObject.SetActive(false);
 
 	}
 

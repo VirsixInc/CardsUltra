@@ -310,6 +310,9 @@ public class SequencingGame : BRTemplate {
 	void PropagateMastery(Assignment assignToUse) {
 		//Mastery Propagation
 		int priorMasteryPercentage = AppManager.s_instance.pullAssignMastery(assignToUse);
+		if (priorMasteryPercentage >97) {
+			priorMasteryPercentage = 0;
+		}
 		int totalMastery = requiredMastery * allTerms.Count;
 		int masteryAvailableForPropagation = Mathf.FloorToInt((float)(priorMasteryPercentage*totalMastery)/ 100f);
 		for (int i = 0; i < allTerms.Count; i++) {
@@ -349,6 +352,7 @@ public class SequencingGame : BRTemplate {
 			currMastery+=x.mastery;
 		}
 		print ("CURR MASTERY AT SET " + currMastery);
+		AppManager.s_instance.currentAssignments[assignIndex].mastery = (int)((currMastery)/totalMastery*100);
 		masteryMeter.value = (float)(currMastery)/totalMastery;
 		timer.Reset(25f);
 	}
