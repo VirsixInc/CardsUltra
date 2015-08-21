@@ -33,14 +33,18 @@ public class Assignment : IComparable<Assignment> {
 			return this.orderVal.CompareTo(compareAssignment.orderVal);
 	}
 
-	public Assignment(string assignTitle, string templateType, string newFileName = "NA",bool usesImg = false, int order = -1, string newSurveyLink = "NA"){
+	public Assignment(string assignTitle, string templateType, string newFileName = "NA",bool usesImg = false, int order = -1, string newSurveyLink = "NA", string displayName = "NA"){
 		hasImages = usesImg; 
     orderVal = order;
     fileName = newFileName;
     surveyLink = newSurveyLink;
 		type = templateType;
 		assignmentTitle = assignTitle;
-		displayTitle = UppercaseFirst(assignmentTitle.Split('.')[0]).Replace("_", " ");
+    if(displayName == "NA"){
+      displayTitle = UppercaseFirst(assignmentTitle.Split('.')[0]).Replace("_", " ");
+    }else{
+      displayTitle = displayName;
+    }
 		fullAssignTitle = type + "_" + assignmentTitle.Split('.')[0];
 	}
 	static string UppercaseFirst(string s){
