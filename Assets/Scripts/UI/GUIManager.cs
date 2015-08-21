@@ -101,7 +101,10 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	public void OpenSurveyLink() {
-		Application.OpenURL("http://WWW.google.com/");
+		if (AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].surveyLink != "NA") {
+			Application.OpenURL(AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex].surveyLink);
+
+		}
 	}
 	
 
