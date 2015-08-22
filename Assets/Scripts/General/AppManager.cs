@@ -371,6 +371,7 @@ public class AppManager : MonoBehaviour
 		string[] assign = assignName.Split ('_');
 		bool assignImages = Directory.Exists (Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images");
 		assignToReturn = new Assignment (assign [1], assign [0], (Application.persistentDataPath + "/" + assignName), assignImages, order, survey, displayName);
+    print(assignToReturn.fileName);
 		assignToReturn.imgDir = Application.persistentDataPath + "/images/" + assignName.Split ('.') [0] + "-images";
     List<string> cont = (File.ReadAllLines((Application.persistentDataPath + "/" + assignName).Replace ("\"", "")).ToList());
     cont.RemoveAt(0);
@@ -464,6 +465,7 @@ public class AppManager : MonoBehaviour
 		string[] dataFile = File.ReadAllLines(assignToUpload.fileName);
     List<string> swpData = new List<string>();
     string dataToPush;
+    print(dataFile.Length);
 
 		for(int i = 0;i<dataFile.Length;i++){
 			if(dataFile[i].Contains("/masteryBreak")){
@@ -479,6 +481,8 @@ public class AppManager : MonoBehaviour
 			}
 		}
     dataToPush = String.Join("|", swpData.ToArray());
+    print(assignToUpload.fileName);
+    print(swpData.Count);
     if(swpData.Count>0){
       StartCoroutine(uploadTermMastery(assignToUpload, dataToPush));
     }

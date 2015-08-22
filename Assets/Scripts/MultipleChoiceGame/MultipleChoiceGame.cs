@@ -318,9 +318,10 @@ public class MultipleChoiceGame : BRTemplate {
 	void AnswerWrong(){
 		AppManager.s_instance.saveTermMastery(
 			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
-			allTerms[currIndex].arrayOfStrings[0],
+			allTerms[currIndex].arrayOfStrings[1],
 			false
 			);
+
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_wrong);
 		
 		redX.StartFade (); //TODO change to drag this into inspector
@@ -334,7 +335,7 @@ public class MultipleChoiceGame : BRTemplate {
 	bool AnswerCorrect() {
 		AppManager.s_instance.saveTermMastery(
 			AppManager.s_instance.currentAssignments[AppManager.s_instance.currIndex],
-			allTerms[currIndex].arrayOfStrings[0],
+			allTerms[currIndex].arrayOfStrings[1],
 			true
 			);
 		if (SoundManager.s_instance!=null) SoundManager.s_instance.PlaySound (SoundManager.s_instance.m_correct);
