@@ -480,10 +480,12 @@ public class AppManager : MonoBehaviour
         swpData.Add((termToPush[0] + "," + valsToPush[0].ToString() + "," + valsToPush[1].ToString()));
 			}
 		}
-    dataToPush = String.Join("|", swpData.ToArray());
-    print(assignToUpload.fileName);
-    print(swpData.Count);
-    if(swpData.Count>0){
+    string[] dataSwp2 = new string[swpData.Count];
+    for(int i = 0;i<swpData.Count;i++){
+      dataSwp2[i] = swpData[i];
+    }
+    dataToPush = String.Join("|", dataSwp2);
+    if(dataSwp2.Length>0){
       StartCoroutine(uploadTermMastery(assignToUpload, dataToPush));
     }
 	}
@@ -492,7 +494,8 @@ public class AppManager : MonoBehaviour
 		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
 		dataToPush = dataToPush.Replace(" ", "%20");
 		//WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&correct=" + corr.ToString () + "&incorrect=" + incorr.ToString() + "&term=" + term);
-		WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&content=" + dataToPush);
+    WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&content=" + dataToPush);
+    print(www.url);
 		yield return www;
     StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)(Time.time-timeAtAssignLoad)));
 	}
