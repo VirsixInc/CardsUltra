@@ -64,7 +64,6 @@ public class MultipleChoiceGame : BRTemplate {
 			break;
 			
 		case GameState.ImageLoad:
-			print ("IMAGE LOAD");
 			if(loadDelay + timeSinceLoad < Time.time){
 				if(currentImageIterator < allTerms.Count){
 					if(!allTerms[currentImageIterator].imageLoaded){

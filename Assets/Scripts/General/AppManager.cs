@@ -19,6 +19,7 @@ public enum AppState
 	MenuConfig,
 	AssignmentMenu,
 	LoadFromAssign,
+	Uploading,
 	PlayConfig,
 	Playing,
 	LoadContent}
@@ -37,7 +38,7 @@ public class AppManager : MonoBehaviour
 	private float timeAtAssignLoad;
 	public string[] supportedTemplates;
 	string[] assignmentURLs;
-	string serverURL = "http://45.33.37.122:8000/client", folderName,
+	string serverURL = "http://45.33.37.122:9090/client", folderName,
 	username,
 	password,
 	masteryFilePath,
@@ -48,7 +49,7 @@ public class AppManager : MonoBehaviour
 	
 	List<string> assignmentURLsToDownload;
 	
-	bool urlsDownloaded, clicked, userExists;
+	bool urlsDownloaded, clicked, userExists, uploadingDone;
 	
 	void Awake (){
 		DontDestroyOnLoad (transform.gameObject);
@@ -77,8 +78,7 @@ public class AppManager : MonoBehaviour
 		}
 	}
 	
-	void Update ()
-	{
+	void Update (){
 		switch (currentAppState) {
 		case AppState.Login:
 			if (userExists) {
@@ -118,9 +118,13 @@ public class AppManager : MonoBehaviour
 			break;
 		case AppState.LoadFromAssign:
 			saveAssignmentMastery(currentAssignments[currIndex]);
-			print("LOAD FROM ASSIGN");
-			currentAppState = AppState.MenuConfig;
+			currentAppState = AppState.Uploading;
 			break;
+    case AppState.Uploading:
+      if(uploadingDone){
+        currentAppState = AppState.MenuConfig;
+      }
+      break;
 		case AppState.MenuConfig:
 			List<int> indexesToRemove = new List<int> ();
 			for (int i = 0; i<currentAssignments.Count; i++) {
@@ -137,19 +141,20 @@ public class AppManager : MonoBehaviour
 			break;
 		case AppState.AssignmentMenu:
 			if (clicked) {
-				Application.LoadLevel (currentAssignments [currIndex].type);
+        timeAtAssignLoad = Time.time;
 				currentAssignments [currIndex].timeAtLoad = Time.time;
 				clicked = false;
 				currentAppState = AppState.PlayConfig;
+				Application.LoadLevel (currentAssignments [currIndex].type);
 			}
 			break;
 		case AppState.PlayConfig:
+      timeAtAssignLoad = Time.time - timeAtAssignLoad;
 			GameObject newMgr = GameObject.Find ("GameManager");
 			
 			if (currentAssignments [currIndex].type != "hotspots") {
 				newMgr.SendMessage ("configureGame", currIndex);//currentAssignments[currIndex]);
 			}
-			timeAtAssignLoad = Time.time;
 			currentAppState = AppState.Playing;
 			break;
 		case AppState.Playing:
@@ -464,8 +469,7 @@ public class AppManager : MonoBehaviour
     }
 		string[] dataFile = File.ReadAllLines(assignToUpload.fileName);
     List<string> swpData = new List<string>();
-    string dataToPush;
-    print(dataFile.Length);
+    string dataToPush = "";
 
 		for(int i = 0;i<dataFile.Length;i++){
 			if(dataFile[i].Contains("/masteryBreak")){
@@ -477,33 +481,43 @@ public class AppManager : MonoBehaviour
 					string valToParse = corrAndIncorr[j];
 					valsToPush[j] = int.Parse (valToParse);
 				}
-        swpData.Add((termToPush[0] + "," + valsToPush[0].ToString() + "," + valsToPush[1].ToString()));
+        string newValToAdd = (termToPush[0] + "," + valsToPush[0].ToString() + "," + valsToPush[1].ToString()); 
+        swpData.Add(newValToAdd);
 			}
 		}
-    string[] dataSwp2 = new string[swpData.Count];
     for(int i = 0;i<swpData.Count;i++){
-      dataSwp2[i] = swpData[i];
+      dataToPush = dataToPush + "|" + swpData[i];
     }
+    /*
+    print(dataToPush);
     dataToPush = String.Join("|", dataSwp2);
-    if(dataSwp2.Length>0){
+    */
+    if(dataToPush.Length > 1){
+      dataToPush = dataToPush.Remove(0,1);
+      Debug.Log("UPLOADING TERM MASTERY: " + dataToPush + "     " + dataFile.Length + "    " + assignToUpload.fileName);
       StartCoroutine(uploadTermMastery(assignToUpload, dataToPush));
+    }else{
+      StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)(Time.time-timeAtAssignLoad)));
     }
 	}
 	
 	public IEnumerator uploadTermMastery(Assignment assignToUpload, string dataToPush){
 		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
-		dataToPush = dataToPush.Replace(" ", "%20");
-		//WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&correct=" + corr.ToString () + "&incorrect=" + incorr.ToString() + "&term=" + term);
-    WWW www = new WWW (serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&content=" + dataToPush);
-    print(www.url);
+		//dataToPush = dataToPush.Replace(" ", "%20");
+    
+    string urlToUse = serverURL + "/setTermMastery?assignmentName=" + assignmentName + "&student=" + username + "&content=" + dataToPush;
+    urlToUse = System.Uri.EscapeUriString(urlToUse);
+    WWW www = new WWW (urlToUse);
 		yield return www;
-    StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)(Time.time-timeAtAssignLoad)));
+    StartCoroutine(uploadAssignTime(currentAssignments[currIndex], (int)timeAtAssignLoad));//(int)(Time.time-timeAtAssignLoad)));
 	}
 	
 	public IEnumerator uploadAssignMastery (Assignment assignToUpload, int mastery)
 	{
 		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
-		WWW www = new WWW (serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString ());
+    string urlToUse =serverURL + "/setAssignmentMastery?assignmentName=" + assignmentName + "&student=" + username + "&mastery=" + mastery.ToString ();
+    urlToUse = System.Uri.EscapeUriString(urlToUse);
+		WWW www = new WWW (urlToUse);
 		yield return www;
     uploadAllTerms(currentAssignments[currIndex]);
 	}
@@ -511,11 +525,13 @@ public class AppManager : MonoBehaviour
 	public IEnumerator uploadAssignTime (Assignment assignToUpload, int seconds)
 	{
 		string assignmentName = assignToUpload.fullAssignTitle.Replace ("\"", "").ToLower ();
-		seconds = (int)Time.time - seconds;
-		//forward slash is an escape character so 
+
 		assignmentName = assignmentName.Replace ("\"", "").ToLower ();
-		WWW www = new WWW (serverURL + "/setAssignmentTime?assignmentName=" + assignmentName + "&student=" + username + "&time=" + seconds.ToString ());
+    string urlToUse =serverURL + "/setAssignmentTime?assignmentName=" + assignmentName + "&student=" + username + "&time=" + seconds.ToString ();
+    urlToUse = System.Uri.EscapeUriString(urlToUse);
+		WWW www = new WWW (urlToUse);
 		yield return www;
+    uploadingDone = true;
 	}
 	
 	JSONObject ParseToJSON (string txt)
