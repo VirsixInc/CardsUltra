@@ -38,7 +38,7 @@ public class AppManager : MonoBehaviour
 	private float timeAtAssignLoad;
 	public string[] supportedTemplates;
 	string[] assignmentURLs;
-	string serverURL = "http://45.33.37.122:9090/client", folderName,
+	string serverURL = "http://45.33.37.122:9990/client", folderName,
 	username,
 	password,
 	masteryFilePath,

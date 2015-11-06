@@ -19,7 +19,7 @@ public class SpinOnClick : MonoBehaviour {
 		thisEventTrigger = GetComponent<EventTrigger>();
 		entry.eventID = EventTriggerType.PointerUp;
 		entry.callback.AddListener( (eventData) => {OnFingerUp(); } );
-		thisEventTrigger.delegates.Add(entry);
+		thisEventTrigger.triggers.Add(entry);
 	}
 
 	

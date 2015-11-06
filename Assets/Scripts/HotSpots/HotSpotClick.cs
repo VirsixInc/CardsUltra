@@ -14,7 +14,7 @@ public class HotSpotClick : MonoBehaviour {
 		thisEventTrigger = GetComponent<EventTrigger>();
 		entry.eventID = EventTriggerType.PointerDown;
 		entry.callback.AddListener( (eventData) => {CallGameManager(); } );
-		thisEventTrigger.delegates.Add(entry);
+		thisEventTrigger.triggers.Add(entry);
 	}
 	
 	//HotSpotsGame.s_instance.SubmitAnswer(gameObject.name)

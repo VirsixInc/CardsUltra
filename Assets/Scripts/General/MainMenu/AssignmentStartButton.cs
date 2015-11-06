@@ -27,8 +27,8 @@ public class AssignmentStartButton : MonoBehaviour {
 		entry.callback.AddListener( (eventData) => {CallManager(); } );
 		entry2.callback.AddListener( (eventData) => {OnFingerDown(); } );
 
-		thisEventTrigger.delegates.Add(entry);
-		thisEventTrigger.delegates.Add(entry2);
+		thisEventTrigger.triggers.Add(entry);
+		thisEventTrigger.triggers.Add(entry2);
 
 	}
 

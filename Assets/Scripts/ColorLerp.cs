@@ -28,8 +28,8 @@ public class ColorLerp : MonoBehaviour {
 		entry.callback.AddListener( (eventData) => {OnFingerDown(); } );
 		entry2.callback.AddListener( (eventData) => {OnFingerUp (); } );
 		
-		thisEventTrigger.delegates.Add(entry);
-		thisEventTrigger.delegates.Add(entry2);
+		thisEventTrigger.triggers.Add(entry);
+		thisEventTrigger.triggers.Add(entry2);
 	}
 	
 	public void OnFingerDown() {
